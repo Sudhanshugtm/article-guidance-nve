@@ -1,0 +1,30 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: var(--font-family-system-sans);
+  background-color: var(--background-color-interactive);
+  color: var(--color-base);
+}
+
+a {
+  color: var(--color-progressive);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#app {
+  height: 100%;
+  background-color: var(--background-color-base);
+}
+
+.oo-ui-popupToolGroup-tools {
+  margin-top: -1px;
+}
