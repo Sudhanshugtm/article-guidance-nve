@@ -285,13 +285,15 @@ onBeforeUnmount(() => {
 }
 
 /* Close button: constrained padding for 44px (12 + 20 icon + 12) */
-.toolbar-tools :deep(.toolbar-group-close .oo-ui-barToolGroup-tools > .oo-ui-tool > .oo-ui-tool-link) {
+.toolbar-tools
+  :deep(.toolbar-group-close .oo-ui-barToolGroup-tools > .oo-ui-tool > .oo-ui-tool-link) {
   padding-left: 12px;
   padding-right: 12px;
 }
 
 /* Bar tool icons — SCOPED to bar groups only */
-.toolbar-tools :deep(.oo-ui-barToolGroup-tools > .oo-ui-tool > .oo-ui-tool-link > .oo-ui-iconElement-icon) {
+.toolbar-tools
+  :deep(.oo-ui-barToolGroup-tools > .oo-ui-tool > .oo-ui-tool-link > .oo-ui-iconElement-icon) {
   position: static;
   width: 20px;
   height: 20px;
@@ -310,7 +312,8 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
 }
 
-.toolbar-tools :deep(.oo-ui-popupToolGroup > .oo-ui-popupToolGroup-handle > .oo-ui-iconElement-icon) {
+.toolbar-tools
+  :deep(.oo-ui-popupToolGroup > .oo-ui-popupToolGroup-handle > .oo-ui-iconElement-icon) {
   position: static;
   width: 20px;
   height: 20px;
@@ -319,11 +322,19 @@ onBeforeUnmount(() => {
 }
 
 /* === Hide structural elements === */
-.toolbar-tools :deep(.oo-ui-toolbar-bar > div[style*="clear"]) {
+.toolbar-tools :deep(.oo-ui-toolbar-bar > div[style*='clear']) {
   display: none;
 }
 
 .toolbar-tools :deep(.oo-ui-toolbar-after) {
   display: none;
+}
+
+.toolbar-tools :deep(.oo-ui-popupToolGroup-tools) {
+  margin-top: -1px;
+}
+
+.toolbar-tools :deep(.oo-ui-tool-name-close) {
+  border-right: 1px solid var(--border-color-subtle, #c8ccd1);
 }
 </style>
