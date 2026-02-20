@@ -18,6 +18,7 @@
       aria-label="Add content"
       :style="floatingButtonStyle"
       @mousedown.prevent="onCodexButtonClick"
+      @click.stop
     >
       <CdxIcon :icon="cdxIconAdd" />
     </CdxButton>
@@ -28,6 +29,8 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
+
+const emit = defineEmits(['open-rail'])
 
 const editorRef = ref(null)
 const isButtonVisible = ref(false)
@@ -187,7 +190,7 @@ function onSelectionChange() {
 }
 
 function onCodexButtonClick() {
-  // Placeholder: future content insertion menu
+  emit('open-rail')
 }
 
 onMounted(() => {

@@ -1,12 +1,12 @@
 <template>
   <div class="editor-page">
     <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen }">
-      <div class="editor-main">
+      <div class="editor-main" @click="isRailOpen && (isRailOpen = false)">
         <EditorToolbar />
-        <TextEditor />
+        <TextEditor @open-rail="isRailOpen = true" />
       </div>
       <div class="editor-rail-column">
-        <EditorRail :is-open="isRailOpen" @toggle="isRailOpen = !isRailOpen" />
+        <EditorRail :is-open="isRailOpen" />
       </div>
     </div>
   </div>

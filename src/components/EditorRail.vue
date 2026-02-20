@@ -1,6 +1,6 @@
 <template>
   <div class="editor-rail">
-    <div class="rail-header" @click="$emit('toggle')">
+    <div class="rail-header">
       <CdxButton
         class="rail-publish-btn"
         action="progressive"
@@ -25,7 +25,6 @@ defineProps({
   },
 })
 
-defineEmits(['toggle'])
 </script>
 
 <style scoped>
@@ -44,7 +43,6 @@ defineEmits(['toggle'])
   min-height: 48px;
   border-bottom: 1px solid var(--border-color-subtle);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
   background-color: var(--background-color-base);
 }
 
