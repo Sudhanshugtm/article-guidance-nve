@@ -43,7 +43,7 @@ const floatingButtonStyle = computed(() => ({
   position: 'absolute',
   top: `${buttonTop.value}px`,
   left: `${buttonLeft.value}px`,
-  zIndex: 10,
+  zIndex: 1,
 }))
 
 function updateButtonPosition() {
@@ -219,7 +219,7 @@ onBeforeUnmount(() => {
 
 .codex-floating-btn {
   position: absolute;
-  z-index: 10;
+  z-index: 1;
   width: 32px !important;
   height: 32px !important;
   min-width: 32px !important;
