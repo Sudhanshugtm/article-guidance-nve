@@ -1,8 +1,8 @@
 <template>
   <div class="editor-page">
+    <CdxToolbar />
     <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen }">
       <div class="editor-main" @click="isRailOpen && (isRailOpen = false)">
-        <EditorToolbar />
         <TextEditor @open-rail="isRailOpen = true" />
       </div>
       <div class="editor-rail-column">
@@ -17,6 +17,7 @@ import { ref } from 'vue'
 import EditorToolbar from '@/components/EditorToolbar.vue'
 import TextEditor from '@/components/TextEditor.vue'
 import EditorRail from '@/components/EditorRail.vue'
+import CdxToolbar from '@/components/CdxToolbar.vue'
 
 const isRailOpen = ref(false)
 </script>
@@ -30,7 +31,7 @@ const isRailOpen = ref(false)
 
 .editor-wrapper {
   display: flex;
-  height: 100%;
+  height: calc(100% - 48px);
   transition: transform 0.3s ease;
 }
 

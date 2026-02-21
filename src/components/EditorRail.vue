@@ -1,15 +1,5 @@
 <template>
   <div class="editor-rail">
-    <div class="rail-header">
-      <CdxButton
-        class="rail-publish-btn"
-        action="progressive"
-        weight="primary"
-        aria-label="Publish"
-      >
-        <CdxIcon :icon="cdxIconNext" />
-      </CdxButton>
-    </div>
     <div class="rail-body"></div>
   </div>
 </template>
@@ -24,7 +14,6 @@ defineProps({
     required: true,
   },
 })
-
 </script>
 
 <style scoped>
