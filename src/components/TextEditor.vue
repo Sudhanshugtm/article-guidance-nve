@@ -20,7 +20,15 @@
       @mousedown.prevent="onCodexButtonClick"
       @click.stop
     >
-      <CdxIcon :icon="cdxIconAdd" />
+      <CdxIcon :icon="activeIcon" />
+    </CdxButton>
+    <CdxButton
+      weight="quiet"
+      class="settings-btn"
+      aria-label="Settings"
+      @click="$emit('open-settings')"
+    >
+      <CdxIcon :icon="cdxIconSettings" />
     </CdxButton>
   </div>
 </template>
@@ -28,10 +36,17 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
-import { cdxIconAdd } from '@wikimedia/codex-icons'
+import { cdxIconSettings } from '@wikimedia/codex-icons'
+import { useEditorSettings } from '../composables/useEditorSettings'
+import { entryPointIcons, defaultSettings } from '../config/editorSettings'
 
-const emit = defineEmits(['open-rail'])
+const emit = defineEmits(['open-rail', 'open-settings'])
 
+const { settings } = useEditorSettings()
+
+const activeIcon = computed(
+  () => entryPointIcons[settings.value.entryPoint.icon] || entryPointIcons[defaultSettings.entryPoint.icon],
+)
 const editorRef = ref(null)
 const isButtonVisible = ref(false)
 const buttonTop = ref(0)
@@ -73,7 +88,8 @@ function updateButtonPosition() {
     const computedStyle = window.getComputedStyle(editorRef.value)
     const paddingTop = parseFloat(computedStyle.paddingTop)
     const paddingLeft = parseFloat(computedStyle.paddingLeft)
-    const lineHeight = parseFloat(computedStyle.lineHeight) || parseFloat(computedStyle.fontSize) * 1.5
+    const lineHeight =
+      parseFloat(computedStyle.lineHeight) || parseFloat(computedStyle.fontSize) * 1.5
     caretRect = {
       top: editorRect.top + paddingTop,
       bottom: editorRect.top + paddingTop + lineHeight,
@@ -85,10 +101,7 @@ function updateButtonPosition() {
   }
 
   // Hide if caret is scrolled out of the visible editor area
-  if (
-    caretRect.bottom < editorRect.top ||
-    caretRect.top > editorRect.bottom
-  ) {
+  if (caretRect.bottom < editorRect.top || caretRect.top > editorRect.bottom) {
     isButtonVisible.value = false
     return
   }
@@ -105,7 +118,7 @@ function updateButtonPosition() {
 
   // Right-edge flip: if button overflows right, align top-right corner to cursor
   if (left + BUTTON_SIZE > editorRef.value.clientWidth) {
-    left = (caretRect.left - editorRect.left) - BUTTON_SIZE
+    left = caretRect.left - editorRect.left - BUTTON_SIZE
   }
 
   left = Math.max(0, left)
@@ -144,8 +157,14 @@ function onKeydown(event) {
 
 function onKeyup(event) {
   const navigationKeys = [
-    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-    'Home', 'End', 'PageUp', 'PageDown',
+    'ArrowUp',
+    'ArrowDown',
+    'ArrowLeft',
+    'ArrowRight',
+    'Home',
+    'End',
+    'PageUp',
+    'PageDown',
   ]
   if (navigationKeys.includes(event.key)) {
     updateButtonPosition()
@@ -218,6 +237,13 @@ onBeforeUnmount(() => {
   background-color: var(--background-color-base);
   outline: none;
   overflow-y: auto;
+}
+
+.settings-btn {
+  position: absolute;
+  bottom: var(--spacing-75);
+  right: var(--spacing-75);
+  z-index: 1;
 }
 
 .codex-floating-btn {

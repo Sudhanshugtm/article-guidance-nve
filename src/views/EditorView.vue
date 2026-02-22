@@ -3,12 +3,13 @@
     <CdxToolbar />
     <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen }">
       <div class="editor-main" @click="isRailOpen && (isRailOpen = false)">
-        <TextEditor @open-rail="isRailOpen = true" />
+        <TextEditor @open-rail="isRailOpen = true" @open-settings="settingsDialogOpen = true" />
       </div>
       <div class="editor-rail-column">
         <EditorRail :is-open="isRailOpen" />
       </div>
     </div>
+    <SettingsDialog v-model:open="settingsDialogOpen" />
   </div>
 </template>
 
@@ -18,8 +19,10 @@ import EditorToolbar from '@/components/EditorToolbar.vue'
 import TextEditor from '@/components/TextEditor.vue'
 import EditorRail from '@/components/EditorRail.vue'
 import CdxToolbar from '@/components/CdxToolbar.vue'
+import SettingsDialog from '@/components/SettingsDialog.vue'
 
 const isRailOpen = ref(false)
+const settingsDialogOpen = ref(false)
 </script>
 
 <style scoped>
