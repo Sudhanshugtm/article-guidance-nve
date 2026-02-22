@@ -1,11 +1,17 @@
 <template>
   <div class="editor-rail">
-    <div class="rail-body"></div>
+    <div class="rail-body">
+      <CdxAccordion v-for="section in articleSections" :key="section.title" separation="minimal">
+        <template #title>{{ section.title }}</template>
+        <template #description>{{ section.description }}</template>
+      </CdxAccordion>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { CdxButton, CdxIcon } from '@wikimedia/codex'
+import { CdxAccordion, CdxButton, CdxIcon } from '@wikimedia/codex'
+import { articleSections } from '../config/articleSections.js'
 import { cdxIconNext } from '@wikimedia/codex-icons'
 
 defineProps({
@@ -48,5 +54,6 @@ defineProps({
 .rail-body {
   flex: 1;
   overflow-y: auto;
+  padding: var(--spacing-100) var(--spacing-100) 0 44px;
 }
 </style>
