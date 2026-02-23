@@ -49,6 +49,7 @@ watch(outlineLocation, () => {
 .editor-page {
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -56,6 +57,7 @@ watch(outlineLocation, () => {
   display: flex;
   padding-top: 48px;
   height: 100%;
+  box-sizing: border-box;
   transition: transform 0.3s ease;
 }
 
