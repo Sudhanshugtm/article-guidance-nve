@@ -68,7 +68,7 @@ import {
 
 <style scoped>
 .cdx-toolbar {
-  position: sticky;
+  position: fixed;
   z-index: 1;
   display: flex;
   height: 48px;

@@ -9,10 +9,7 @@
         <EditorRail :is-open="isRailOpen" />
       </div>
     </div>
-    <OutlinePopover
-      v-if="outlineLocation === 'popover'"
-      v-model:open="isPopoverOpen"
-    />
+    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" />
     <SettingsDialog v-model:open="settingsDialogOpen" />
   </div>
 </template>
@@ -57,7 +54,8 @@ watch(outlineLocation, () => {
 
 .editor-wrapper {
   display: flex;
-  height: calc(100% - 48px);
+  padding-top: 48px;
+  height: 100%;
   transition: transform 0.3s ease;
 }
 
