@@ -13,7 +13,7 @@ export const defaultSettings = {
  * Entry point style labels for display in the settings dialog
  */
 export const entryPointLabels = {
-  icon: 'Icon button',
-  quiet: 'Quiet button with label',
+  icon: 'Icon-only button',
+  quiet: 'Animated label',
   text: 'Plain text',
 }
