@@ -25,6 +25,14 @@ export function useEditorSettings() {
           parsed.entryPoint[settingName] = value
         }
       }
+
+      const outlineMatch = key.match(/^outline-(\w+)$/)
+      if (outlineMatch) {
+        const settingName = outlineMatch[1]
+        if (settingName in parsed.outline) {
+          parsed.outline[settingName] = value
+        }
+      }
     }
 
     return parsed
@@ -43,6 +51,12 @@ export function useEditorSettings() {
       }
     }
 
+    for (const [settingName, value] of Object.entries(settings.outline)) {
+      if (value !== defaultSettings.outline[settingName]) {
+        query[`outline-${settingName}`] = value
+      }
+    }
+
     return query
   }
 
@@ -56,7 +70,7 @@ export function useEditorSettings() {
     // Preserve non-settings query params
     const preservedQuery = {}
     for (const [key, value] of Object.entries(route.query)) {
-      if (!key.match(/^entryPoint-\w+$/)) {
+      if (!key.match(/^(entryPoint|outline)-\w+$/)) {
         preservedQuery[key] = value
       }
     }

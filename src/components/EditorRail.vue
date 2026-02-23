@@ -1,18 +1,13 @@
 <template>
   <div class="editor-rail">
     <div class="rail-body">
-      <CdxAccordion v-for="section in articleSections" :key="section.title" separation="minimal">
-        <template #title>{{ section.title }}</template>
-        <template #description>{{ section.description }}</template>
-      </CdxAccordion>
+      <OutlineAccordionList />
     </div>
   </div>
 </template>
 
 <script setup>
-import { CdxAccordion, CdxButton, CdxIcon } from '@wikimedia/codex'
-import { articleSections } from '../config/articleSections.js'
-import { cdxIconNext } from '@wikimedia/codex-icons'
+import OutlineAccordionList from './OutlineAccordionList.vue'
 
 defineProps({
   isOpen: {

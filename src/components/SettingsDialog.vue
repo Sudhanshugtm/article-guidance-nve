@@ -10,7 +10,21 @@
           v-model="localSettings.entryPoint.style"
           :input-value="styleKey"
           name="entryPoint-style"
-          @update:model-value="onStyleChange"
+          @update:model-value="onSettingChange"
+        >
+          {{ label }}
+        </CdxRadio>
+      </div>
+      <!-- Outline location section -->
+      <div class="field-group">
+        <CdxLabel>Outline location</CdxLabel>
+        <CdxRadio
+          v-for="(label, locationKey) in outlineLocationLabels"
+          :key="locationKey"
+          v-model="localSettings.outline.location"
+          :input-value="locationKey"
+          name="outline-location"
+          @update:model-value="onSettingChange"
         >
           {{ label }}
         </CdxRadio>
@@ -23,7 +37,7 @@
 import { ref, watch, onMounted } from 'vue'
 import { CdxDialog, CdxLabel, CdxRadio } from '@wikimedia/codex'
 import { useEditorSettings } from '../composables/useEditorSettings'
-import { entryPointLabels } from '../config/editorSettings'
+import { entryPointLabels, outlineLocationLabels } from '../config/editorSettings'
 
 const open = defineModel('open', { type: Boolean, default: false })
 
@@ -51,7 +65,7 @@ watch(
   { deep: true },
 )
 
-function onStyleChange() {
+function onSettingChange() {
   updateSettings(localSettings.value)
 }
 </script>

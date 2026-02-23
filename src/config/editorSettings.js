@@ -7,6 +7,9 @@ export const defaultSettings = {
   entryPoint: {
     style: 'icon', // 'icon' | 'quiet' | 'text'
   },
+  outline: {
+    location: 'rail', // 'rail' | 'popover'
+  },
 }
 
 /**
@@ -16,4 +19,9 @@ export const entryPointLabels = {
   icon: 'Icon-only button',
   quiet: 'Animated label',
   text: 'Plain text',
+}
+
+export const outlineLocationLabels = {
+  rail: 'Side panel',
+  popover: 'Popover',
 }

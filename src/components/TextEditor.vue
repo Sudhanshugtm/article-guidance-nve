@@ -81,7 +81,7 @@ import { useEditorSettings } from '../composables/useEditorSettings'
 import { defaultSettings } from '../config/editorSettings'
 import { articleSections } from '../config/articleSections'
 
-const emit = defineEmits(['open-rail', 'open-settings'])
+const emit = defineEmits(['open-outline', 'open-settings'])
 
 const { settings } = useEditorSettings()
 
@@ -368,7 +368,7 @@ function onSelectionChange() {
 
 function onCodexButtonClick() {
   stopCycling()
-  emit('open-rail')
+  emit('open-outline')
 }
 
 // Start typewriter on first button appearance (not on mount)
