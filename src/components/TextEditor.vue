@@ -29,15 +29,24 @@
         <CdxIcon :icon="cdxIconAdd" />
       </CdxButton>
 
-      <!-- Style 2: Quiet button with label -->
+      <!-- Style 2: Quiet button with cycling label (before interaction) -->
       <CdxButton
-        v-else-if="entryPointStyle === 'quiet'"
+        v-else-if="entryPointStyle === 'quiet' && isCycling"
         weight="quiet"
         class="codex-floating-btn-quiet"
         aria-label="Add content"
       >
         <CdxIcon :icon="cdxIconAdd" />
-        Label
+        {{ displayText }}
+      </CdxButton>
+
+      <!-- Style 2 fallback: icon-only after interaction -->
+      <CdxButton
+        v-else-if="entryPointStyle === 'quiet'"
+        class="codex-floating-btn"
+        aria-label="Add content"
+      >
+        <CdxIcon :icon="cdxIconAdd" />
       </CdxButton>
 
       <!-- Style 3: Plain text -->
@@ -62,6 +71,7 @@ import { CdxButton, CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd, cdxIconSettings } from '@wikimedia/codex-icons'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { defaultSettings } from '../config/editorSettings'
+import { articleSections } from '../config/articleSections'
 
 const emit = defineEmits(['open-rail', 'open-settings'])
 
@@ -70,6 +80,80 @@ const { settings } = useEditorSettings()
 const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
 )
+
+// Typewriter animation for the quiet button style
+const sectionTitles = articleSections.map((s) => s.title)
+const currentLabelIndex = ref(0)
+const displayText = ref('')
+const isCycling = ref(true)
+
+let charTimer = null
+let holdTimer = null
+let animPhase = 'typing' // 'typing' | 'holding' | 'transitioning'
+let charIndex = 0
+let eraseProgress = 0
+let typeProgress = 0
+let oldTitle = ''
+
+const CHAR_INTERVAL_MS = 50
+const HOLD_DURATION_MS = 3000
+
+function typewriterTick() {
+  const title = sectionTitles[currentLabelIndex.value]
+
+  if (animPhase === 'typing') {
+    charIndex++
+    displayText.value = title.slice(0, charIndex)
+    if (charIndex >= title.length) {
+      clearInterval(charTimer)
+      charTimer = null
+      animPhase = 'holding'
+      holdTimer = setTimeout(startTransition, HOLD_DURATION_MS)
+    }
+  } else if (animPhase === 'transitioning') {
+    const nextIndex = (currentLabelIndex.value + 1) % sectionTitles.length
+    const nextTitle = sectionTitles[nextIndex]
+
+    if (eraseProgress < oldTitle.length) eraseProgress++
+    if (typeProgress < nextTitle.length) typeProgress++
+
+    displayText.value = nextTitle.slice(0, typeProgress) + oldTitle.slice(eraseProgress)
+
+    if (eraseProgress >= oldTitle.length && typeProgress >= nextTitle.length) {
+      currentLabelIndex.value = nextIndex
+      clearInterval(charTimer)
+      charTimer = null
+      animPhase = 'holding'
+      holdTimer = setTimeout(startTransition, HOLD_DURATION_MS)
+    }
+  }
+}
+
+function startTransition() {
+  holdTimer = null
+  oldTitle = sectionTitles[currentLabelIndex.value]
+  eraseProgress = 0
+  typeProgress = 0
+  animPhase = 'transitioning'
+  charTimer = setInterval(typewriterTick, CHAR_INTERVAL_MS)
+}
+
+function startCycling() {
+  if (charTimer) return
+  animPhase = 'typing'
+  charIndex = 0
+  displayText.value = ''
+  charTimer = setInterval(typewriterTick, CHAR_INTERVAL_MS)
+}
+
+function stopCycling() {
+  if (!isCycling.value) return
+  isCycling.value = false
+  clearInterval(charTimer)
+  clearTimeout(holdTimer)
+  charTimer = null
+  holdTimer = null
+}
 
 const editorRef = ref(null)
 const floatingElRef = ref(null)
@@ -81,7 +165,7 @@ let typingTimer = null
 const TYPING_DEBOUNCE_MS = 500
 const BUTTON_GAP = 4
 const ENTRY_POINT_HEIGHT = 32
-const ENTRY_POINT_WIDTHS = { icon: 32, quiet: 110, text: 180 }
+const ENTRY_POINT_WIDTHS = { icon: 32, quiet: 220, text: 180 }
 
 const floatingButtonStyle = computed(() => ({
   position: 'absolute',
@@ -136,7 +220,9 @@ function updateButtonPosition() {
   let top = caretRect.bottom - editorRect.top + BUTTON_GAP
   let left = caretRect.left - editorRect.left
 
-  const currentWidth = ENTRY_POINT_WIDTHS[entryPointStyle.value] || 32
+  const quietWidth = isCycling.value ? ENTRY_POINT_WIDTHS.quiet : ENTRY_POINT_WIDTHS.icon
+  const currentWidth =
+    entryPointStyle.value === 'quiet' ? quietWidth : (ENTRY_POINT_WIDTHS[entryPointStyle.value] || 32)
 
   // Hide if button would extend below visible editor area
   if (top + ENTRY_POINT_HEIGHT > editorRef.value.clientHeight) {
@@ -171,6 +257,7 @@ function scheduleShowButton() {
 }
 
 function onInput() {
+  stopCycling()
   hideButton()
   scheduleShowButton()
 }
@@ -237,16 +324,20 @@ function onSelectionChange() {
 }
 
 function onCodexButtonClick() {
+  stopCycling()
   emit('open-rail')
 }
 
 onMounted(() => {
   document.addEventListener('selectionchange', onSelectionChange)
+  startCycling()
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('selectionchange', onSelectionChange)
   clearTimeout(typingTimer)
+  clearInterval(charTimer)
+  clearTimeout(holdTimer)
 })
 </script>
 
