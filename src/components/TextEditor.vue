@@ -45,7 +45,9 @@ const emit = defineEmits(['open-rail', 'open-settings'])
 const { settings } = useEditorSettings()
 
 const activeIcon = computed(
-  () => entryPointIcons[settings.value.entryPoint.icon] || entryPointIcons[defaultSettings.entryPoint.icon],
+  () =>
+    entryPointIcons[settings.value.entryPoint.icon] ||
+    entryPointIcons[defaultSettings.entryPoint.icon],
 )
 const editorRef = ref(null)
 const isButtonVisible = ref(false)
@@ -242,8 +244,9 @@ onBeforeUnmount(() => {
 .settings-btn {
   position: absolute;
   bottom: var(--spacing-75);
-  right: var(--spacing-75);
+  left: var(--spacing-75);
   z-index: 1;
+  opacity: 0.1;
 }
 
 .codex-floating-btn {
