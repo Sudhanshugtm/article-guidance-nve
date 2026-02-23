@@ -205,7 +205,7 @@ const buttonTop = ref(0)
 const buttonLeft = ref(0)
 
 let typingTimer = null
-const TYPING_DEBOUNCE_MS = 500
+const TYPING_DEBOUNCE_MS = 1000
 const BUTTON_GAP = 4
 const ENTRY_POINT_HEIGHT = 32
 const ENTRY_POINT_WIDTHS = { icon: 32, quiet: 220, text: 180 }
