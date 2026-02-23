@@ -17,8 +17,8 @@
       ref="floatingElRef"
       class="codex-floating-entry"
       :style="floatingButtonStyle"
-      @mousedown.prevent="onCodexButtonClick"
-      @click.stop
+      @mousedown.prevent
+      @click.stop="onCodexButtonClick"
     >
       <!-- Style 1: Icon button (default) -->
       <CdxButton
@@ -37,12 +37,20 @@
         aria-label="Add content"
       >
         <CdxIcon :icon="cdxIconAdd" />
-        {{ displayText }}
+        <span class="typewriter-container">
+          <span
+            class="typewriter-text"
+            :class="{ 'typewriter-mask': animPhase === 'wiping' }"
+            :style="animPhase === 'wiping' ? { '--wipe': wipeMaskPercent + '%' } : {}"
+            >{{ displayText }}</span
+          >
+        </span>
       </CdxButton>
 
-      <!-- Style 2 fallback: icon-only after interaction -->
+      <!-- Style 2 fallback: quiet icon-only after interaction -->
       <CdxButton
         v-else-if="entryPointStyle === 'quiet'"
+        weight="quiet"
         class="codex-floating-btn"
         aria-label="Add content"
       >
@@ -50,9 +58,7 @@
       </CdxButton>
 
       <!-- Style 3: Plain text -->
-      <span v-else class="codex-floating-text">
-        Tap here to continue...
-      </span>
+      <span v-else class="codex-floating-text"> Tap here to continue... </span>
     </div>
     <CdxButton
       weight="quiet"
@@ -66,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd, cdxIconSettings } from '@wikimedia/codex-icons'
 import { useEditorSettings } from '../composables/useEditorSettings'
@@ -85,62 +91,62 @@ const entryPointStyle = computed(
 const sectionTitles = articleSections.map((s) => s.title)
 const currentLabelIndex = ref(0)
 const displayText = ref('')
+const wipeProgress = ref(0)
 const isCycling = ref(true)
+const animPhase = ref('typing') // 'typing' | 'holding' | 'wiping'
 
 let charTimer = null
 let holdTimer = null
-let animPhase = 'typing' // 'typing' | 'holding' | 'transitioning'
 let charIndex = 0
-let eraseProgress = 0
-let typeProgress = 0
-let oldTitle = ''
+let wipeLen = 0
+let wipeTicks = 0
+let cyclingStarted = false
 
 const CHAR_INTERVAL_MS = 50
 const HOLD_DURATION_MS = 3000
 
-function typewriterTick() {
-  const title = sectionTitles[currentLabelIndex.value]
+// Mask goes from -15% (all visible) to 100% (all hidden)
+const wipeMaskPercent = computed(() => -15 + wipeProgress.value * 115)
 
-  if (animPhase === 'typing') {
+function typewriterTick() {
+  if (animPhase.value === 'typing') {
+    const title = sectionTitles[currentLabelIndex.value]
+    displayText.value += title[charIndex]
     charIndex++
-    displayText.value = title.slice(0, charIndex)
     if (charIndex >= title.length) {
       clearInterval(charTimer)
       charTimer = null
-      animPhase = 'holding'
-      holdTimer = setTimeout(startTransition, HOLD_DURATION_MS)
+      animPhase.value = 'holding'
+      holdTimer = setTimeout(startWipe, HOLD_DURATION_MS)
     }
-  } else if (animPhase === 'transitioning') {
-    const nextIndex = (currentLabelIndex.value + 1) % sectionTitles.length
-    const nextTitle = sectionTitles[nextIndex]
-
-    if (eraseProgress < oldTitle.length) eraseProgress++
-    if (typeProgress < nextTitle.length) typeProgress++
-
-    displayText.value = nextTitle.slice(0, typeProgress) + oldTitle.slice(eraseProgress)
-
-    if (eraseProgress >= oldTitle.length && typeProgress >= nextTitle.length) {
-      currentLabelIndex.value = nextIndex
+  } else if (animPhase.value === 'wiping') {
+    wipeTicks++
+    wipeProgress.value = wipeTicks / wipeLen
+    if (wipeTicks >= wipeLen) {
       clearInterval(charTimer)
       charTimer = null
-      animPhase = 'holding'
-      holdTimer = setTimeout(startTransition, HOLD_DURATION_MS)
+      // Advance to next label and start typing
+      displayText.value = ''
+      currentLabelIndex.value = (currentLabelIndex.value + 1) % sectionTitles.length
+      charIndex = 0
+      animPhase.value = 'typing'
+      charTimer = setInterval(typewriterTick, CHAR_INTERVAL_MS)
     }
   }
 }
 
-function startTransition() {
+function startWipe() {
   holdTimer = null
-  oldTitle = sectionTitles[currentLabelIndex.value]
-  eraseProgress = 0
-  typeProgress = 0
-  animPhase = 'transitioning'
+  wipeLen = displayText.value.length
+  wipeTicks = 0
+  wipeProgress.value = 0
+  animPhase.value = 'wiping'
   charTimer = setInterval(typewriterTick, CHAR_INTERVAL_MS)
 }
 
 function startCycling() {
   if (charTimer) return
-  animPhase = 'typing'
+  animPhase.value = 'typing'
   charIndex = 0
   displayText.value = ''
   charTimer = setInterval(typewriterTick, CHAR_INTERVAL_MS)
@@ -153,6 +159,7 @@ function stopCycling() {
   clearTimeout(holdTimer)
   charTimer = null
   holdTimer = null
+  displayText.value = ''
 }
 
 const editorRef = ref(null)
@@ -222,7 +229,7 @@ function updateButtonPosition() {
 
   const quietWidth = isCycling.value ? ENTRY_POINT_WIDTHS.quiet : ENTRY_POINT_WIDTHS.icon
   const currentWidth =
-    entryPointStyle.value === 'quiet' ? quietWidth : (ENTRY_POINT_WIDTHS[entryPointStyle.value] || 32)
+    entryPointStyle.value === 'quiet' ? quietWidth : ENTRY_POINT_WIDTHS[entryPointStyle.value] || 32
 
   // Hide if button would extend below visible editor area
   if (top + ENTRY_POINT_HEIGHT > editorRef.value.clientHeight) {
@@ -328,9 +335,16 @@ function onCodexButtonClick() {
   emit('open-rail')
 }
 
+// Start typewriter on first button appearance (not on mount)
+watch(isButtonVisible, (visible) => {
+  if (visible && !cyclingStarted && isCycling.value) {
+    cyclingStarted = true
+    startCycling()
+  }
+})
+
 onMounted(() => {
   document.addEventListener('selectionchange', onSelectionChange)
-  startCycling()
 })
 
 onBeforeUnmount(() => {
@@ -381,6 +395,32 @@ onBeforeUnmount(() => {
 
 .codex-floating-btn-quiet {
   white-space: nowrap;
+}
+
+.typewriter-container {
+  display: inline-block;
+}
+
+.typewriter-text {
+  white-space: pre;
+}
+
+.typewriter-mask {
+  --wipe: -15%;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    transparent var(--wipe),
+    black calc(var(--wipe) + 15%),
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    transparent var(--wipe),
+    black calc(var(--wipe) + 15%),
+    black 100%
+  );
 }
 
 .codex-floating-text {
