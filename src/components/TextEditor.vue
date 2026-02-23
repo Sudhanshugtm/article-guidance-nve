@@ -19,6 +19,8 @@
       :style="floatingButtonStyle"
       @mousedown.prevent
       @click.stop="onCodexButtonClick"
+      @mouseenter="pauseAnimation"
+      @mouseleave="resumeAnimation"
     >
       <!-- Style 1: Icon button (default) -->
       <CdxButton
@@ -101,6 +103,9 @@ let charIndex = 0
 let wipeLen = 0
 let wipeTicks = 0
 let cyclingStarted = false
+let isPaused = false
+let holdStartTime = 0
+let holdRemainingMs = 0
 
 const CHAR_INTERVAL_MS = 50
 const HOLD_DURATION_MS = 3000
@@ -117,6 +122,8 @@ function typewriterTick() {
       clearInterval(charTimer)
       charTimer = null
       animPhase.value = 'holding'
+      if (isPaused) return
+      holdStartTime = Date.now()
       holdTimer = setTimeout(startWipe, HOLD_DURATION_MS)
     }
   } else if (animPhase.value === 'wiping') {
@@ -131,6 +138,8 @@ function typewriterTick() {
       charIndex = 0
       animPhase.value = 'typing'
       charTimer = setInterval(typewriterTick, CHAR_INTERVAL_MS)
+      // If paused, let the next label type out fully, then it will
+      // hit the typing→holding boundary and stop there
     }
   }
 }
@@ -160,6 +169,33 @@ function stopCycling() {
   charTimer = null
   holdTimer = null
   displayText.value = ''
+}
+
+function pauseAnimation() {
+  if (!isCycling.value) return
+  isPaused = true
+
+  if (animPhase.value === 'holding') {
+    // Pause the hold timer, save remaining time
+    clearTimeout(holdTimer)
+    holdTimer = null
+    holdRemainingMs = Math.max(0, HOLD_DURATION_MS - (Date.now() - holdStartTime))
+  }
+  // typing and wiping: let the current phase run to completion,
+  // isPaused flag is checked at the transition boundary
+}
+
+function resumeAnimation() {
+  if (!isCycling.value || !isPaused) return
+  isPaused = false
+
+  if (animPhase.value === 'holding') {
+    // Resume the hold timeout with remaining time
+    holdStartTime = Date.now()
+    holdTimer = setTimeout(startWipe, holdRemainingMs)
+  }
+  // typing/wiping: interval is still running (they run to completion),
+  // and the next transition will proceed normally since isPaused is now false
 }
 
 const editorRef = ref(null)
