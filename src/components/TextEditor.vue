@@ -368,6 +368,7 @@ function onSelectionChange() {
 
 function onCodexButtonClick() {
   stopCycling()
+  editorRef.value?.blur()
   emit('open-outline')
 }
 
