@@ -33,12 +33,9 @@ const anchorRef = ref(null)
 .outline-popover-body {
   max-height: 50vh;
   overflow-y: auto;
-  padding: var(--spacing-100);
 }
-</style>
 
-<style>
-.outline-popover-anchor + .cdx-popover {
+.outline-popover-anchor + :deep(.cdx-popover) {
   position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
@@ -46,6 +43,8 @@ const anchorRef = ref(null)
   width: 100% !important;
   max-width: 100% !important;
   transform: none !important;
-  border-radius: none;
+  border-radius: 0 !important;
+  border: none !important;
+  border-top: 1px solid var(--border-color-base, #a2a9b1) !important;
 }
 </style>
