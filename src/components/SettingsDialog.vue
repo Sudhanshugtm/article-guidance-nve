@@ -4,15 +4,16 @@
       <!-- Entry point section -->
       <div class="field-group">
         <CdxLabel>Entry point</CdxLabel>
-        <CdxCheckbox
-          v-for="(label, iconKey) in entryPointLabels"
-          :key="iconKey"
-          :checkbox-id="`entryPoint-${iconKey}`"
-          :model-value="localSettings.entryPoint.icon === iconKey"
-          @update:model-value="() => updateEntryPointIcon(iconKey)"
+        <CdxRadio
+          v-for="(label, styleKey) in entryPointLabels"
+          :key="styleKey"
+          v-model="localSettings.entryPoint.style"
+          :input-value="styleKey"
+          name="entryPoint-style"
+          @update:model-value="onStyleChange"
         >
           {{ label }}
-        </CdxCheckbox>
+        </CdxRadio>
       </div>
     </div>
   </CdxDialog>
@@ -20,13 +21,13 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { CdxDialog, CdxLabel, CdxCheckbox } from '@wikimedia/codex'
+import { CdxDialog, CdxLabel, CdxRadio } from '@wikimedia/codex'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { entryPointLabels } from '../config/editorSettings'
 
 const open = defineModel('open', { type: Boolean, default: false })
 
-// Suppress CSS transitions on mount so checkboxes don't animate to their initial state
+// Suppress CSS transitions on mount so radios don't animate to their initial state
 const suppressTransitions = ref(true)
 onMounted(() => {
   requestAnimationFrame(() => {
@@ -50,8 +51,7 @@ watch(
   { deep: true },
 )
 
-function updateEntryPointIcon(iconKey) {
-  localSettings.value.entryPoint.icon = iconKey
+function onStyleChange() {
   updateSettings(localSettings.value)
 }
 </script>

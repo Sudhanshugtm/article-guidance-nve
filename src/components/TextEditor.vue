@@ -12,16 +12,39 @@
       @blur="onBlur"
       @scroll="onScroll"
     ></div>
-    <CdxButton
+    <div
       v-show="isButtonVisible"
-      class="codex-floating-btn"
-      aria-label="Add content"
+      ref="floatingElRef"
+      class="codex-floating-entry"
       :style="floatingButtonStyle"
       @mousedown.prevent="onCodexButtonClick"
       @click.stop
     >
-      <CdxIcon :icon="activeIcon" />
-    </CdxButton>
+      <!-- Style 1: Icon button (default) -->
+      <CdxButton
+        v-if="entryPointStyle === 'icon'"
+        class="codex-floating-btn"
+        aria-label="Add content"
+      >
+        <CdxIcon :icon="cdxIconAdd" />
+      </CdxButton>
+
+      <!-- Style 2: Quiet button with label -->
+      <CdxButton
+        v-else-if="entryPointStyle === 'quiet'"
+        weight="quiet"
+        class="codex-floating-btn-quiet"
+        aria-label="Add content"
+      >
+        <CdxIcon :icon="cdxIconAdd" />
+        Label
+      </CdxButton>
+
+      <!-- Style 3: Plain text -->
+      <span v-else class="codex-floating-text">
+        Tap here to continue...
+      </span>
+    </div>
     <CdxButton
       weight="quiet"
       class="settings-btn"
@@ -36,20 +59,20 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
-import { cdxIconSettings } from '@wikimedia/codex-icons'
+import { cdxIconAdd, cdxIconSettings } from '@wikimedia/codex-icons'
 import { useEditorSettings } from '../composables/useEditorSettings'
-import { entryPointIcons, defaultSettings } from '../config/editorSettings'
+import { defaultSettings } from '../config/editorSettings'
 
 const emit = defineEmits(['open-rail', 'open-settings'])
 
 const { settings } = useEditorSettings()
 
-const activeIcon = computed(
-  () =>
-    entryPointIcons[settings.value.entryPoint.icon] ||
-    entryPointIcons[defaultSettings.entryPoint.icon],
+const entryPointStyle = computed(
+  () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
 )
+
 const editorRef = ref(null)
+const floatingElRef = ref(null)
 const isButtonVisible = ref(false)
 const buttonTop = ref(0)
 const buttonLeft = ref(0)
@@ -57,7 +80,8 @@ const buttonLeft = ref(0)
 let typingTimer = null
 const TYPING_DEBOUNCE_MS = 500
 const BUTTON_GAP = 4
-const BUTTON_SIZE = 32
+const ENTRY_POINT_HEIGHT = 32
+const ENTRY_POINT_WIDTHS = { icon: 32, quiet: 110, text: 180 }
 
 const floatingButtonStyle = computed(() => ({
   position: 'absolute',
@@ -112,15 +136,17 @@ function updateButtonPosition() {
   let top = caretRect.bottom - editorRect.top + BUTTON_GAP
   let left = caretRect.left - editorRect.left
 
+  const currentWidth = ENTRY_POINT_WIDTHS[entryPointStyle.value] || 32
+
   // Hide if button would extend below visible editor area
-  if (top + BUTTON_SIZE > editorRef.value.clientHeight) {
+  if (top + ENTRY_POINT_HEIGHT > editorRef.value.clientHeight) {
     isButtonVisible.value = false
     return
   }
 
-  // Right-edge flip: if button overflows right, align top-right corner to cursor
-  if (left + BUTTON_SIZE > editorRef.value.clientWidth) {
-    left = caretRect.left - editorRect.left - BUTTON_SIZE
+  // Right-edge flip: if entry point overflows right, align right edge to cursor
+  if (left + currentWidth > editorRef.value.clientWidth) {
+    left = caretRect.left - editorRect.left - currentWidth
   }
 
   left = Math.max(0, left)
@@ -184,7 +210,7 @@ function onFocus() {
 }
 
 function onBlur(event) {
-  if (event.relatedTarget && event.relatedTarget.closest('.codex-floating-btn')) {
+  if (event.relatedTarget && event.relatedTarget.closest('.codex-floating-entry')) {
     return
   }
   hideButton()
@@ -249,13 +275,26 @@ onBeforeUnmount(() => {
   opacity: 0.1;
 }
 
-.codex-floating-btn {
+.codex-floating-entry {
   position: absolute;
   z-index: 1;
+}
+
+.codex-floating-btn {
   width: 32px !important;
   height: 32px !important;
   min-width: 32px !important;
   min-height: 32px !important;
   padding: 5px !important;
+}
+
+.codex-floating-btn-quiet {
+  white-space: nowrap;
+}
+
+.codex-floating-text {
+  white-space: nowrap;
+  color: var(--color-subtle);
+  cursor: pointer;
 }
 </style>
