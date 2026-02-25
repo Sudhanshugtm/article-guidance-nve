@@ -30,7 +30,8 @@ const { insertContent } = useEditorInstance()
 
 function onInsertParagraph(paragraph) {
   if (paragraph.content) {
-    insertContent(paragraph.content)
+    const html = `<h3>${paragraph.title}</h3><p>${paragraph.content}</p>`
+    insertContent(html)
   }
 }
 </script>

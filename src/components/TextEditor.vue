@@ -368,6 +368,7 @@ onMounted(() => {
   // Register the editor instance globally
   if (editor.value) {
     setEditor(editor.value)
+    if (import.meta.env.DEV) window.__editor = editor.value
   }
 
   // Attach scroll listener to the EditorContent wrapper
@@ -414,12 +415,41 @@ defineExpose({ editor })
   overflow-y: auto;
 }
 
+/* Placeholder */
+
 .text-editor :deep(.ProseMirror p.is-editor-empty:first-child::before) {
   content: attr(data-placeholder);
   color: var(--color-placeholder);
   pointer-events: none;
   float: left;
   height: 0;
+}
+
+/* Text styles */
+
+.text-editor :deep(.ProseMirror h2) {
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-xx-large);
+  line-height: var(--line-height-xx-large);
+  border-bottom: 1px var(--border-style-base) var(--border-color-muted, #dadde3);
+  margin: 0 0 var(--spacing-50) 0;
+  padding: var(--spacing-50) 0;
+}
+
+.text-editor :deep(.ProseMirror h3) {
+  font-size: var(--font-size-x-large);
+  line-height: var(--line-height-x-large);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+  padding: var(--spacing-50) 0;
+}
+
+.text-editor :deep(.ProseMirror h4) {
+  font-size: var(--font-size-large);
+  line-height: var(--line-height-large);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+  padding: var(--spacing-50) 0;
 }
 
 .text-editor :deep(.ProseMirror p) {
