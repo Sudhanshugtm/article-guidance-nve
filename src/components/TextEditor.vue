@@ -429,6 +429,7 @@ defineExpose({ editor })
 .text-editor :deep(.ProseMirror h2) {
   font-family: var(--font-family-serif);
   font-size: var(--font-size-xx-large);
+  font-weight: var(--font-weight-normal);
   line-height: var(--line-height-xx-large);
   border-bottom: 1px var(--border-style-base) var(--border-color-muted, #dadde3);
   margin: 0 0 var(--spacing-50) 0;
