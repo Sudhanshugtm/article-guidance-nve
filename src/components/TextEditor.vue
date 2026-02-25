@@ -41,7 +41,6 @@
       <!-- Style 2 fallback: quiet icon-only after interaction -->
       <CdxButton
         v-else-if="entryPointStyle === 'quiet'"
-        weight="quiet"
         class="codex-floating-btn"
         aria-label="Add content"
       >
