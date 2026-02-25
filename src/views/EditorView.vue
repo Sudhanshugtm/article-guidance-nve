@@ -16,7 +16,6 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import EditorToolbar from '@/components/EditorToolbar.vue'
 import TextEditor from '@/components/TextEditor.vue'
 import EditorRail from '@/components/EditorRail.vue'
 import CdxToolbar from '@/components/CdxToolbar.vue'

@@ -1,17 +1,6 @@
 <template>
   <div class="text-editor-wrapper">
-    <div
-      ref="editorRef"
-      class="text-editor"
-      contenteditable="true"
-      @input="onInput"
-      @keydown="onKeydown"
-      @keyup="onKeyup"
-      @mouseup="onCursorChange"
-      @focus="onFocus"
-      @blur="onBlur"
-      @scroll="onScroll"
-    ></div>
+    <EditorContent ref="editorContentRef" class="text-editor" :editor="editor" />
     <div
       v-show="isButtonVisible"
       ref="floatingElRef"
@@ -52,7 +41,6 @@
       <!-- Style 2 fallback: quiet icon-only after interaction -->
       <CdxButton
         v-else-if="entryPointStyle === 'quiet'"
-        weight="quiet"
         class="codex-floating-btn"
         aria-label="Add content"
       >
@@ -77,19 +65,64 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd, cdxIconSettings } from '@wikimedia/codex-icons'
+import { useEditor, EditorContent } from '@tiptap/vue-3'
+import StarterKit from '@tiptap/starter-kit'
+import Placeholder from '@tiptap/extension-placeholder'
+import { AnnotationHighlight } from '../extensions/annotationHighlight'
 import { useEditorSettings } from '../composables/useEditorSettings'
+import { useEditorInstance } from '../composables/useEditorInstance'
 import { defaultSettings } from '../config/editorSettings'
 import { articleSections } from '../config/articleSections'
 
 const emit = defineEmits(['open-outline', 'open-settings'])
 
 const { settings } = useEditorSettings()
+const { setEditor } = useEditorInstance()
 
 const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
 )
 
-// Typewriter animation for the quiet button style
+// ── TipTap editor ──────────────────────────────────────────────────────
+
+const editorContentRef = ref(null)
+
+const editor = useEditor({
+  extensions: [
+    StarterKit.configure({
+      heading: { levels: [2, 3, 4] },
+      link: { openOnClick: false },
+    }),
+    // Placeholder.configure({
+    //   placeholder: 'Start writing...',
+    // }),
+    AnnotationHighlight,
+  ],
+  onSelectionUpdate() {
+    if (!typingTimer) {
+      updateButtonPosition()
+    }
+  },
+  onTransaction({ transaction }) {
+    if (transaction.docChanged) {
+      stopCycling()
+      hideButton()
+      scheduleShowButton()
+    }
+  },
+  onFocus() {
+    setTimeout(() => updateButtonPosition(), 0)
+  },
+  onBlur({ event }) {
+    if (event.relatedTarget && event.relatedTarget.closest('.codex-floating-entry')) {
+      return
+    }
+    hideButton()
+  },
+})
+
+// ── Typewriter animation for the quiet button style ────────────────────
+
 const sectionTitles = articleSections.map((s) => s.title)
 const currentLabelIndex = ref(0)
 const displayText = ref('')
@@ -132,14 +165,11 @@ function typewriterTick() {
     if (wipeTicks >= wipeLen) {
       clearInterval(charTimer)
       charTimer = null
-      // Advance to next label and start typing
       displayText.value = ''
       currentLabelIndex.value = (currentLabelIndex.value + 1) % sectionTitles.length
       charIndex = 0
       animPhase.value = 'typing'
       charTimer = setInterval(typewriterTick, CHAR_INTERVAL_MS)
-      // If paused, let the next label type out fully, then it will
-      // hit the typing→holding boundary and stop there
     }
   }
 }
@@ -176,13 +206,10 @@ function pauseAnimation() {
   isPaused = true
 
   if (animPhase.value === 'holding') {
-    // Pause the hold timer, save remaining time
     clearTimeout(holdTimer)
     holdTimer = null
     holdRemainingMs = Math.max(0, HOLD_DURATION_MS - (Date.now() - holdStartTime))
   }
-  // typing and wiping: let the current phase run to completion,
-  // isPaused flag is checked at the transition boundary
 }
 
 function resumeAnimation() {
@@ -190,15 +217,13 @@ function resumeAnimation() {
   isPaused = false
 
   if (animPhase.value === 'holding') {
-    // Resume the hold timeout with remaining time
     holdStartTime = Date.now()
     holdTimer = setTimeout(startWipe, holdRemainingMs)
   }
-  // typing/wiping: interval is still running (they run to completion),
-  // and the next transition will proceed normally since isPaused is now false
 }
 
-const editorRef = ref(null)
+// ── Floating button positioning ────────────────────────────────────────
+
 const floatingElRef = ref(null)
 const isButtonVisible = ref(false)
 const buttonTop = ref(0)
@@ -217,65 +242,80 @@ const floatingButtonStyle = computed(() => ({
   zIndex: 1,
 }))
 
+function getEditorScrollEl() {
+  // The EditorContent wrapper is the scrollable element (.text-editor has overflow-y: auto)
+  return editorContentRef.value?.$el || null
+}
+
 function updateButtonPosition() {
-  const selection = window.getSelection()
-  if (!selection || selection.rangeCount === 0 || !selection.getRangeAt(0).collapsed) {
+  if (!editor.value) {
     isButtonVisible.value = false
     return
   }
 
-  const range = selection.getRangeAt(0)
+  const { state, view } = editor.value
+  const { empty } = state.selection
 
-  if (!editorRef.value || !editorRef.value.contains(range.commonAncestorContainer)) {
+  // Only show button when cursor is collapsed (no text selected)
+  if (!empty) {
     isButtonVisible.value = false
     return
   }
 
-  const editorRect = editorRef.value.getBoundingClientRect()
-  let caretRect = range.getBoundingClientRect()
+  const editorEl = getEditorScrollEl()
+  if (!editorEl) {
+    isButtonVisible.value = false
+    return
+  }
 
-  // Empty editor or empty line: getBoundingClientRect returns a zero-height rect.
-  // Calculate position from the editor's padding instead of modifying the DOM,
-  // which would disrupt the browser's native caret rendering.
-  if (caretRect.height === 0) {
-    const computedStyle = window.getComputedStyle(editorRef.value)
-    const paddingTop = parseFloat(computedStyle.paddingTop)
-    const paddingLeft = parseFloat(computedStyle.paddingLeft)
+  const editorRect = editorEl.getBoundingClientRect()
+
+  // Use ProseMirror's coordsAtPos for precise cursor position
+  let coords
+  try {
+    coords = view.coordsAtPos(state.selection.from)
+  } catch {
+    isButtonVisible.value = false
+    return
+  }
+
+  // Handle empty document or empty line: zero-height coords
+  const caretHeight = coords.bottom - coords.top
+  if (caretHeight === 0) {
+    const computedStyle = window.getComputedStyle(view.dom)
     const lineHeight =
       parseFloat(computedStyle.lineHeight) || parseFloat(computedStyle.fontSize) * 1.5
-    caretRect = {
-      top: editorRect.top + paddingTop,
-      bottom: editorRect.top + paddingTop + lineHeight,
-      left: editorRect.left + paddingLeft,
-      right: editorRect.left + paddingLeft,
-      height: lineHeight,
-      width: 0,
+    coords = {
+      top: coords.top,
+      bottom: coords.top + lineHeight,
+      left: coords.left,
+      right: coords.right,
     }
   }
 
   // Hide if caret is scrolled out of the visible editor area
-  if (caretRect.bottom < editorRect.top || caretRect.top > editorRect.bottom) {
+  if (coords.bottom < editorRect.top || coords.top > editorRect.bottom) {
     isButtonVisible.value = false
     return
   }
 
-  // Convert viewport coords to wrapper-relative coords (wrapper matches editor position)
-  let top = caretRect.bottom - editorRect.top + BUTTON_GAP
-  let left = caretRect.left - editorRect.left
+  // Convert viewport coords to wrapper-relative coords
+  let top = coords.bottom - editorRect.top + BUTTON_GAP
+  let left = coords.left - editorRect.left
 
   const quietWidth = isCycling.value ? ENTRY_POINT_WIDTHS.quiet : ENTRY_POINT_WIDTHS.icon
   const currentWidth =
     entryPointStyle.value === 'quiet' ? quietWidth : ENTRY_POINT_WIDTHS[entryPointStyle.value] || 32
 
   // Hide if button would extend below visible editor area
-  if (top + ENTRY_POINT_HEIGHT > editorRef.value.clientHeight) {
+  if (top + ENTRY_POINT_HEIGHT > editorEl.clientHeight) {
     isButtonVisible.value = false
     return
   }
 
   // Right-edge flip: if entry point overflows right, align right edge to cursor
-  if (left + currentWidth > editorRef.value.clientWidth) {
-    left = caretRect.left - editorRect.left - currentWidth
+  if (left + currentWidth > editorEl.clientWidth) {
+    left = coords.left - editorRect.left - currentWidth
   }
 
   left = Math.max(0, left)
@@ -299,76 +339,15 @@ function scheduleShowButton() {
   }, TYPING_DEBOUNCE_MS)
 }
 
-function onInput() {
-  stopCycling()
-  hideButton()
-  scheduleShowButton()
-}
-
-function onKeydown(event) {
-  const modifierKeys = ['Shift', 'Control', 'Alt', 'Meta']
-  if (!modifierKeys.includes(event.key)) {
-    hideButton()
-    scheduleShowButton()
-  }
-}
-
-function onKeyup(event) {
-  const navigationKeys = [
-    'ArrowUp',
-    'ArrowDown',
-    'ArrowLeft',
-    'ArrowRight',
-    'Home',
-    'End',
-    'PageUp',
-    'PageDown',
-  ]
-  if (navigationKeys.includes(event.key)) {
-    updateButtonPosition()
-  }
-}
-
-function onCursorChange() {
-  updateButtonPosition()
-}
-
-function onFocus() {
-  setTimeout(() => {
-    updateButtonPosition()
-  }, 0)
-}
-
-function onBlur(event) {
-  if (event.relatedTarget && event.relatedTarget.closest('.codex-floating-entry')) {
-    return
-  }
-  hideButton()
-}
-
 function onScroll() {
   if (isButtonVisible.value) {
     updateButtonPosition()
   }
 }
 
-function onSelectionChange() {
-  const selection = window.getSelection()
-  if (
-    selection &&
-    selection.rangeCount > 0 &&
-    editorRef.value &&
-    editorRef.value.contains(selection.getRangeAt(0).commonAncestorContainer)
-  ) {
-    if (!typingTimer) {
-      updateButtonPosition()
-    }
-  }
-}
-
 function onCodexButtonClick() {
   stopCycling()
-  editorRef.value?.blur()
+  editor.value?.commands.blur()
   emit('open-outline')
 }
 
@@ -380,16 +359,35 @@ watch(isButtonVisible, (visible) => {
   }
 })
 
+// ── Lifecycle ──────────────────────────────────────────────────────────
+
+let scrollEl = null
+
 onMounted(() => {
-  document.addEventListener('selectionchange', onSelectionChange)
+  // Register the editor instance globally
+  if (editor.value) {
+    setEditor(editor.value)
+    if (import.meta.env.DEV) window.__editor = editor.value
+  }
+
+  // Attach scroll listener to the EditorContent wrapper
+  scrollEl = getEditorScrollEl()
+  if (scrollEl) {
+    scrollEl.addEventListener('scroll', onScroll)
+  }
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('selectionchange', onSelectionChange)
+  setEditor(null)
+  if (scrollEl) {
+    scrollEl.removeEventListener('scroll', onScroll)
+  }
   clearTimeout(typingTimer)
   clearInterval(charTimer)
   clearTimeout(holdTimer)
 })
+
+defineExpose({ editor })
 </script>
 
 <style scoped>
@@ -403,10 +401,65 @@ onBeforeUnmount(() => {
 
 .text-editor {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.text-editor :deep(.ProseMirror) {
+  flex: 1;
   padding: var(--spacing-100);
   background-color: var(--background-color-base);
   outline: none;
   overflow-y: auto;
+}
+
+/* Placeholder */
+
+.text-editor :deep(.ProseMirror p.is-editor-empty:first-child::before) {
+  content: attr(data-placeholder);
+  color: var(--color-placeholder);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Text styles */
+
+.text-editor :deep(.ProseMirror h2) {
+  font-family: var(--font-family-serif);
+  font-size: var(--font-size-xx-large);
+  line-height: var(--line-height-xx-large);
+  border-bottom: 1px var(--border-style-base) var(--border-color-muted, #dadde3);
+  margin: 0 0 var(--spacing-50) 0;
+  padding: var(--spacing-50) 0;
+}
+
+.text-editor :deep(.ProseMirror h3) {
+  font-size: var(--font-size-x-large);
+  line-height: var(--line-height-x-large);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+  padding: var(--spacing-50) 0;
+}
+
+.text-editor :deep(.ProseMirror h4) {
+  font-size: var(--font-size-large);
+  line-height: var(--line-height-large);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+  padding: var(--spacing-50) 0;
+}
+
+.text-editor :deep(.ProseMirror p) {
+  padding-bottom: var(--spacing-50);
+  margin: var(--spacing-50) 0 0 0;
+  line-height: var(--line-height-medium);
+}
+
+.text-editor :deep(.annotation-highlight) {
+  background-color: var(--background-color-warning-subtle, #fef6e7);
+  border-radius: 2px;
 }
 
 .settings-btn {

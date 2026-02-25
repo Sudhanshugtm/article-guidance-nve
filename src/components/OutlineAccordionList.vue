@@ -11,6 +11,7 @@
         v-for="paragraph in section.paragraphs"
         :key="paragraph.title"
         :icon="cdxIconAdd"
+        @click="onInsertParagraph(paragraph)"
       >
         <template #title>{{ paragraph.title }}</template>
         <template #description>{{ paragraph.description }}</template>
@@ -23,6 +24,16 @@
 import { CdxAccordion, CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
 import { articleSections } from '../config/articleSections.js'
+import { useEditorInstance } from '../composables/useEditorInstance'
+
+const { insertContent } = useEditorInstance()
+
+function onInsertParagraph(paragraph) {
+  if (paragraph.content) {
+    const html = `<h3>${paragraph.title}</h3><p>${paragraph.content}</p>`
+    insertContent(html)
+  }
+}
 </script>
 
 <style scoped>
