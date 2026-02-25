@@ -62,19 +62,19 @@ export const articleSections = [
   {
     title: 'Ecology and behaviour',
     description: 'Diet, activity and social behaviour.',
-    paragraphs: [
-      {
-        title: 'Hunting and diet',
-        description: 'What it eats and how it catches prey.',
-        content:
-          'The Siberian tiger is an apex predator that hunts primarily ungulates such as red deer, wild boar, and sika deer. It stalks its prey silently through dense vegetation before launching a short, explosive charge, dispatching the quarry with a powerful bite to the neck.',
-      },
-      {
-        title: 'Territory and social structure',
-        description: 'How it marks and defends its home range.',
-        content:
-          'Adults are solitary and maintain large home ranges that they mark with urine, claw marks, and faeces. A male territory may overlap those of several females. Home ranges vary from 500 to over 4 000 square kilometres depending on prey density and habitat quality.',
-      },
-    ],
+    // paragraphs: [
+    //   {
+    //     title: 'Hunting and diet',
+    //     description: 'What it eats and how it catches prey.',
+    //     content:
+    //       'The Siberian tiger is an apex predator that hunts primarily ungulates such as red deer, wild boar, and sika deer. It stalks its prey silently through dense vegetation before launching a short, explosive charge, dispatching the quarry with a powerful bite to the neck.',
+    //   },
+    //   {
+    //     title: 'Territory and social structure',
+    //     description: 'How it marks and defends its home range.',
+    //     content:
+    //       'Adults are solitary and maintain large home ranges that they mark with urine, claw marks, and faeces. A male territory may overlap those of several females. Home ranges vary from 500 to over 4 000 square kilometres depending on prey density and habitat quality.',
+    //   },
+    // ],
   },
 ]
