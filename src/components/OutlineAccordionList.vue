@@ -37,9 +37,7 @@ import { useEditorInstance } from '../composables/useEditorInstance'
 const { insertContent } = useEditorInstance()
 
 const accordionStates = ref(
-  Object.fromEntries(
-    articleSections.map((section, index) => [section.title, index === 0])
-  )
+  Object.fromEntries(articleSections.map((section, index) => [section.title, index === 0])),
 )
 
 function isSectionEmpty(section) {
@@ -75,7 +73,7 @@ function onInsertParagraph(paragraph) {
 }
 
 .accordion--empty :deep(> summary::before) {
-  display: none;
+  opacity: 0;
 }
 
 .accordion--empty :deep(> summary) {
