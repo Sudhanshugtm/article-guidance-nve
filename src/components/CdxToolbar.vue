@@ -15,7 +15,7 @@
         <CdxIcon :icon="cdxIconTextStyle" />
         <CdxIcon :icon="cdxIconExpand" class="cdx-toolbar__indicator" />
       </CdxButton>
-      <CdxButton class="cdx-toolbar__btn" weight="quiet" aria-label="Link">
+      <CdxButton class="cdx-toolbar__btn" weight="quiet" aria-label="Cite">
         <CdxIcon :icon="cdxIconQuotes" />
       </CdxButton>
       <CdxButton class="cdx-toolbar__btn" weight="quiet" aria-label="Link">
