@@ -6,10 +6,10 @@
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
       </div>
       <div class="editor-rail-column">
-        <EditorRail :is-open="isRailOpen" />
+        <EditorRail :is-open="isRailOpen" @content-inserted="onContentInserted" />
       </div>
     </div>
-    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" />
+    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" @content-inserted="onContentInserted" />
     <SettingsDialog v-model:open="settingsDialogOpen" />
     <CiteDialog v-model:open="citeDialogOpen" />
   </div>
@@ -27,6 +27,7 @@ import { useEditorSettings } from '@/composables/useEditorSettings'
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
+const outlinePersistence = computed(() => settings.value.outline.persistence)
 
 const isRailOpen = ref(false)
 const isPopoverOpen = ref(false)
@@ -40,6 +41,28 @@ function onOpenOutline() {
     isRailOpen.value = true
   }
 }
+
+// Track whether the popover/rail should stay open after content insertion
+const keepOpenAfterInsert = ref(false)
+
+function onContentInserted() {
+  if (outlinePersistence.value === 'close') {
+    isRailOpen.value = false
+    isPopoverOpen.value = false
+  } else {
+    // Set flag so the watcher can re-open the popover if focus-loss closes it
+    keepOpenAfterInsert.value = true
+  }
+}
+
+// When the popover closes due to focus moving to the editor after insertion,
+// re-open it if the keep-open flag is set
+watch(isPopoverOpen, (newVal) => {
+  if (!newVal && keepOpenAfterInsert.value) {
+    keepOpenAfterInsert.value = false
+    isPopoverOpen.value = true
+  }
+})
 
 watch(outlineLocation, () => {
   isRailOpen.value = false

@@ -1,7 +1,7 @@
 <template>
   <div class="editor-rail">
     <div class="rail-body">
-      <OutlineAccordionList />
+      <OutlineAccordionList @content-inserted="$emit('content-inserted')" />
     </div>
   </div>
 </template>
@@ -9,6 +9,7 @@
 <script setup>
 import OutlineAccordionList from './OutlineAccordionList.vue'
 
+defineEmits(['content-inserted'])
 defineProps({
   isOpen: {
     type: Boolean,

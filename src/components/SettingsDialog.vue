@@ -29,6 +29,20 @@
           {{ label }}
         </CdxRadio>
       </div>
+      <!-- Outline persistence section -->
+      <div class="field-group">
+        <CdxLabel>Outline persistence</CdxLabel>
+        <CdxRadio
+          v-for="(label, persistenceKey) in outlinePersistenceLabels"
+          :key="persistenceKey"
+          v-model="localSettings.outline.persistence"
+          :input-value="persistenceKey"
+          name="outline-persistence"
+          @update:model-value="onSettingChange"
+        >
+          {{ label }}
+        </CdxRadio>
+      </div>
     </div>
   </CdxDialog>
 </template>
@@ -37,7 +51,11 @@
 import { ref, watch, onMounted } from 'vue'
 import { CdxDialog, CdxLabel, CdxRadio } from '@wikimedia/codex'
 import { useEditorSettings } from '../composables/useEditorSettings'
-import { entryPointLabels, outlineLocationLabels } from '../config/editorSettings'
+import {
+  entryPointLabels,
+  outlineLocationLabels,
+  outlinePersistenceLabels,
+} from '../config/editorSettings'
 
 const open = defineModel('open', { type: Boolean, default: false })
 

@@ -3,7 +3,7 @@
     v-for="(section, index) in articleSections"
     :key="section.title"
     :class="{ 'accordion--empty': isSectionEmpty(section) }"
-    separation="minimal"
+    separation="none"
     :model-value="accordionStates[section.title]"
     :action-icon="index === 0 ? null : cdxIconAdd"
     :action-always-visible="index !== 0 && isSectionEmpty(section)"
@@ -34,6 +34,7 @@ import { cdxIconAdd } from '@wikimedia/codex-icons'
 import { articleSections } from '../config/articleSections.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
 
+const emit = defineEmits(['content-inserted'])
 const { insertContent } = useEditorInstance()
 
 const accordionStates = ref(
@@ -51,12 +52,14 @@ function onAccordionUpdate(section, newValue) {
 
 function onInsertSectionHeading(section) {
   insertContent(`<h2>${section.title}</h2>`)
+  emit('content-inserted')
 }
 
 function onInsertParagraph(paragraph) {
   if (paragraph.content) {
     const html = `<h3>${paragraph.title}</h3><p>${paragraph.content}</p>`
     insertContent(html)
+    emit('content-inserted')
   }
 }
 </script>

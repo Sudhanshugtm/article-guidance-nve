@@ -11,7 +11,7 @@
       </CdxButton>
     </div>
     <div class="outline-popover-body">
-      <OutlineAccordionList v-if="selectedView === 'outline'" />
+      <OutlineAccordionList v-if="selectedView === 'outline'" @content-inserted="$emit('content-inserted')" />
     </div>
   </CdxPopover>
 </template>
@@ -27,6 +27,7 @@ import {
 } from '@wikimedia/codex-icons'
 import OutlineAccordionList from './OutlineAccordionList.vue'
 
+defineEmits(['content-inserted'])
 const open = defineModel('open', { type: Boolean, default: false })
 const anchorRef = ref(null)
 const selectedView = ref('outline')
