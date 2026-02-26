@@ -1,6 +1,6 @@
 <template>
   <div class="editor-page">
-    <CdxToolbar />
+    <CdxToolbar @cite="citeDialogOpen = true" />
     <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen }">
       <div class="editor-main" @click="isRailOpen && (isRailOpen = false)">
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
@@ -11,6 +11,7 @@
     </div>
     <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" />
     <SettingsDialog v-model:open="settingsDialogOpen" />
+    <CiteDialog v-model:open="citeDialogOpen" />
   </div>
 </template>
 
@@ -20,6 +21,7 @@ import TextEditor from '@/components/TextEditor.vue'
 import EditorRail from '@/components/EditorRail.vue'
 import CdxToolbar from '@/components/CdxToolbar.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
+import CiteDialog from '@/components/CiteDialog.vue'
 import OutlinePopover from '@/components/OutlinePopover.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 
@@ -29,6 +31,7 @@ const outlineLocation = computed(() => settings.value.outline.location)
 const isRailOpen = ref(false)
 const isPopoverOpen = ref(false)
 const settingsDialogOpen = ref(false)
+const citeDialogOpen = ref(false)
 
 function onOpenOutline() {
   if (outlineLocation.value === 'popover') {
