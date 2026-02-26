@@ -47,4 +47,8 @@ const anchorRef = ref(null)
   border: none !important;
   border-top: 1px solid var(--border-color-base, #a2a9b1) !important;
 }
+
+.outline-popover-body :deep(.cdx-accordion__content) {
+  font-family: var(--font-family-system-sans);
+}
 </style>

@@ -51,4 +51,8 @@ defineProps({
   overflow-y: auto;
   padding: var(--spacing-100) var(--spacing-100) 0 44px;
 }
+
+.rail-body :deep(.cdx-accordion__content) {
+  font-family: var(--font-family-system-sans);
+}
 </style>
