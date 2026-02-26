@@ -11,7 +11,14 @@
       </CdxButton>
     </div>
     <div class="outline-popover-body">
-      <OutlineAccordionList v-if="selectedView === 'outline'" @content-inserted="$emit('content-inserted')" />
+      <OutlineAccordionList
+        v-if="selectedView === 'outline'"
+        @content-inserted="$emit('content-inserted')"
+      />
+      <VerifiedFactsList
+        v-if="selectedView === 'verified-facts'"
+        @content-inserted="$emit('content-inserted')"
+      />
     </div>
   </CdxPopover>
 </template>
@@ -26,6 +33,7 @@ import {
   cdxIconClose,
 } from '@wikimedia/codex-icons'
 import OutlineAccordionList from './OutlineAccordionList.vue'
+import VerifiedFactsList from './VerifiedFactsList.vue'
 
 defineEmits(['content-inserted'])
 const open = defineModel('open', { type: Boolean, default: false })
@@ -76,7 +84,7 @@ const currentItem = computed(
 }
 
 .outline-popover-header :deep(.cdx-menu-button > .cdx-button.cdx-button--weight-quiet) {
-  border-color: var(--border-color-base, #a2a9b1);
+  border-color: var(--border-color-interactive);
   background-color: var(--background-color-interactive-subtle);
   font-weight: var(--font-weight-bold);
 }

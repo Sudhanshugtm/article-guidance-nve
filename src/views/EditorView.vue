@@ -6,7 +6,7 @@
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
       </div>
       <div class="editor-rail-column">
-        <EditorRail :is-open="isRailOpen" @content-inserted="onContentInserted" />
+        <EditorRail :is-open="isRailOpen" @content-inserted="onContentInserted" @close="isRailOpen = false" />
       </div>
     </div>
     <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" @content-inserted="onContentInserted" />
