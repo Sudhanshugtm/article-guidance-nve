@@ -70,6 +70,10 @@ const currentItem = computed(
   padding-bottom: var(--spacing-75, 12px);
 }
 
+.outline-popover-header :deep(.cdx-menu-button__menu) {
+  min-width: 256px;
+}
+
 .outline-popover-header :deep(.cdx-menu-button > .cdx-button.cdx-button--weight-quiet) {
   border-color: var(--border-color-base, #a2a9b1);
   background-color: var(--background-color-interactive-subtle);
