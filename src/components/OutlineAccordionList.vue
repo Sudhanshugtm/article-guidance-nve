@@ -51,7 +51,7 @@ function onAccordionUpdate(section, newValue) {
 }
 
 function onInsertSectionHeading(section) {
-  insertContent(`<h2>${section.title}</h2>`)
+  insertContent(`<h2>${section.title}</h2><p></p>`)
   emit('content-inserted')
 }
 
