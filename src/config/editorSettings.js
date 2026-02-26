@@ -5,10 +5,11 @@
 
 export const defaultSettings = {
   entryPoint: {
-    style: 'icon', // 'icon' | 'quiet' | 'text'
+    style: 'quiet', // 'icon' | 'quiet' | 'text'
   },
   outline: {
     location: 'rail', // 'rail' | 'popover'
+    persistence: 'close', // 'keep-open' | 'close'
   },
 }
 
@@ -24,4 +25,9 @@ export const entryPointLabels = {
 export const outlineLocationLabels = {
   rail: 'Side panel',
   popover: 'Popover',
+}
+
+export const outlinePersistenceLabels = {
+  'keep-open': 'Keep open after adding content',
+  close: 'Close after adding content',
 }
