@@ -48,13 +48,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { CdxDialog, CdxTabs, CdxTab, CdxSearchInput, CdxButton, CdxIcon } from '@wikimedia/codex'
 import { cdxIconLogoWikidata } from '@wikimedia/codex-icons'
 
+const props = defineProps({
+  initialTab: {
+    type: String,
+    default: 'automatic',
+  },
+})
+
 const open = defineModel('open', { type: Boolean, default: false })
-const activeTab = ref('automatic')
+const activeTab = ref(props.initialTab)
 const searchQuery = ref('')
+
+watch(open, (isOpen) => {
+  if (isOpen) {
+    activeTab.value = props.initialTab
+  }
+})
 </script>
 
 <style scoped>

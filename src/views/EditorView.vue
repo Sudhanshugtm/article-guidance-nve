@@ -1,12 +1,12 @@
 <template>
   <div class="editor-page">
-    <CdxToolbar @cite="citeDialogOpen = true" />
+    <CdxToolbar @cite="onOpenCiteDefault" />
     <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen }">
       <div class="editor-main" @click="isRailOpen && (isRailOpen = false)">
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
       </div>
       <div class="editor-rail-column">
-        <EditorRail :is-open="isRailOpen" :initial-view="initialView" @content-inserted="onContentInserted" @close="isRailOpen = false" />
+        <EditorRail :is-open="isRailOpen" :initial-view="initialView" @content-inserted="onContentInserted" @close="isRailOpen = false" @open-cite-discover="onOpenCiteDiscover" />
       </div>
     </div>
 
@@ -21,9 +21,9 @@
       <CdxIcon :icon="cdxIconAdd" />
     </div>
 
-    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" :initial-view="initialView" @content-inserted="onContentInserted" />
+    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" :initial-view="initialView" @content-inserted="onContentInserted" @open-cite-discover="onOpenCiteDiscover" />
     <SettingsDialog v-model:open="settingsDialogOpen" />
-    <CiteDialog v-model:open="citeDialogOpen" />
+    <CiteDialog v-model:open="citeDialogOpen" :initial-tab="citeDialogInitialTab" />
   </div>
 </template>
 
@@ -52,7 +52,7 @@ const { getEditor } = useEditorInstance()
 const { cursorRect } = useCursorRect()
 
 const isForceButtonVisible = computed(() => {
-  if (!['force', 'quiet', 'text'].includes(entryPointStyle.value)) return false
+  if (!['force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value)) return false
   if (isRailOpen.value || isPopoverOpen.value) return false
   if (!cursorRect.value) return false
   return cursorRect.value.visible
@@ -75,6 +75,7 @@ const isRailOpen = ref(false)
 const isPopoverOpen = ref(false)
 const settingsDialogOpen = ref(false)
 const citeDialogOpen = ref(false)
+const citeDialogInitialTab = ref('automatic')
 const initialView = ref(null)
 
 function onForceButtonClick() {
@@ -93,6 +94,16 @@ function onOpenOutline() {
   } else {
     isRailOpen.value = true
   }
+}
+
+function onOpenCiteDefault() {
+  citeDialogInitialTab.value = 'automatic'
+  citeDialogOpen.value = true
+}
+
+function onOpenCiteDiscover() {
+  citeDialogInitialTab.value = 'discover'
+  citeDialogOpen.value = true
 }
 
 // Track whether the popover/rail should stay open after content insertion

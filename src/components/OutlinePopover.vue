@@ -19,6 +19,10 @@
         v-if="selectedView === 'verified-facts'"
         @content-inserted="$emit('content-inserted')"
       />
+      <ReferenceSourcesList
+        v-if="selectedView === 'references'"
+        @open-cite-discover="$emit('open-cite-discover')"
+      />
     </div>
   </CdxPopover>
 </template>
@@ -34,8 +38,9 @@ import {
 } from '@wikimedia/codex-icons'
 import OutlineAccordionList from './OutlineAccordionList.vue'
 import VerifiedFactsList from './VerifiedFactsList.vue'
+import ReferenceSourcesList from './ReferenceSourcesList.vue'
 
-defineEmits(['content-inserted'])
+defineEmits(['content-inserted', 'open-cite-discover'])
 const props = defineProps({
   initialView: {
     type: String,
@@ -68,7 +73,7 @@ const menuItems = [
   {
     value: 'references',
     label: 'References',
-    description: 'From other Wikimedia projects',
+    description: 'In other projects',
     icon: cdxIconReference,
   },
 ]
