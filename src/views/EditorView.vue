@@ -9,6 +9,18 @@
         <EditorRail :is-open="isRailOpen" @content-inserted="onContentInserted" @close="isRailOpen = false" />
       </div>
     </div>
+
+    <!-- Force entry point: + button in the 44px rail strip, aligned with cursor -->
+    <div
+      v-if="isForceButtonVisible"
+      class="force-entry-point"
+      :style="forceButtonStyle"
+      @mousedown.prevent
+      @click.stop="onForceButtonClick"
+    >
+      <CdxIcon :icon="cdxIconAdd" />
+    </div>
+
     <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" @content-inserted="onContentInserted" />
     <SettingsDialog v-model:open="settingsDialogOpen" />
     <CiteDialog v-model:open="citeDialogOpen" />
@@ -17,6 +29,8 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { CdxIcon } from '@wikimedia/codex'
+import { cdxIconAdd } from '@wikimedia/codex-icons'
 import TextEditor from '@/components/TextEditor.vue'
 import EditorRail from '@/components/EditorRail.vue'
 import CdxToolbar from '@/components/CdxToolbar.vue'
@@ -24,15 +38,43 @@ import SettingsDialog from '@/components/SettingsDialog.vue'
 import CiteDialog from '@/components/CiteDialog.vue'
 import OutlinePopover from '@/components/OutlinePopover.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
+import { useCursorRect } from '@/composables/useCursorRect'
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
 const outlinePersistence = computed(() => settings.value.outline.persistence)
+const entryPointStyle = computed(() => settings.value.entryPoint.style)
+
+// Force entry point
+const { cursorRect } = useCursorRect()
+
+const isForceButtonVisible = computed(() => {
+  if (entryPointStyle.value !== 'force') return false
+  if (isRailOpen.value || isPopoverOpen.value) return false
+  if (!cursorRect.value) return false
+  return cursorRect.value.visible
+})
+
+const forceButtonStyle = computed(() => {
+  if (!cursorRect.value) return {}
+  const rect = cursorRect.value
+  return {
+    position: 'fixed',
+    top: `${rect.top}px`,
+    right: '0px',
+    width: '44px',
+    height: `${rect.lineHeight}px`,
+  }
+})
 
 const isRailOpen = ref(false)
 const isPopoverOpen = ref(false)
 const settingsDialogOpen = ref(false)
 const citeDialogOpen = ref(false)
+
+function onForceButtonClick() {
+  onOpenOutline()
+}
 
 function onOpenOutline() {
   if (outlineLocation.value === 'popover') {
@@ -100,5 +142,19 @@ watch(outlineLocation, () => {
   flex: 0 0 calc(100vw - 44px);
   display: flex;
   flex-direction: column;
+}
+
+.force-entry-point {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 2px solid var(--border-color-interactive);
+  box-sizing: border-box;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.force-entry-point :deep(.cdx-icon) {
+  color: var(--color-base);
 }
 </style>
