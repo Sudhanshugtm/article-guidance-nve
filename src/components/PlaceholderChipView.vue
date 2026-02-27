@@ -40,6 +40,6 @@ function onChipClick() {
 }
 
 .placeholder-chip--selected {
-  outline: 2px solid var(--color-progressive);
+  box-shadow: 0 0 0 2px var(--color-progressive);
 }
 </style>
