@@ -464,9 +464,9 @@ defineExpose({ editor })
 }
 
 .settings-btn {
-  position: absolute;
-  bottom: var(--spacing-75);
-  left: var(--spacing-75);
+  position: fixed;
+  bottom: var(--spacing-35);
+  right: var(--spacing-35);
   z-index: 1;
   opacity: 0.1;
 }
