@@ -1,5 +1,5 @@
 <template>
-  <div class="editor-rail">
+  <div class="editor-rail" :class="{ 'is-open': isOpen }">
     <div class="rail-header">
       <CdxMenuButton v-model:selected="selectedView" :menu-items="menuItems">
         <CdxIcon :icon="currentItem.icon" />
@@ -9,7 +9,7 @@
         <CdxIcon :icon="cdxIconClose" />
       </CdxButton>
     </div>
-    <div class="rail-body">
+    <div ref="bodyRef" class="rail-body" @scroll="onBodyScroll">
       <OutlineAccordionList
         v-if="selectedView === 'outline'"
         @content-inserted="$emit('content-inserted')"
@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { CdxMenuButton, CdxButton, CdxIcon } from '@wikimedia/codex'
 import {
   cdxIconListBullet,
@@ -68,6 +68,21 @@ const menuItems = [
 const currentItem = computed(
   () => menuItems.find((item) => item.value === selectedView.value) || menuItems[0],
 )
+
+const bodyRef = ref(null)
+
+function onBodyScroll() {
+  if (!bodyRef.value) return
+  bodyRef.value.classList.toggle('is-scrolled', bodyRef.value.scrollTop > 0)
+}
+
+watch(selectedView, async () => {
+  if (bodyRef.value) {
+    await nextTick()
+    bodyRef.value.scrollTop = 0
+    bodyRef.value.classList.remove('is-scrolled')
+  }
+})
 </script>
 
 <style scoped>
@@ -82,7 +97,12 @@ const currentItem = computed(
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-100) var(--spacing-100) 0 44px;
+  padding: var(--spacing-100, 16px);
+  padding-left: 44px;
+}
+
+.editor-rail.is-open .rail-header {
+  padding-left: var(--spacing-100, 16px);
 }
 
 .rail-header :deep(.cdx-menu-button__menu) {
@@ -98,7 +118,20 @@ const currentItem = computed(
 .rail-body {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-100) var(--spacing-100) 0 44px;
+  padding: var(--spacing-100, 16px);
+  padding-left: 44px;
+  border-top: 1px solid var(--border-color-transparent);
+  transition-property: var(--transition-property-base);
+  transition-duration: var(--transition-duration-medium);
+  transition-timing-function: var(--transition-timing-function-user);
+}
+
+.editor-rail.is-open .rail-body {
+  padding-left: var(--spacing-100, 16px);
+}
+
+.rail-body.is-scrolled {
+  border-top: 1px solid var(--border-color-subtle, #c8ccd1);
 }
 
 .rail-body :deep(.cdx-accordion__content) {
