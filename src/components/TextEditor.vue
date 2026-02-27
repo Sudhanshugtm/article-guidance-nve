@@ -315,6 +315,7 @@ function updateButtonPosition() {
     top: coords.top,
     bottom: coords.bottom,
     lineHeight: computedLineHeight,
+    glyphHeight: coords.bottom - coords.top,
     visible: caretVisible,
   })
 

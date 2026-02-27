@@ -58,9 +58,10 @@ const isForceButtonVisible = computed(() => {
 const forceButtonStyle = computed(() => {
   if (!cursorRect.value) return {}
   const rect = cursorRect.value
+  const halfLeading = (rect.lineHeight - rect.glyphHeight) / 2
   return {
     position: 'fixed',
-    top: `${rect.top}px`,
+    top: `${rect.top - halfLeading}px`,
     right: '0px',
     width: '44px',
     height: `${rect.lineHeight}px`,
