@@ -38,6 +38,7 @@ import SettingsDialog from '@/components/SettingsDialog.vue'
 import CiteDialog from '@/components/CiteDialog.vue'
 import OutlinePopover from '@/components/OutlinePopover.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
+import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
 
 const { settings } = useEditorSettings()
@@ -46,6 +47,7 @@ const outlinePersistence = computed(() => settings.value.outline.persistence)
 const entryPointStyle = computed(() => settings.value.entryPoint.style)
 
 // Force entry point
+const { getEditor } = useEditorInstance()
 const { cursorRect } = useCursorRect()
 
 const isForceButtonVisible = computed(() => {
@@ -74,6 +76,7 @@ const settingsDialogOpen = ref(false)
 const citeDialogOpen = ref(false)
 
 function onForceButtonClick() {
+  getEditor()?.commands.blur()
   onOpenOutline()
 }
 
