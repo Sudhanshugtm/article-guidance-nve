@@ -55,10 +55,26 @@ function onInsertSectionHeading(section) {
   emit('content-inserted')
 }
 
+function parsePlaceholders(text) {
+  const parts = text.split(/(\{\{[^}]+\}\})/)
+  return parts
+    .filter((part) => part.length > 0)
+    .map((part) => {
+      const match = part.match(/^\{\{(.+)\}\}$/)
+      if (match) {
+        return { type: 'placeholderChip', attrs: { label: match[1] } }
+      }
+      return { type: 'text', text: part }
+    })
+}
+
 function onInsertParagraph(paragraph) {
   if (paragraph.content) {
-    const html = `<h3>${paragraph.title}</h3><p>${paragraph.content}</p>`
-    insertContent(html)
+    const contentNodes = parsePlaceholders(paragraph.content)
+    insertContent([
+      { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: paragraph.title }] },
+      { type: 'paragraph', content: contentNodes },
+    ])
     emit('content-inserted')
   }
 }

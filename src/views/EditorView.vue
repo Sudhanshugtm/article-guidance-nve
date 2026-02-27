@@ -6,7 +6,7 @@
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
       </div>
       <div class="editor-rail-column">
-        <EditorRail :is-open="isRailOpen" @content-inserted="onContentInserted" @close="isRailOpen = false" />
+        <EditorRail :is-open="isRailOpen" :initial-view="initialView" @content-inserted="onContentInserted" @close="isRailOpen = false" />
       </div>
     </div>
 
@@ -21,7 +21,7 @@
       <CdxIcon :icon="cdxIconAdd" />
     </div>
 
-    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" @content-inserted="onContentInserted" />
+    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" :initial-view="initialView" @content-inserted="onContentInserted" />
     <SettingsDialog v-model:open="settingsDialogOpen" />
     <CiteDialog v-model:open="citeDialogOpen" />
   </div>
@@ -40,6 +40,7 @@ import OutlinePopover from '@/components/OutlinePopover.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
+
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
@@ -74,6 +75,7 @@ const isRailOpen = ref(false)
 const isPopoverOpen = ref(false)
 const settingsDialogOpen = ref(false)
 const citeDialogOpen = ref(false)
+const initialView = ref(null)
 
 function onForceButtonClick() {
   getEditor()?.commands.blur()
@@ -81,6 +83,11 @@ function onForceButtonClick() {
 }
 
 function onOpenOutline() {
+  const editor = getEditor()
+  const isPlaceholderSelected =
+    editor?.state.selection.node?.type.name === 'placeholderChip'
+  initialView.value = isPlaceholderSelected ? 'verified-facts' : null
+
   if (outlineLocation.value === 'popover') {
     isPopoverOpen.value = true
   } else {
