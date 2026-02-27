@@ -15,6 +15,20 @@
           {{ label }}
         </CdxRadio>
       </div>
+      <!-- Auto-focus section -->
+      <div class="field-group">
+        <CdxLabel>Auto-focus</CdxLabel>
+        <CdxRadio
+          v-for="(label, focusKey) in autoFocusLabels"
+          :key="focusKey"
+          v-model="localSettings.entryPoint.autoFocus"
+          :input-value="focusKey"
+          name="entryPoint-autoFocus"
+          @update:model-value="onSettingChange"
+        >
+          {{ label }}
+        </CdxRadio>
+      </div>
       <!-- Outline location section -->
       <div class="field-group">
         <CdxLabel>Outline location</CdxLabel>
@@ -53,6 +67,7 @@ import { CdxDialog, CdxLabel, CdxRadio } from '@wikimedia/codex'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import {
   entryPointLabels,
+  autoFocusLabels,
   outlineLocationLabels,
   outlinePersistenceLabels,
 } from '../config/editorSettings'

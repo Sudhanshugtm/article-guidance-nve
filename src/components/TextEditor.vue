@@ -1,5 +1,5 @@
 <template>
-  <div class="text-editor-wrapper" :class="{ 'hide-placeholder': !isTextInitialState }">
+  <div class="text-editor-wrapper" :class="{ 'hide-placeholder': !(entryPointStyle === 'text' && !hasInteracted) }">
     <EditorContent ref="editorContentRef" class="text-editor" :editor="editor" />
     <div
       v-show="isButtonVisible"
@@ -37,6 +37,11 @@
           >
         </span>
       </CdxButton>
+
+      <!-- Style 3: Floating placeholder (initial state only) -->
+      <span v-else-if="entryPointStyle === 'floating' && !hasInteracted" class="codex-floating-text">
+        Tap here to continue...
+      </span>
 
       <!-- Fallback: icon button for other styles after cycling stops -->
       <CdxButton v-else class="codex-floating-btn" aria-label="Add content">
@@ -85,11 +90,14 @@ const useForceMode = computed(
   () =>
     entryPointStyle.value === 'force' ||
     (entryPointStyle.value === 'quiet' && !isCycling.value) ||
-    (entryPointStyle.value === 'text' && hasInteracted.value),
+    ((entryPointStyle.value === 'text' || entryPointStyle.value === 'floating') &&
+      hasInteracted.value),
 )
 
-const isTextInitialState = computed(
-  () => entryPointStyle.value === 'text' && !hasInteracted.value,
+const isPlaceholderInitialState = computed(
+  () =>
+    (entryPointStyle.value === 'text' || entryPointStyle.value === 'floating') &&
+    !hasInteracted.value,
 )
 
 // ── TipTap editor ──────────────────────────────────────────────────────
@@ -115,7 +123,7 @@ const editor = useEditor({
   },
   onTransaction({ transaction }) {
     if (transaction.docChanged) {
-      if (isTextInitialState.value) {
+      if (isPlaceholderInitialState.value) {
         hasInteracted.value = true
       }
       if (useForceMode.value) {
@@ -254,7 +262,7 @@ let typingTimer = null
 const TYPING_DEBOUNCE_MS = 1000
 const BUTTON_GAP = 4
 const ENTRY_POINT_HEIGHT = 32
-const ENTRY_POINT_WIDTHS = { icon: 32, quiet: 220 }
+const ENTRY_POINT_WIDTHS = { icon: 32, quiet: 220, floating: 180 }
 
 const floatingButtonStyle = computed(() => ({
   position: 'absolute',
@@ -274,8 +282,8 @@ function updateButtonPosition() {
     return
   }
 
-  // In text initial state, the placeholder is the entry point — no button needed
-  if (isTextInitialState.value) {
+  // In inline placeholder initial state, no button needed — the placeholder is the entry point
+  if (entryPointStyle.value === 'text' && !hasInteracted.value) {
     isButtonVisible.value = false
     return
   }
@@ -417,12 +425,13 @@ function onScroll() {
 
 function onCodexButtonClick() {
   stopCycling()
+  hasInteracted.value = true
   editor.value?.commands.blur()
   emit('open-outline')
 }
 
 function onEditorClick(event) {
-  if (isTextInitialState.value && editor.value?.isEmpty) {
+  if (entryPointStyle.value === 'text' && !hasInteracted.value && editor.value?.isEmpty) {
     event.stopPropagation()
     hasInteracted.value = true
     editor.value?.commands.blur()
@@ -456,9 +465,13 @@ onMounted(() => {
     scrollEl.addEventListener('click', onEditorClick)
   }
 
-  // Auto-focus in text mode so cursor is visible on launch
-  if (entryPointStyle.value === 'text') {
+  // Auto-focus editor on launch if setting is enabled (default: true)
+  if (settings.value.entryPoint.autoFocus !== 'false') {
     editor.value?.commands.focus()
+    // Ensure floating button position is calculated after DOM paint
+    if (entryPointStyle.value === 'floating') {
+      setTimeout(() => updateButtonPosition(), 50)
+    }
   }
 })
 
@@ -603,6 +616,12 @@ defineExpose({ editor })
     black calc(var(--wipe) + 15%),
     black 100%
   );
+}
+
+.codex-floating-text {
+  white-space: nowrap;
+  color: var(--color-subtle);
+  cursor: pointer;
 }
 
 </style>

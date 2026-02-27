@@ -5,7 +5,8 @@
 
 export const defaultSettings = {
   entryPoint: {
-    style: 'quiet', // 'icon' | 'quiet' | 'text' | 'force'
+    style: 'quiet', // 'icon' | 'quiet' | 'text' | 'floating' | 'force'
+    autoFocus: 'true', // 'true' | 'false'
   },
   outline: {
     location: 'rail', // 'rail' | 'popover'
@@ -19,8 +20,14 @@ export const defaultSettings = {
 export const entryPointLabels = {
   icon: 'Icon-only button',
   quiet: 'Animated label',
-  text: 'Plain text',
+  text: 'Inline placeholder',
+  floating: 'Floating placeholder',
   force: 'Rail button',
+}
+
+export const autoFocusLabels = {
+  true: 'Focus editor on launch',
+  false: "Don't focus on launch",
 }
 
 export const outlineLocationLabels = {
