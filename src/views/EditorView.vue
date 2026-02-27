@@ -51,7 +51,7 @@ const { getEditor } = useEditorInstance()
 const { cursorRect } = useCursorRect()
 
 const isForceButtonVisible = computed(() => {
-  if (entryPointStyle.value !== 'force') return false
+  if (entryPointStyle.value !== 'force' && entryPointStyle.value !== 'quiet') return false
   if (isRailOpen.value || isPopoverOpen.value) return false
   if (!cursorRect.value) return false
   return cursorRect.value.visible

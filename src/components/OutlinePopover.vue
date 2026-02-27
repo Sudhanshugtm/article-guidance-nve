@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { CdxPopover, CdxMenuButton, CdxButton, CdxIcon } from '@wikimedia/codex'
 import {
   cdxIconListBullet,
@@ -64,6 +64,73 @@ const menuItems = [
 const currentItem = computed(
   () => menuItems.find((item) => item.value === selectedView.value) || menuItems[0],
 )
+
+let bodyEl = null
+let resizeObserver = null
+
+function getBodyEl() {
+  if (!anchorRef.value) return null
+  const popover = anchorRef.value.nextElementSibling
+  return popover?.querySelector('.outline-popover-body') ?? null
+}
+
+function checkScrollable() {
+  if (!bodyEl) return
+  const scrollable = bodyEl.scrollHeight > bodyEl.clientHeight
+  bodyEl.classList.toggle('is-scrollable', scrollable)
+}
+
+function onBodyScroll() {
+  if (!bodyEl) return
+  bodyEl.classList.toggle('is-scrolled', bodyEl.scrollTop > 0)
+}
+
+function attachObserver() {
+  detachObserver()
+  bodyEl = getBodyEl()
+  if (!bodyEl) return
+  bodyEl.addEventListener('scroll', onBodyScroll)
+  resizeObserver = new ResizeObserver(checkScrollable)
+  resizeObserver.observe(bodyEl)
+  checkScrollable()
+}
+
+function detachObserver() {
+  bodyEl?.removeEventListener('scroll', onBodyScroll)
+  bodyEl?.classList.remove('is-scrollable', 'is-scrolled')
+  resizeObserver?.disconnect()
+  bodyEl = null
+}
+
+watch(selectedView, async () => {
+  if (bodyEl) {
+    await nextTick()
+    bodyEl.scrollTop = 0
+    bodyEl.classList.remove('is-scrolled')
+    checkScrollable()
+  }
+})
+
+watch(open, async (isOpen) => {
+  if (isOpen) {
+    await nextTick()
+    await nextTick()
+    attachObserver()
+  } else {
+    detachObserver()
+  }
+})
+
+onMounted(async () => {
+  if (open.value) {
+    await nextTick()
+    attachObserver()
+  }
+})
+
+onBeforeUnmount(() => {
+  detachObserver()
+})
 </script>
 
 <style scoped>
@@ -76,7 +143,7 @@ const currentItem = computed(
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: var(--spacing-75, 12px);
+  padding: var(--spacing-100, 16px);
 }
 
 .outline-popover-header :deep(.cdx-menu-button__menu) {
@@ -93,6 +160,16 @@ const currentItem = computed(
   overflow-y: auto;
   flex: 1;
   min-height: 0;
+  padding: var(--spacing-100, 16px) var(--spacing-100, 16px) 0;
+}
+
+.outline-popover-body.is-scrollable {
+  border-bottom: 1px solid var(--border-color-subtle, #c8ccd1);
+  padding-bottom: var(--spacing-100);
+}
+
+.outline-popover-body.is-scrolled {
+  border-top: 1px solid var(--border-color-subtle, #c8ccd1);
 }
 
 .outline-popover-anchor + :deep(.cdx-popover .cdx-popover__body) {
@@ -117,6 +194,7 @@ const currentItem = computed(
   border-radius: 0 !important;
   border: none !important;
   border-top: 1px solid var(--border-color-base, #a2a9b1) !important;
+  padding: 0 !important;
 }
 
 .outline-popover-body :deep(.cdx-accordion__content) {

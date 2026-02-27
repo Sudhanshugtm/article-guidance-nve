@@ -38,15 +38,6 @@
         </span>
       </CdxButton>
 
-      <!-- Style 2 fallback: quiet icon-only after interaction -->
-      <CdxButton
-        v-else-if="entryPointStyle === 'quiet'"
-        class="codex-floating-btn"
-        aria-label="Add content"
-      >
-        <CdxIcon :icon="cdxIconAdd" />
-      </CdxButton>
-
       <!-- Style 3: Plain text -->
       <span v-else class="codex-floating-text"> Tap here to continue... </span>
     </div>
@@ -85,6 +76,10 @@ const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
 )
 
+const useForceMode = computed(
+  () => entryPointStyle.value === 'force' || (entryPointStyle.value === 'quiet' && !isCycling.value),
+)
+
 // ── TipTap editor ──────────────────────────────────────────────────────
 
 const editorContentRef = ref(null)
@@ -107,7 +102,7 @@ const editor = useEditor({
   },
   onTransaction({ transaction }) {
     if (transaction.docChanged) {
-      if (entryPointStyle.value === 'force') {
+      if (useForceMode.value) {
         updateButtonPosition()
       } else {
         stopCycling()
@@ -305,22 +300,20 @@ function updateButtonPosition() {
 
   const caretVisible = !(coords.bottom < editorRect.top || coords.top > editorRect.bottom)
 
-  // Publish cursor rect for force entry point
-  const resolvedPos = view.domAtPos(state.selection.from)
-  const domEl =
-    resolvedPos.node.nodeType === 3 ? resolvedPos.node.parentElement : resolvedPos.node
-  const computedLineHeight =
-    parseFloat(window.getComputedStyle(domEl).lineHeight) || coords.bottom - coords.top
-  setCursorRect({
-    top: coords.top,
-    bottom: coords.bottom,
-    lineHeight: computedLineHeight,
-    glyphHeight: coords.bottom - coords.top,
-    visible: caretVisible,
-  })
-
-  // For force style, don't show the inline floating button
-  if (entryPointStyle.value === 'force') {
+  // For force mode, publish cursor rect and don't show the inline floating button
+  if (useForceMode.value) {
+    const resolvedPos = view.domAtPos(state.selection.from)
+    const domEl =
+      resolvedPos.node.nodeType === 3 ? resolvedPos.node.parentElement : resolvedPos.node
+    const computedLineHeight =
+      parseFloat(window.getComputedStyle(domEl).lineHeight) || coords.bottom - coords.top
+    setCursorRect({
+      top: coords.top,
+      bottom: coords.bottom,
+      lineHeight: computedLineHeight,
+      glyphHeight: coords.bottom - coords.top,
+      visible: caretVisible,
+    })
     isButtonVisible.value = false
     return
   }
@@ -373,7 +366,7 @@ function scheduleShowButton() {
 }
 
 function onScroll() {
-  if (isButtonVisible.value || entryPointStyle.value === 'force') {
+  if (isButtonVisible.value || useForceMode.value) {
     updateButtonPosition()
   }
 }
