@@ -161,6 +161,10 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 0;
   padding: var(--spacing-100, 16px) var(--spacing-100, 16px) 0;
+  border-top: 1px solid var(--border-color-transparent);
+  transition-property: var(--transition-property-base);
+  transition-duration: var(--transition-duration-medium);
+  transition-timing-function: var(--transition-timing-function-user);
 }
 
 .outline-popover-body.is-scrollable {
