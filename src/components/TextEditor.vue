@@ -1,5 +1,5 @@
 <template>
-  <div class="text-editor-wrapper">
+  <div class="text-editor-wrapper" :class="{ 'hide-placeholder': !isTextInitialState }">
     <EditorContent ref="editorContentRef" class="text-editor" :editor="editor" />
     <div
       v-show="isButtonVisible"
@@ -38,8 +38,10 @@
         </span>
       </CdxButton>
 
-      <!-- Style 3: Plain text -->
-      <span v-else class="codex-floating-text"> Tap here to continue... </span>
+      <!-- Fallback: icon button for other styles after cycling stops -->
+      <CdxButton v-else class="codex-floating-btn" aria-label="Add content">
+        <CdxIcon :icon="cdxIconAdd" />
+      </CdxButton>
     </div>
     <CdxButton
       weight="quiet"
@@ -76,8 +78,17 @@ const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
 )
 
+const hasInteracted = ref(false)
+
 const useForceMode = computed(
-  () => entryPointStyle.value === 'force' || (entryPointStyle.value === 'quiet' && !isCycling.value),
+  () =>
+    entryPointStyle.value === 'force' ||
+    (entryPointStyle.value === 'quiet' && !isCycling.value) ||
+    (entryPointStyle.value === 'text' && hasInteracted.value),
+)
+
+const isTextInitialState = computed(
+  () => entryPointStyle.value === 'text' && !hasInteracted.value,
 )
 
 // ── TipTap editor ──────────────────────────────────────────────────────
@@ -90,9 +101,9 @@ const editor = useEditor({
       heading: { levels: [2, 3, 4] },
       link: { openOnClick: false },
     }),
-    // Placeholder.configure({
-    //   placeholder: 'Start writing...',
-    // }),
+    Placeholder.configure({
+      placeholder: 'Start writing or tap here to continue...',
+    }),
     AnnotationHighlight,
   ],
   onSelectionUpdate() {
@@ -102,6 +113,9 @@ const editor = useEditor({
   },
   onTransaction({ transaction }) {
     if (transaction.docChanged) {
+      if (isTextInitialState.value) {
+        hasInteracted.value = true
+      }
       if (useForceMode.value) {
         updateButtonPosition()
       } else {
@@ -238,7 +252,7 @@ let typingTimer = null
 const TYPING_DEBOUNCE_MS = 1000
 const BUTTON_GAP = 4
 const ENTRY_POINT_HEIGHT = 32
-const ENTRY_POINT_WIDTHS = { icon: 32, quiet: 220, text: 180 }
+const ENTRY_POINT_WIDTHS = { icon: 32, quiet: 220 }
 
 const floatingButtonStyle = computed(() => ({
   position: 'absolute',
@@ -254,6 +268,12 @@ function getEditorScrollEl() {
 
 function updateButtonPosition() {
   if (!editor.value) {
+    isButtonVisible.value = false
+    return
+  }
+
+  // In text initial state, the placeholder is the entry point — no button needed
+  if (isTextInitialState.value) {
     isButtonVisible.value = false
     return
   }
@@ -377,6 +397,15 @@ function onCodexButtonClick() {
   emit('open-outline')
 }
 
+function onEditorClick(event) {
+  if (isTextInitialState.value && editor.value?.isEmpty) {
+    event.stopPropagation()
+    hasInteracted.value = true
+    editor.value?.commands.blur()
+    emit('open-outline')
+  }
+}
+
 // Start typewriter on first button appearance (not on mount)
 watch(isButtonVisible, (visible) => {
   if (visible && !cyclingStarted && isCycling.value) {
@@ -400,6 +429,12 @@ onMounted(() => {
   scrollEl = getEditorScrollEl()
   if (scrollEl) {
     scrollEl.addEventListener('scroll', onScroll)
+    scrollEl.addEventListener('click', onEditorClick)
+  }
+
+  // Auto-focus in text mode so cursor is visible on launch
+  if (entryPointStyle.value === 'text') {
+    editor.value?.commands.focus()
   }
 })
 
@@ -408,6 +443,7 @@ onBeforeUnmount(() => {
   clearCursorRect()
   if (scrollEl) {
     scrollEl.removeEventListener('scroll', onScroll)
+    scrollEl.removeEventListener('click', onEditorClick)
   }
   clearTimeout(typingTimer)
   clearInterval(charTimer)
@@ -449,6 +485,10 @@ defineExpose({ editor })
   pointer-events: none;
   float: left;
   height: 0;
+}
+
+.hide-placeholder :deep(.ProseMirror p.is-editor-empty:first-child::before) {
+  display: none;
 }
 
 /* Text styles */
@@ -541,9 +581,4 @@ defineExpose({ editor })
   );
 }
 
-.codex-floating-text {
-  white-space: nowrap;
-  color: var(--color-subtle);
-  cursor: pointer;
-}
 </style>
