@@ -46,14 +46,11 @@ const open = defineModel('open', { type: Boolean, default: false })
 const anchorRef = ref(null)
 const selectedView = ref('outline')
 
-watch(
-  () => props.initialView,
-  (view) => {
-    if (view) {
-      selectedView.value = view
-    }
-  },
-)
+watch(open, (isOpen) => {
+  if (isOpen) {
+    selectedView.value = props.initialView || 'outline'
+  }
+})
 
 const menuItems = [
   {

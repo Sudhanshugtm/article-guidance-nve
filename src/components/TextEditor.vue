@@ -288,8 +288,6 @@ function updateButtonPosition() {
     const chipDom = view.nodeDOM(state.selection.from)
     if (chipDom) {
       const chipRect = chipDom.getBoundingClientRect()
-      const computedLineHeight =
-        parseFloat(window.getComputedStyle(chipDom).lineHeight) || chipRect.height
       const editorEl = getEditorScrollEl()
       const editorRect = editorEl?.getBoundingClientRect()
       const caretVisible = editorRect
@@ -298,7 +296,7 @@ function updateButtonPosition() {
       setCursorRect({
         top: chipRect.top,
         bottom: chipRect.bottom,
-        lineHeight: computedLineHeight,
+        lineHeight: chipRect.height,
         glyphHeight: chipRect.height,
         visible: caretVisible,
       })

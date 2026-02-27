@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
 import TextEditor from '@/components/TextEditor.vue'
@@ -40,7 +40,7 @@ import OutlinePopover from '@/components/OutlinePopover.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
-import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
+
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
@@ -77,28 +77,22 @@ const settingsDialogOpen = ref(false)
 const citeDialogOpen = ref(false)
 const initialView = ref(null)
 
-const { placeholderClickEvent, clearPlaceholderClick } = usePlaceholderInteraction()
-
-watch(placeholderClickEvent, (event) => {
-  if (!event) return
-  initialView.value = 'verified-facts'
-  clearPlaceholderClick()
-})
-
 function onForceButtonClick() {
   getEditor()?.commands.blur()
   onOpenOutline()
 }
 
 function onOpenOutline() {
+  const editor = getEditor()
+  const isPlaceholderSelected =
+    editor?.state.selection.node?.type.name === 'placeholderChip'
+  initialView.value = isPlaceholderSelected ? 'verified-facts' : null
+
   if (outlineLocation.value === 'popover') {
     isPopoverOpen.value = true
   } else {
     isRailOpen.value = true
   }
-  nextTick(() => {
-    initialView.value = null
-  })
 }
 
 // Track whether the popover/rail should stay open after content insertion

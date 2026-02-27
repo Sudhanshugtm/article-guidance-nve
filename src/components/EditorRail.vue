@@ -49,10 +49,10 @@ const props = defineProps({
 const selectedView = ref('outline')
 
 watch(
-  () => props.initialView,
-  (view) => {
-    if (view) {
-      selectedView.value = view
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      selectedView.value = props.initialView || 'outline'
     }
   },
 )
