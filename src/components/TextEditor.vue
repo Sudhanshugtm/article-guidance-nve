@@ -71,6 +71,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import { AnnotationHighlight } from '../extensions/annotationHighlight'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { useCursorRect } from '../composables/useCursorRect'
 import { defaultSettings } from '../config/editorSettings'
 import { articleSections } from '../config/articleSections'
 
@@ -78,6 +79,7 @@ const emit = defineEmits(['open-outline', 'open-settings'])
 
 const { settings } = useEditorSettings()
 const { setEditor } = useEditorInstance()
+const { setCursorRect, clearCursorRect } = useCursorRect()
 
 const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
@@ -105,16 +107,24 @@ const editor = useEditor({
   },
   onTransaction({ transaction }) {
     if (transaction.docChanged) {
-      stopCycling()
-      hideButton()
-      scheduleShowButton()
+      if (entryPointStyle.value === 'force') {
+        updateButtonPosition()
+      } else {
+        stopCycling()
+        hideButton()
+        scheduleShowButton()
+      }
     }
   },
   onFocus() {
     setTimeout(() => updateButtonPosition(), 0)
   },
   onBlur({ event }) {
-    if (event.relatedTarget && event.relatedTarget.closest('.codex-floating-entry')) {
+    if (
+      event.relatedTarget &&
+      (event.relatedTarget.closest('.codex-floating-entry') ||
+        event.relatedTarget.closest('.force-entry-point'))
+    ) {
       return
     }
     hideButton()
@@ -293,8 +303,30 @@ function updateButtonPosition() {
     }
   }
 
+  const caretVisible = !(coords.bottom < editorRect.top || coords.top > editorRect.bottom)
+
+  // Publish cursor rect for force entry point
+  const resolvedPos = view.domAtPos(state.selection.from)
+  const domEl =
+    resolvedPos.node.nodeType === 3 ? resolvedPos.node.parentElement : resolvedPos.node
+  const computedLineHeight =
+    parseFloat(window.getComputedStyle(domEl).lineHeight) || coords.bottom - coords.top
+  setCursorRect({
+    top: coords.top,
+    bottom: coords.bottom,
+    lineHeight: computedLineHeight,
+    glyphHeight: coords.bottom - coords.top,
+    visible: caretVisible,
+  })
+
+  // For force style, don't show the inline floating button
+  if (entryPointStyle.value === 'force') {
+    isButtonVisible.value = false
+    return
+  }
+
   // Hide if caret is scrolled out of the visible editor area
-  if (coords.bottom < editorRect.top || coords.top > editorRect.bottom) {
+  if (!caretVisible) {
     isButtonVisible.value = false
     return
   }
@@ -327,6 +359,7 @@ function updateButtonPosition() {
 
 function hideButton() {
   isButtonVisible.value = false
+  clearCursorRect()
   clearTimeout(typingTimer)
   typingTimer = null
 }
@@ -340,7 +373,7 @@ function scheduleShowButton() {
 }
 
 function onScroll() {
-  if (isButtonVisible.value) {
+  if (isButtonVisible.value || entryPointStyle.value === 'force') {
     updateButtonPosition()
   }
 }
@@ -379,6 +412,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   setEditor(null)
+  clearCursorRect()
   if (scrollEl) {
     scrollEl.removeEventListener('scroll', onScroll)
   }

@@ -13,7 +13,7 @@ export const articleSections = [
         title: 'Short overview',
         description: 'A brief introduction to the topic.',
         content:
-          'The majestic Siberian tiger or Amur tiger is a population of the tiger subspecies Panthera tigris tigris native to Northeast China, the Russian Far East, and possibly North Korea. It once ranged throughout the Korean Peninsula, north China, and eastern Mongolia.',
+          'The Siberian tiger or Amur tiger is a population of the tiger subspecies Panthera tigris tigris native to Northeast China, the Russian Far East, and possibly North Korea. It once ranged throughout the Korean Peninsula, north China, and eastern Mongolia.',
       },
       {
         title: 'Taxonomy in brief',
