@@ -35,14 +35,27 @@ import OutlineAccordionList from './OutlineAccordionList.vue'
 import VerifiedFactsList from './VerifiedFactsList.vue'
 
 defineEmits(['content-inserted', 'close'])
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     required: true,
   },
+  initialView: {
+    type: String,
+    default: null,
+  },
 })
 
 const selectedView = ref('outline')
+
+watch(
+  () => props.initialView,
+  (view) => {
+    if (view) {
+      selectedView.value = view
+    }
+  },
+)
 
 const menuItems = [
   {

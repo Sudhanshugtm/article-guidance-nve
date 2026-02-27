@@ -62,6 +62,7 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { AnnotationHighlight } from '../extensions/annotationHighlight'
+import { PlaceholderChip } from '../extensions/placeholderChip'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { useCursorRect } from '../composables/useCursorRect'
@@ -105,6 +106,7 @@ const editor = useEditor({
       placeholder: 'Start writing or tap here to continue...',
     }),
     AnnotationHighlight,
+    PlaceholderChip,
   ],
   onSelectionUpdate() {
     if (!typingTimer) {
@@ -280,6 +282,30 @@ function updateButtonPosition() {
 
   const { state, view } = editor.value
   const { empty } = state.selection
+
+  // When a placeholderChip has a NodeSelection, align the force button with the chip
+  if (!empty && state.selection.node?.type.name === 'placeholderChip') {
+    const chipDom = view.nodeDOM(state.selection.from)
+    if (chipDom) {
+      const chipRect = chipDom.getBoundingClientRect()
+      const computedLineHeight =
+        parseFloat(window.getComputedStyle(chipDom).lineHeight) || chipRect.height
+      const editorEl = getEditorScrollEl()
+      const editorRect = editorEl?.getBoundingClientRect()
+      const caretVisible = editorRect
+        ? !(chipRect.bottom < editorRect.top || chipRect.top > editorRect.bottom)
+        : true
+      setCursorRect({
+        top: chipRect.top,
+        bottom: chipRect.bottom,
+        lineHeight: computedLineHeight,
+        glyphHeight: chipRect.height,
+        visible: caretVisible,
+      })
+    }
+    isButtonVisible.value = false
+    return
+  }
 
   // Only show button when cursor is collapsed (no text selected)
   if (!empty) {

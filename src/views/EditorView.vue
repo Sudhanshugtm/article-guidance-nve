@@ -6,7 +6,7 @@
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
       </div>
       <div class="editor-rail-column">
-        <EditorRail :is-open="isRailOpen" @content-inserted="onContentInserted" @close="isRailOpen = false" />
+        <EditorRail :is-open="isRailOpen" :initial-view="initialView" @content-inserted="onContentInserted" @close="isRailOpen = false" />
       </div>
     </div>
 
@@ -21,14 +21,14 @@
       <CdxIcon :icon="cdxIconAdd" />
     </div>
 
-    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" @content-inserted="onContentInserted" />
+    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" :initial-view="initialView" @content-inserted="onContentInserted" />
     <SettingsDialog v-model:open="settingsDialogOpen" />
     <CiteDialog v-model:open="citeDialogOpen" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
 import TextEditor from '@/components/TextEditor.vue'
@@ -40,6 +40,7 @@ import OutlinePopover from '@/components/OutlinePopover.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
+import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
@@ -74,6 +75,15 @@ const isRailOpen = ref(false)
 const isPopoverOpen = ref(false)
 const settingsDialogOpen = ref(false)
 const citeDialogOpen = ref(false)
+const initialView = ref(null)
+
+const { placeholderClickEvent, clearPlaceholderClick } = usePlaceholderInteraction()
+
+watch(placeholderClickEvent, (event) => {
+  if (!event) return
+  initialView.value = 'verified-facts'
+  clearPlaceholderClick()
+})
 
 function onForceButtonClick() {
   getEditor()?.commands.blur()
@@ -86,6 +96,9 @@ function onOpenOutline() {
   } else {
     isRailOpen.value = true
   }
+  nextTick(() => {
+    initialView.value = null
+  })
 }
 
 // Track whether the popover/rail should stay open after content insertion
