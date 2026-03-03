@@ -4,7 +4,7 @@
       <CdxButton class="cdx-toolbar__btn cdx-toolbar__btn--close" weight="quiet" aria-label="Close">
         <CdxIcon :icon="cdxIconClose" />
       </CdxButton>
-      <CdxButton class="cdx-toolbar__btn" weight="quiet" aria-label="Undo">
+      <CdxButton class="cdx-toolbar__btn" weight="quiet" aria-label="Undo" @click="getEditor()?.chain().focus().undo().run()">
         <CdxIcon :icon="cdxIconUndo" />
       </CdxButton>
       <CdxButton
@@ -44,6 +44,7 @@
         action="progressive"
         weight="primary"
         aria-label="Publish"
+        :disabled="!hasContent"
       >
         <CdxIcon :icon="cdxIconNext" />
       </CdxButton>
@@ -54,6 +55,9 @@
 <script setup>
 const emit = defineEmits(['cite'])
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
+import { useEditorInstance } from '../composables/useEditorInstance'
+
+const { hasContent, getEditor } = useEditorInstance()
 import {
   cdxIconClose,
   cdxIconUndo,
