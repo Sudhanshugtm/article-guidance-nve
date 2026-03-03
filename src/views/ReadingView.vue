@@ -93,6 +93,8 @@ onMounted(async () => {
 <style scoped>
 .reading {
   min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   background-color: var(--background-color-base);
