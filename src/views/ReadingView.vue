@@ -4,6 +4,9 @@
 <template>
   <div class="reading">
     <header class="reading__header">
+      <router-link :to="{ name: 'hub' }" class="reading__back" aria-label="Back to languages">
+        <CdxIcon :icon="cdxIconArrowPrevious" />
+      </router-link>
       <span class="reading__wordmark">{{ locale.reading.wordmark }}</span>
     </header>
 
@@ -61,6 +64,8 @@
 // ABOUTME: with a Minerva-style shell. One list item is a red link to the editor.
 
 import { ref, watch } from 'vue'
+import { CdxIcon } from '@wikimedia/codex'
+import { cdxIconArrowPrevious } from '@wikimedia/codex-icons'
 import { FakeWiki } from 'fakewiki'
 import { useLocale } from '@/composables/useLocale'
 
@@ -86,7 +91,7 @@ watch(lang, loadArticle, { immediate: true })
 <style scoped>
 .reading {
   min-height: 100vh;
-  max-width: 480px;
+  max-width: 720px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -100,10 +105,18 @@ watch(lang, loadArticle, { immediate: true })
   z-index: var(--z-index-sticky);
   display: flex;
   align-items: center;
+  gap: var(--spacing-50);
   height: 54px;
   padding: 0 16px;
   background-color: var(--background-color-base);
   border-bottom: var(--border-width-base) var(--border-style-base) var(--border-color-subtle);
+}
+
+.reading__back {
+  display: flex;
+  align-items: center;
+  color: var(--color-base);
+  text-decoration: none;
 }
 
 .reading__wordmark {

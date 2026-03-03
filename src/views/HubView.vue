@@ -49,7 +49,7 @@ const prototypes = Object.values(locales).map((loc) => ({
 
 <style scoped>
 .hub {
-  max-width: 480px;
+  max-width: 720px;
   margin: 0 auto;
   padding: var(--spacing-200) var(--spacing-100);
   min-height: 100vh;
