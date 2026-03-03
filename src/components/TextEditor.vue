@@ -77,7 +77,7 @@ import { articleSections } from '../config/articleSections'
 const emit = defineEmits(['open-outline', 'open-settings'])
 
 const { settings } = useEditorSettings()
-const { setEditor } = useEditorInstance()
+const { setEditor, hasContent } = useEditorInstance()
 const { setCursorRect, clearCursorRect } = useCursorRect()
 
 const entryPointStyle = computed(
@@ -121,8 +121,9 @@ const editor = useEditor({
       updateButtonPosition()
     }
   },
-  onTransaction({ transaction }) {
+  onTransaction({ transaction, editor: editorRef }) {
     if (transaction.docChanged) {
+      hasContent.value = !editorRef.isEmpty
       if (isPlaceholderInitialState.value) {
         hasInteracted.value = true
       }

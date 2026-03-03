@@ -48,7 +48,7 @@ const outlinePersistence = computed(() => settings.value.outline.persistence)
 const entryPointStyle = computed(() => settings.value.entryPoint.style)
 
 // Force entry point
-const { getEditor } = useEditorInstance()
+const { getEditor, hasContent } = useEditorInstance()
 const { cursorRect } = useCursorRect()
 
 const isForceButtonVisible = computed(() => {
@@ -110,6 +110,7 @@ function onOpenCiteDiscover() {
 const keepOpenAfterInsert = ref(false)
 
 function onContentInserted() {
+  hasContent.value = true
   if (outlinePersistence.value === 'close') {
     isRailOpen.value = false
     isPopoverOpen.value = false

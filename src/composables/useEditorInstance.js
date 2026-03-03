@@ -1,6 +1,7 @@
-import { shallowRef } from 'vue'
+import { shallowRef, ref } from 'vue'
 
 const editorInstance = shallowRef(null)
+const hasContent = ref(false)
 
 export function useEditorInstance() {
   function setEditor(editor) {
@@ -21,5 +22,5 @@ export function useEditorInstance() {
     editorInstance.value?.commands.focus()
   }
 
-  return { editorInstance, setEditor, getEditor, insertContent, focus }
+  return { editorInstance, setEditor, getEditor, insertContent, focus, hasContent }
 }
