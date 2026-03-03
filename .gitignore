@@ -37,3 +37,8 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Local briefs and research docs
+PROTOTYPE_BRIEF.md
+NARRATIVE_SUMMARY.md
+Guided Article Creation Brief.md
