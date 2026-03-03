@@ -1,6 +1,6 @@
 <template>
   <CdxAccordion
-    v-for="(section, index) in articleSections"
+    v-for="(section, index) in sections"
     :key="section.title"
     :class="{ 'accordion--empty': isSectionEmpty(section) }"
     separation="none"
@@ -28,18 +28,28 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { CdxAccordion, CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
-import { articleSections } from '../config/articleSections.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { useLocale } from '../composables/useLocale'
 
 const emit = defineEmits(['content-inserted'])
 const { insertContent } = useEditorInstance()
+const { locale } = useLocale()
 
-const accordionStates = ref(
-  Object.fromEntries(articleSections.map((section, index) => [section.title, index === 0])),
-)
+const sections = computed(() => locale.value.sections)
+
+const accordionStates = ref({})
+
+function resetAccordionStates() {
+  accordionStates.value = Object.fromEntries(
+    sections.value.map((section, index) => [section.title, index === 0]),
+  )
+}
+
+resetAccordionStates()
+watch(sections, resetAccordionStates)
 
 function isSectionEmpty(section) {
   return !section.paragraphs || section.paragraphs.length === 0

@@ -71,14 +71,15 @@ import { PlaceholderChip } from '../extensions/placeholderChip'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { useCursorRect } from '../composables/useCursorRect'
+import { useLocale } from '../composables/useLocale'
 import { defaultSettings } from '../config/editorSettings'
-import { articleSections } from '../config/articleSections'
 
 const emit = defineEmits(['open-outline', 'open-settings'])
 
 const { settings } = useEditorSettings()
 const { setEditor } = useEditorInstance()
 const { setCursorRect, clearCursorRect } = useCursorRect()
+const { locale } = useLocale()
 
 const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
@@ -152,7 +153,7 @@ const editor = useEditor({
 
 // ── Typewriter animation for the quiet button style ────────────────────
 
-const sectionTitles = articleSections.map((s) => s.title)
+const sectionTitles = computed(() => locale.value.sections.map((s) => s.title))
 const currentLabelIndex = ref(0)
 const displayText = ref('')
 const wipeProgress = ref(0)
@@ -177,7 +178,7 @@ const wipeMaskPercent = computed(() => -15 + wipeProgress.value * 115)
 
 function typewriterTick() {
   if (animPhase.value === 'typing') {
-    const title = sectionTitles[currentLabelIndex.value]
+    const title = sectionTitles.value[currentLabelIndex.value]
     displayText.value += title[charIndex]
     charIndex++
     if (charIndex >= title.length) {
@@ -195,7 +196,7 @@ function typewriterTick() {
       clearInterval(charTimer)
       charTimer = null
       displayText.value = ''
-      currentLabelIndex.value = (currentLabelIndex.value + 1) % sectionTitles.length
+      currentLabelIndex.value = (currentLabelIndex.value + 1) % sectionTitles.value.length
       charIndex = 0
       animPhase.value = 'typing'
       charTimer = setInterval(typewriterTick, CHAR_INTERVAL_MS)

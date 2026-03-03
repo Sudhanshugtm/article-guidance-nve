@@ -1,6 +1,6 @@
 <template>
   <div class="editor-page">
-    <CdxToolbar @cite="onOpenCiteDefault" />
+    <CdxToolbar @cite="onOpenCiteDefault" @close="onClose" />
     <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen }">
       <div class="editor-main" @click="isRailOpen && (isRailOpen = false)">
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
@@ -29,6 +29,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
 import TextEditor from '@/components/TextEditor.vue'
@@ -40,8 +41,10 @@ import OutlinePopover from '@/components/OutlinePopover.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
+import { useLocale } from '@/composables/useLocale'
 
-
+const router = useRouter()
+const { lang } = useLocale()
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
 const outlinePersistence = computed(() => settings.value.outline.persistence)
@@ -94,6 +97,10 @@ function onOpenOutline() {
   } else {
     isRailOpen.value = true
   }
+}
+
+function onClose() {
+  router.push({ name: 'article', query: { lang: lang.value } })
 }
 
 function onOpenCiteDefault() {

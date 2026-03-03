@@ -4,7 +4,7 @@
 <template>
   <div class="reading">
     <header class="reading__header">
-      <span class="reading__wordmark">Wikipedia</span>
+      <span class="reading__wordmark">{{ locale.reading.wordmark }}</span>
     </header>
 
     <main class="reading__content">
@@ -23,9 +23,9 @@
             v-html="summary.extract_html"
           />
 
-          <h2 class="reading__section-heading">Notable parks</h2>
+          <h2 class="reading__section-heading">{{ locale.article.sectionHeading }}</h2>
           <ul class="reading__list">
-            <li v-for="item in listItems" :key="item.title">
+            <li v-for="item in locale.article.listItems" :key="item.title">
               <a
                 v-if="item.exists"
                 :href="item.url"
@@ -42,16 +42,16 @@
       </article>
 
       <div v-else-if="error" class="reading__message">
-        Could not load article.
+        {{ locale.reading.error }}
       </div>
 
       <div v-else class="reading__message reading__message--loading">
-        Loading...
+        {{ locale.reading.loading }}
       </div>
     </main>
 
     <footer class="reading__footer">
-      <span>Content from Wikipedia, the free encyclopedia</span>
+      <span>{{ locale.reading.footer }}</span>
     </footer>
   </div>
 </template>
@@ -60,34 +60,27 @@
 // ABOUTME: Fetches a real Wikipedia article via fakewiki and renders it
 // ABOUTME: with a Minerva-style shell. One list item is a red link to the editor.
 
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, watch } from 'vue'
 import { FakeWiki } from 'fakewiki'
+import { useLocale } from '@/composables/useLocale'
 
-const route = useRoute()
-const lang = computed(() => route.query.lang || 'en')
+const { lang, locale } = useLocale()
 
 const summary = ref(null)
 const error = ref(false)
 
-const articleTitle = 'National parks of India'
-
-const listItems = [
-  { title: 'Jim Corbett National Park', exists: true, url: 'https://en.wikipedia.org/wiki/Jim_Corbett_National_Park' },
-  { title: 'Kaziranga National Park', exists: true, url: 'https://en.wikipedia.org/wiki/Kaziranga_National_Park' },
-  { title: 'Ranthambore National Park', exists: true, url: 'https://en.wikipedia.org/wiki/Ranthambore_National_Park' },
-  { title: 'Sessa Orchid Sanctuary', exists: false, url: null },
-  { title: 'Periyar National Park', exists: true, url: 'https://en.wikipedia.org/wiki/Periyar_National_Park' },
-]
-
-onMounted(async () => {
-  const wiki = new FakeWiki()
+async function loadArticle() {
+  summary.value = null
+  error.value = false
+  const wiki = new FakeWiki(locale.value.article.wikiBase)
   try {
-    summary.value = await wiki.getPageSummary(articleTitle)
+    summary.value = await wiki.getPageSummary(locale.value.article.title)
   } catch (e) {
     error.value = true
   }
-})
+}
+
+watch(lang, loadArticle, { immediate: true })
 </script>
 
 <style scoped>

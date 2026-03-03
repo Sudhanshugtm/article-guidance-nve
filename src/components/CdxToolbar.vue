@@ -1,7 +1,7 @@
 <template>
   <div class="cdx-toolbar">
     <div class="cdx-toolbar__lhs">
-      <CdxButton class="cdx-toolbar__btn cdx-toolbar__btn--close" weight="quiet" aria-label="Close">
+      <CdxButton class="cdx-toolbar__btn cdx-toolbar__btn--close" weight="quiet" aria-label="Close" @click="emit('close')">
         <CdxIcon :icon="cdxIconClose" />
       </CdxButton>
       <CdxButton class="cdx-toolbar__btn" weight="quiet" aria-label="Undo">
@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-const emit = defineEmits(['cite'])
+const emit = defineEmits(['cite', 'close'])
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
 import {
   cdxIconClose,

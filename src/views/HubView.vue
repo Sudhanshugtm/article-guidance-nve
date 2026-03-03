@@ -32,36 +32,19 @@
 </template>
 
 <script setup>
-// ABOUTME: Defines available prototype entries. Add new languages here.
-// ABOUTME: Each entry has a route, label, description, and status.
+// ABOUTME: Generates prototype entries from locale metadata.
+// ABOUTME: One card per language, linking to the reading page for that language.
 
-const prototypes = [
-  {
-    lang: 'English',
-    label: 'Article reading → editing',
-    description: 'Wikipedia article with red link leading into the editor',
-    to: { name: 'article', query: { lang: 'en' } },
-    status: 'active',
-    statusLabel: 'In progress',
-  },
-  {
-    lang: 'English',
-    label: 'Editor only',
-    description: 'Jump straight into the article creation editor',
-    to: { name: 'editor', query: { lang: 'en' } },
-    status: 'active',
-    statusLabel: 'In progress',
-  },
-  // Add more languages as needed:
-  // {
-  //   lang: 'Hindi',
-  //   label: 'लेख निर्माण संपादक',
-  //   description: 'Article creation editor — Hindi translation',
-  //   to: { name: 'editor', query: { lang: 'hi' } },
-  //   status: 'planned',
-  //   statusLabel: 'Planned',
-  // },
-]
+import locales from '@/config/locales'
+
+const prototypes = Object.values(locales).map((loc) => ({
+  lang: loc.name,
+  label: loc.article.title,
+  description: loc.reading.wordmark,
+  to: { name: 'article', query: { lang: loc.code } },
+  status: 'active',
+  statusLabel: 'In progress',
+}))
 </script>
 
 <style scoped>

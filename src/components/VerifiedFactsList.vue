@@ -1,7 +1,7 @@
 <template>
   <div class="verified-facts-cards">
     <CdxCard
-      v-for="fact in verifiedFacts"
+      v-for="fact in facts"
       :key="fact.title"
       :icon="cdxIconAdd"
       @click="onInsertFact(fact)"
@@ -24,13 +24,17 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
-import { verifiedFacts } from '../config/verifiedFacts.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { useLocale } from '../composables/useLocale'
 
 const emit = defineEmits(['content-inserted'])
 const { insertContent } = useEditorInstance()
+const { locale } = useLocale()
+
+const facts = computed(() => locale.value.facts)
 
 function onInsertFact(fact) {
   insertContent(fact.title)

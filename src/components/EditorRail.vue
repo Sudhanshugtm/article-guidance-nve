@@ -38,6 +38,7 @@ import {
 import OutlineAccordionList from './OutlineAccordionList.vue'
 import VerifiedFactsList from './VerifiedFactsList.vue'
 import ReferenceSourcesList from './ReferenceSourcesList.vue'
+import { useLocale } from '../composables/useLocale'
 
 defineEmits(['content-inserted', 'close', 'open-cite-discover'])
 const props = defineProps({
@@ -51,6 +52,7 @@ const props = defineProps({
   },
 })
 
+const { locale } = useLocale()
 const selectedView = ref('outline')
 
 watch(
@@ -62,29 +64,26 @@ watch(
   },
 )
 
-const menuItems = [
+const menuItems = computed(() => [
   {
     value: 'outline',
-    label: 'Outline',
-    description: 'Build off similar articles',
+    label: locale.value.rail.outline,
     icon: cdxIconListBullet,
   },
   {
     value: 'verified-facts',
-    label: 'Verified facts',
-    description: 'From Wikidata',
+    label: locale.value.rail.verifiedFacts,
     icon: cdxIconCheckAll,
   },
   {
     value: 'references',
-    label: 'References',
-    description: 'In other projects',
+    label: locale.value.rail.references,
     icon: cdxIconReference,
   },
-]
+])
 
 const currentItem = computed(
-  () => menuItems.find((item) => item.value === selectedView.value) || menuItems[0],
+  () => menuItems.value.find((item) => item.value === selectedView.value) || menuItems.value[0],
 )
 
 const bodyRef = ref(null)
