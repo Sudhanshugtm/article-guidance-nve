@@ -13,7 +13,7 @@ export const defaultSettings = {
     persistence: 'close', // 'keep-open' | 'close'
   },
   placeholder: {
-    cursorBehavior: 'after', // 'after' | 'select'
+    cursorBehavior: 'select', // 'after' | 'select'
   },
 }
 
