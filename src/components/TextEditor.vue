@@ -159,6 +159,10 @@ const editor = useEditor({
     ) {
       return
     }
+    if (entryPointStyle.value === 'inline') {
+      isButtonVisible.value = false
+      return
+    }
     hideButton()
   },
 })
