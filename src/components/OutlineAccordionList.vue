@@ -30,7 +30,7 @@
 <script setup>
 import { CdxAccordion, CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
-import { articleSections } from '../config/articleSections.js'
+import { articleSections, CITATION_LABEL } from '../config/articleSections.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { useAccordionState } from '../composables/useAccordionState'
 
@@ -48,13 +48,17 @@ function onInsertSectionHeading(section) {
 }
 
 function parsePlaceholders(text) {
-  const parts = text.split(/(\{\{[^}]+\}\})/)
+  const citationMarker = `[${CITATION_LABEL}]`
+  const parts = text.split(new RegExp(`(\\{\\{[^}]+\\}\\}|\\[${CITATION_LABEL}\\])`))
   return parts
     .filter((part) => part.length > 0)
     .map((part) => {
-      const match = part.match(/^\{\{(.+)\}\}$/)
-      if (match) {
-        return { type: 'placeholderChip', attrs: { label: match[1] } }
+      const placeholderMatch = part.match(/^\{\{(.+)\}\}$/)
+      if (placeholderMatch) {
+        return { type: 'placeholderChip', attrs: { label: placeholderMatch[1] } }
+      }
+      if (part === citationMarker) {
+        return { type: 'citationSuperscript', attrs: { label: CITATION_LABEL } }
       }
       return { type: 'text', text: part }
     })

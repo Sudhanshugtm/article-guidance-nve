@@ -2,6 +2,7 @@ import { shallowRef, ref } from 'vue'
 
 const editorInstance = shallowRef(null)
 const hasContent = ref(false)
+const citationClickCount = ref(0)
 
 export function useEditorInstance() {
   function setEditor(editor) {
@@ -22,5 +23,18 @@ export function useEditorInstance() {
     editorInstance.value?.commands.focus()
   }
 
-  return { editorInstance, setEditor, getEditor, insertContent, focus, hasContent }
+  function signalCitationClicked() {
+    citationClickCount.value++
+  }
+
+  return {
+    editorInstance,
+    setEditor,
+    getEditor,
+    insertContent,
+    focus,
+    hasContent,
+    citationClickCount,
+    signalCitationClicked,
+  }
 }

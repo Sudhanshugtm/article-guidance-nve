@@ -77,6 +77,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { AnnotationHighlight } from '../extensions/annotationHighlight'
 import { PlaceholderChip } from '../extensions/placeholderChip'
+import { CitationSuperscript } from '../extensions/citationSuperscript'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
@@ -127,6 +128,7 @@ const editor = useEditor({
     }),
     AnnotationHighlight,
     PlaceholderChip,
+    CitationSuperscript,
   ],
   onSelectionUpdate() {
     if (!typingTimer) {

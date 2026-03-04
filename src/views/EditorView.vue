@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 import { CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
 import TextEditor from '@/components/TextEditor.vue'
@@ -49,7 +49,7 @@ const outlinePersistence = computed(() => settings.value.outline.persistence)
 const entryPointStyle = computed(() => settings.value.entryPoint.style)
 
 // Force entry point
-const { getEditor, hasContent } = useEditorInstance()
+const { getEditor, hasContent, citationClickCount } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { cursorRect } = useCursorRect()
 
@@ -130,6 +130,10 @@ watch(isPopoverOpen, (newVal) => {
     keepOpenAfterInsert.value = false
     isPopoverOpen.value = true
   }
+})
+
+watch(citationClickCount, () => {
+  onOpenCiteDefault()
 })
 
 watch(outlineLocation, () => {
