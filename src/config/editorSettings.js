@@ -12,6 +12,9 @@ export const defaultSettings = {
     location: 'rail', // 'rail' | 'popover'
     persistence: 'close', // 'keep-open' | 'close'
   },
+  placeholder: {
+    cursorBehavior: 'after', // 'after' | 'select'
+  },
 }
 
 /**
@@ -39,4 +42,9 @@ export const outlineLocationLabels = {
 export const outlinePersistenceLabels = {
   'keep-open': 'Keep open after adding content',
   close: 'Close after adding content',
+}
+
+export const placeholderCursorLabels = {
+  after: 'Place cursor after placeholder on tap',
+  select: 'Select placeholder on tap',
 }

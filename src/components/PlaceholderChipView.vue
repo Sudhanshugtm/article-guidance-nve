@@ -2,7 +2,7 @@
   <NodeViewWrapper
     as="span"
     class="placeholder-chip"
-    :class="{ 'placeholder-chip--selected': selected }"
+    :class="{ 'placeholder-chip--selected': isHighlighted }"
     @click.stop="onChipClick"
   >
     {{ node.attrs.label }}
@@ -10,8 +10,10 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { NodeViewWrapper } from '@tiptap/vue-3'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
+import { useEditorSettings } from '../composables/useEditorSettings'
 
 const props = defineProps({
   node: { type: Object, required: true },
@@ -20,10 +22,30 @@ const props = defineProps({
   getPos: { type: Function, required: true },
 })
 
-const { signalPlaceholderClicked } = usePlaceholderInteraction()
+const {
+  signalPlaceholderClicked,
+  activePlaceholderPos,
+  setActivePlaceholder,
+  markActivePlaceholderSettled,
+} = usePlaceholderInteraction()
+const { settings } = useEditorSettings()
+
+const isHighlighted = computed(
+  () => props.selected || activePlaceholderPos.value === props.getPos(),
+)
 
 function onChipClick() {
   signalPlaceholderClicked(props.node.attrs.label)
+
+  if (settings.value.placeholder?.cursorBehavior === 'after') {
+    const chipPos = props.getPos()
+    setActivePlaceholder(chipPos)
+    // Defer to run after ProseMirror's mouseup handler finishes resolving selection
+    requestAnimationFrame(() => {
+      props.editor.commands.setTextSelection(chipPos + props.node.nodeSize)
+      markActivePlaceholderSettled()
+    })
+  }
 }
 </script>
 

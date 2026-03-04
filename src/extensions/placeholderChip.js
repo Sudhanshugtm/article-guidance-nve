@@ -1,5 +1,7 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { VueNodeViewRenderer } from '@tiptap/vue-3'
+import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
 import PlaceholderChipView from '../components/PlaceholderChipView.vue'
 
 export const PlaceholderChip = Node.create({
@@ -29,6 +31,43 @@ export const PlaceholderChip = Node.create({
 
   addNodeView() {
     return VueNodeViewRenderer(PlaceholderChipView)
+  },
+
+  addProseMirrorPlugins() {
+    const { clearActivePlaceholder, activePlaceholderPos, activePlaceholderSettled } =
+      usePlaceholderInteraction()
+
+    return [
+      new Plugin({
+        key: new PluginKey('placeholderChipActiveState'),
+        appendTransaction(transactions, _oldState, newState) {
+          if (activePlaceholderPos.value === null) return null
+          // Wait until the deferred setTextSelection has run
+          if (!activePlaceholderSettled.value) return null
+
+          const hasRelevantChange = transactions.some(
+            (tr) => tr.selectionSet || tr.docChanged,
+          )
+          if (!hasRelevantChange) return null
+
+          // Check if the node at the active position is still a placeholderChip
+          // and the cursor is still near it (right after the chip)
+          const { selection } = newState
+          const chipPos = activePlaceholderPos.value
+          const node = newState.doc.nodeAt(chipPos)
+          const isStillAfterChip =
+            node?.type.name === 'placeholderChip' &&
+            selection.empty &&
+            selection.from === chipPos + node.nodeSize
+
+          if (!isStillAfterChip) {
+            clearActivePlaceholder()
+          }
+
+          return null
+        },
+      }),
+    ]
   },
 
   addKeyboardShortcuts() {
