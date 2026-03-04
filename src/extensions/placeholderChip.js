@@ -50,11 +50,22 @@ export const PlaceholderChip = Node.create({
           )
           if (!hasRelevantChange) return null
 
-          // Check if the node at the active position is still a placeholderChip
-          // and the cursor is still near it (right after the chip)
-          const { selection } = newState
-          const chipPos = activePlaceholderPos.value
+          const hasDocChange = transactions.some((tr) => tr.docChanged)
+
+          // Map the chip position through any doc changes
+          const chipPos = hasDocChange
+            ? transactions.reduce((pos, tr) => tr.mapping.map(pos), activePlaceholderPos.value)
+            : activePlaceholderPos.value
           const node = newState.doc.nodeAt(chipPos)
+
+          // If user typed while chip was active, delete the chip
+          if (hasDocChange && node?.type.name === 'placeholderChip') {
+            clearActivePlaceholder()
+            return newState.tr.delete(chipPos, chipPos + node.nodeSize)
+          }
+
+          // Check if the cursor is still right after the chip
+          const { selection } = newState
           const isStillAfterChip =
             node?.type.name === 'placeholderChip' &&
             selection.empty &&
