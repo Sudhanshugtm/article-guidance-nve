@@ -34,8 +34,12 @@ export const PlaceholderChip = Node.create({
   },
 
   addProseMirrorPlugins() {
-    const { clearActivePlaceholder, activePlaceholderPos, activePlaceholderSettled } =
-      usePlaceholderInteraction()
+    const {
+      clearActivePlaceholder,
+      activePlaceholderPos,
+      activePlaceholderMode,
+      activePlaceholderSettled,
+    } = usePlaceholderInteraction()
 
     return [
       new Plugin({
@@ -64,14 +68,17 @@ export const PlaceholderChip = Node.create({
             return newState.tr.delete(chipPos, chipPos + node.nodeSize)
           }
 
-          // Check if the cursor is still right after the chip
+          // Check if the cursor is still adjacent to the chip
           const { selection } = newState
-          const isStillAfterChip =
+          const mode = activePlaceholderMode.value
+          const isStillAdjacentToChip =
             node?.type.name === 'placeholderChip' &&
             selection.empty &&
-            selection.from === chipPos + node.nodeSize
+            (mode === 'before'
+              ? selection.from === chipPos
+              : selection.from === chipPos + node.nodeSize)
 
-          if (!isStillAfterChip) {
+          if (!isStillAdjacentToChip) {
             clearActivePlaceholder()
           }
 

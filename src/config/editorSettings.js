@@ -13,7 +13,7 @@ export const defaultSettings = {
     persistence: 'close', // 'keep-open' | 'close'
   },
   placeholder: {
-    cursorBehavior: 'select', // 'after' | 'select'
+    cursorBehavior: 'before', // 'after' | 'select' | 'before'
   },
 }
 
@@ -47,4 +47,5 @@ export const outlinePersistenceLabels = {
 export const placeholderCursorLabels = {
   after: 'Place cursor after placeholder on tap',
   select: 'Select placeholder on tap',
+  before: 'Place cursor before placeholder on tap',
 }

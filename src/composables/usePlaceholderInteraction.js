@@ -2,6 +2,7 @@ import { ref, shallowRef } from 'vue'
 
 const placeholderClickEvent = shallowRef(null)
 const activePlaceholderPos = ref(null)
+const activePlaceholderMode = ref(null)
 const activePlaceholderSettled = ref(false)
 
 export function usePlaceholderInteraction() {
@@ -13,8 +14,9 @@ export function usePlaceholderInteraction() {
     placeholderClickEvent.value = null
   }
 
-  function setActivePlaceholder(pos) {
+  function setActivePlaceholder(pos, mode = 'after') {
     activePlaceholderPos.value = pos
+    activePlaceholderMode.value = mode
     activePlaceholderSettled.value = false
   }
 
@@ -24,6 +26,7 @@ export function usePlaceholderInteraction() {
 
   function clearActivePlaceholder() {
     activePlaceholderPos.value = null
+    activePlaceholderMode.value = null
     activePlaceholderSettled.value = false
   }
 
@@ -32,6 +35,7 @@ export function usePlaceholderInteraction() {
     signalPlaceholderClicked,
     clearPlaceholderClick,
     activePlaceholderPos,
+    activePlaceholderMode,
     activePlaceholderSettled,
     setActivePlaceholder,
     markActivePlaceholderSettled,

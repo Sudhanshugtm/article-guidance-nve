@@ -2,7 +2,10 @@
   <NodeViewWrapper
     as="span"
     class="placeholder-chip"
-    :class="{ 'placeholder-chip--selected': isHighlighted }"
+    :class="{
+      'placeholder-chip--selected': isHighlighted,
+      'placeholder-chip--before': isBeforeMode,
+    }"
     @click.stop="onChipClick"
   >
     {{ node.attrs.label }}
@@ -34,15 +37,19 @@ const isHighlighted = computed(
   () => props.selected || activePlaceholderPos.value === props.getPos(),
 )
 
+const isBeforeMode = computed(() => settings.value.placeholder?.cursorBehavior === 'before')
+
 function onChipClick() {
   signalPlaceholderClicked(props.node.attrs.label)
+  const behavior = settings.value.placeholder?.cursorBehavior
 
-  if (settings.value.placeholder?.cursorBehavior === 'after') {
+  if (behavior === 'after' || behavior === 'before') {
     const chipPos = props.getPos()
-    setActivePlaceholder(chipPos)
+    setActivePlaceholder(chipPos, behavior)
     // Defer to run after ProseMirror's mouseup handler finishes resolving selection
     requestAnimationFrame(() => {
-      props.editor.commands.setTextSelection(chipPos + props.node.nodeSize)
+      const targetPos = behavior === 'before' ? chipPos : chipPos + props.node.nodeSize
+      props.editor.commands.setTextSelection(targetPos)
       markActivePlaceholderSettled()
     })
   }
@@ -63,5 +70,16 @@ function onChipClick() {
 
 .placeholder-chip--selected {
   box-shadow: 0 0 0 2px var(--color-progressive);
+}
+
+.placeholder-chip--before {
+  background-color: var(--background-color-interactive-subtle);
+  border-radius: 0;
+  padding: 0;
+}
+
+.placeholder-chip--before.placeholder-chip--selected {
+  box-shadow: none;
+  background-color: var(--background-color-interactive-subtle--hover);
 }
 </style>
