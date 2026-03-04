@@ -8,7 +8,7 @@
     :action-icon="index === 0 ? null : cdxIconAdd"
     :action-always-visible="index !== 0 && isSectionEmpty(section)"
     :action-button-label="`Add ${section.title} section`"
-    @update:model-value="(val) => onAccordionUpdate(section, val)"
+    @update:model-value="(val) => updateAccordionState(section, val)"
     @action-button-click="onInsertSectionHeading(section)"
   >
     <template #title>{{ section.title }}</template>
@@ -28,26 +28,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { CdxAccordion, CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
 import { articleSections } from '../config/articleSections.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { useAccordionState } from '../composables/useAccordionState'
 
 const emit = defineEmits(['content-inserted'])
 const { insertContent, getEditor } = useEditorInstance()
-
-const accordionStates = ref(
-  Object.fromEntries(articleSections.map((section, index) => [section.title, index === 0])),
-)
+const { accordionStates, updateAccordionState } = useAccordionState()
 
 function isSectionEmpty(section) {
   return !section.paragraphs || section.paragraphs.length === 0
-}
-
-function onAccordionUpdate(section, newValue) {
-  if (isSectionEmpty(section) && newValue) return
-  accordionStates.value[section.title] = newValue
 }
 
 function onInsertSectionHeading(section) {
