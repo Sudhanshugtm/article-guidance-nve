@@ -18,7 +18,7 @@
         v-for="paragraph in section.paragraphs"
         :key="paragraph.title"
         :icon="cdxIconAdd"
-        @click="onInsertParagraph(paragraph)"
+        @click="onInsertParagraph(section, index, paragraph)"
       >
         <template #title>{{ paragraph.title }}</template>
         <template #description>{{ paragraph.description }}</template>
@@ -35,7 +35,7 @@ import { articleSections } from '../config/articleSections.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
 
 const emit = defineEmits(['content-inserted'])
-const { insertContent } = useEditorInstance()
+const { insertContent, getEditor } = useEditorInstance()
 
 const accordionStates = ref(
   Object.fromEntries(articleSections.map((section, index) => [section.title, index === 0])),
@@ -68,13 +68,32 @@ function parsePlaceholders(text) {
     })
 }
 
-function onInsertParagraph(paragraph) {
+function editorHasH2(title) {
+  const editor = getEditor()
+  if (!editor) return false
+  let found = false
+  editor.state.doc.descendants((node) => {
+    if (node.type.name === 'heading' && node.attrs.level === 2 && node.textContent === title) {
+      found = true
+      return false
+    }
+  })
+  return found
+}
+
+function onInsertParagraph(section, index, paragraph) {
   if (paragraph.content) {
     const contentNodes = parsePlaceholders(paragraph.content)
-    insertContent([
-      { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: paragraph.title }] },
-      { type: 'paragraph', content: contentNodes },
-    ])
+    const nodes = []
+    if (index !== 0 && !editorHasH2(section.title)) {
+      nodes.push({
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: section.title }],
+      })
+    }
+    nodes.push({ type: 'paragraph', content: contentNodes })
+    insertContent(nodes)
     emit('content-inserted')
   }
 }

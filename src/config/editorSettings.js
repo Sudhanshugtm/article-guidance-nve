@@ -9,7 +9,7 @@ export const defaultSettings = {
     autoFocus: 'true', // 'true' | 'false'
   },
   outline: {
-    location: 'rail', // 'rail' | 'popover'
+    location: 'popover', // 'rail' | 'popover'
     persistence: 'close', // 'keep-open' | 'close'
   },
 }
