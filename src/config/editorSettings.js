@@ -5,7 +5,7 @@
 
 export const defaultSettings = {
   entryPoint: {
-    style: 'quiet', // 'icon' | 'quiet' | 'text' | 'floating' | 'force'
+    style: 'inline', // 'inline' | 'icon' | 'quiet' | 'text' | 'floating' | 'force'
     autoFocus: 'true', // 'true' | 'false'
   },
   outline: {
@@ -18,9 +18,10 @@ export const defaultSettings = {
  * Entry point style labels for display in the settings dialog
  */
 export const entryPointLabels = {
+  inline: 'Inline placeholder',
   icon: 'Icon-only button',
   quiet: 'Animated label',
-  text: 'Inline placeholder',
+  text: 'Inline placeholder (tap to open)',
   floating: 'Floating placeholder',
   force: 'Rail button',
 }

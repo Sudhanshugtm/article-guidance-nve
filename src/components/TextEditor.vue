@@ -1,5 +1,11 @@
 <template>
-  <div class="text-editor-wrapper" :class="{ 'hide-placeholder': !(entryPointStyle === 'text' && !hasInteracted) }">
+  <div
+    class="text-editor-wrapper"
+    :class="{
+      'hide-placeholder':
+        entryPointStyle !== 'inline' && !(entryPointStyle === 'text' && !hasInteracted),
+    }"
+  >
     <EditorContent ref="editorContentRef" class="text-editor" :editor="editor" />
     <div
       v-show="isButtonVisible"
@@ -39,7 +45,10 @@
       </CdxButton>
 
       <!-- Style 3: Floating placeholder (initial state only) -->
-      <span v-else-if="entryPointStyle === 'floating' && !hasInteracted" class="codex-floating-text">
+      <span
+        v-else-if="entryPointStyle === 'floating' && !hasInteracted"
+        class="codex-floating-text"
+      >
         Tap here to continue...
       </span>
 
@@ -88,6 +97,7 @@ const hasInteracted = ref(false)
 
 const useForceMode = computed(
   () =>
+    entryPointStyle.value === 'inline' ||
     entryPointStyle.value === 'force' ||
     (entryPointStyle.value === 'quiet' && !isCycling.value) ||
     ((entryPointStyle.value === 'text' || entryPointStyle.value === 'floating') &&
@@ -111,7 +121,7 @@ const editor = useEditor({
       link: { openOnClick: false },
     }),
     Placeholder.configure({
-      placeholder: 'Start writing or tap here to continue...',
+      placeholder: 'Start writing or tap the +',
     }),
     AnnotationHighlight,
     PlaceholderChip,
@@ -624,5 +634,4 @@ defineExpose({ editor })
   color: var(--color-subtle);
   cursor: pointer;
 }
-
 </style>
