@@ -33,6 +33,14 @@ export function useEditorSettings() {
           parsed.outline[settingName] = value
         }
       }
+
+      const placeholderMatch = key.match(/^placeholder-(\w+)$/)
+      if (placeholderMatch) {
+        const settingName = placeholderMatch[1]
+        if (settingName in parsed.placeholder) {
+          parsed.placeholder[settingName] = value
+        }
+      }
     }
 
     return parsed
@@ -57,6 +65,12 @@ export function useEditorSettings() {
       }
     }
 
+    for (const [settingName, value] of Object.entries(settings.placeholder)) {
+      if (value !== defaultSettings.placeholder[settingName]) {
+        query[`placeholder-${settingName}`] = value
+      }
+    }
+
     return query
   }
 
@@ -70,7 +84,7 @@ export function useEditorSettings() {
     // Preserve non-settings query params
     const preservedQuery = {}
     for (const [key, value] of Object.entries(route.query)) {
-      if (!key.match(/^(entryPoint|outline)-\w+$/)) {
+      if (!key.match(/^(entryPoint|outline|placeholder)-\w+$/)) {
         preservedQuery[key] = value
       }
     }

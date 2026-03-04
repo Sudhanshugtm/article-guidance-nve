@@ -79,6 +79,7 @@ import { AnnotationHighlight } from '../extensions/annotationHighlight'
 import { PlaceholderChip } from '../extensions/placeholderChip'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
 import { useCursorRect } from '../composables/useCursorRect'
 import { defaultSettings } from '../config/editorSettings'
 import { articleSections } from '../config/articleSections'
@@ -87,6 +88,7 @@ const emit = defineEmits(['open-outline', 'open-settings'])
 
 const { settings } = useEditorSettings()
 const { setEditor, hasContent } = useEditorInstance()
+const { activePlaceholderPos } = usePlaceholderInteraction()
 const { setCursorRect, clearCursorRect } = useCursorRect()
 
 const entryPointStyle = computed(
@@ -305,6 +307,28 @@ function updateButtonPosition() {
   // When a placeholderChip has a NodeSelection, align the force button with the chip
   if (!empty && state.selection.node?.type.name === 'placeholderChip') {
     const chipDom = view.nodeDOM(state.selection.from)
+    if (chipDom) {
+      const chipRect = chipDom.getBoundingClientRect()
+      const editorEl = getEditorScrollEl()
+      const editorRect = editorEl?.getBoundingClientRect()
+      const caretVisible = editorRect
+        ? !(chipRect.bottom < editorRect.top || chipRect.top > editorRect.bottom)
+        : true
+      setCursorRect({
+        top: chipRect.top,
+        bottom: chipRect.bottom,
+        lineHeight: chipRect.height,
+        glyphHeight: chipRect.height,
+        visible: caretVisible,
+      })
+    }
+    isButtonVisible.value = false
+    return
+  }
+
+  // When cursor-after mode is active, use the chip's bounding rect for the force button
+  if (activePlaceholderPos.value !== null) {
+    const chipDom = view.nodeDOM(activePlaceholderPos.value)
     if (chipDom) {
       const chipRect = chipDom.getBoundingClientRect()
       const editorEl = getEditorScrollEl()

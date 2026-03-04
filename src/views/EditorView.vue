@@ -40,6 +40,7 @@ import OutlinePopover from '@/components/OutlinePopover.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
+import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
 
 
 const { settings } = useEditorSettings()
@@ -49,6 +50,7 @@ const entryPointStyle = computed(() => settings.value.entryPoint.style)
 
 // Force entry point
 const { getEditor, hasContent } = useEditorInstance()
+const { activePlaceholderPos } = usePlaceholderInteraction()
 const { cursorRect } = useCursorRect()
 
 const isForceButtonVisible = computed(() => {
@@ -86,7 +88,8 @@ function onForceButtonClick() {
 function onOpenOutline() {
   const editor = getEditor()
   const isPlaceholderSelected =
-    editor?.state.selection.node?.type.name === 'placeholderChip'
+    editor?.state.selection.node?.type.name === 'placeholderChip' ||
+    activePlaceholderPos.value !== null
   initialView.value = isPlaceholderSelected ? 'verified-facts' : null
 
   if (outlineLocation.value === 'popover') {

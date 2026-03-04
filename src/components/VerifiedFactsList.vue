@@ -28,11 +28,34 @@ import { CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
 import { verifiedFacts } from '../config/verifiedFacts.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
 
 const emit = defineEmits(['content-inserted'])
-const { insertContent } = useEditorInstance()
+const { getEditor, insertContent } = useEditorInstance()
+const { activePlaceholderPos, clearActivePlaceholder } = usePlaceholderInteraction()
 
 function onInsertFact(fact) {
+  const chipPos = activePlaceholderPos.value
+  const editor = getEditor()
+
+  if (chipPos !== null && editor) {
+    const node = editor.state.doc.nodeAt(chipPos)
+    if (node?.type.name === 'placeholderChip') {
+      editor
+        .chain()
+        .focus()
+        .command(({ tr }) => {
+          tr.delete(chipPos, chipPos + node.nodeSize)
+          return true
+        })
+        .insertContentAt(chipPos, fact.title)
+        .run()
+      clearActivePlaceholder()
+      emit('content-inserted')
+      return
+    }
+  }
+
   insertContent(fact.title)
   emit('content-inserted')
 }

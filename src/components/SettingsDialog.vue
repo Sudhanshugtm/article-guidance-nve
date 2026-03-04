@@ -57,6 +57,20 @@
           {{ label }}
         </CdxRadio>
       </div>
+      <!-- Placeholder cursor behavior section -->
+      <div class="field-group">
+        <CdxLabel>Placeholder behavior</CdxLabel>
+        <CdxRadio
+          v-for="(label, cursorKey) in placeholderCursorLabels"
+          :key="cursorKey"
+          v-model="localSettings.placeholder.cursorBehavior"
+          :input-value="cursorKey"
+          name="placeholder-cursorBehavior"
+          @update:model-value="onSettingChange"
+        >
+          {{ label }}
+        </CdxRadio>
+      </div>
     </div>
   </CdxDialog>
 </template>
@@ -70,6 +84,7 @@ import {
   autoFocusLabels,
   outlineLocationLabels,
   outlinePersistenceLabels,
+  placeholderCursorLabels,
 } from '../config/editorSettings'
 
 const open = defineModel('open', { type: Boolean, default: false })

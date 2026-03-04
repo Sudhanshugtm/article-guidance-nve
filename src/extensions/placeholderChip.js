@@ -1,5 +1,7 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { VueNodeViewRenderer } from '@tiptap/vue-3'
+import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
 import PlaceholderChipView from '../components/PlaceholderChipView.vue'
 
 export const PlaceholderChip = Node.create({
@@ -29,6 +31,54 @@ export const PlaceholderChip = Node.create({
 
   addNodeView() {
     return VueNodeViewRenderer(PlaceholderChipView)
+  },
+
+  addProseMirrorPlugins() {
+    const { clearActivePlaceholder, activePlaceholderPos, activePlaceholderSettled } =
+      usePlaceholderInteraction()
+
+    return [
+      new Plugin({
+        key: new PluginKey('placeholderChipActiveState'),
+        appendTransaction(transactions, _oldState, newState) {
+          if (activePlaceholderPos.value === null) return null
+          // Wait until the deferred setTextSelection has run
+          if (!activePlaceholderSettled.value) return null
+
+          const hasRelevantChange = transactions.some(
+            (tr) => tr.selectionSet || tr.docChanged,
+          )
+          if (!hasRelevantChange) return null
+
+          const hasDocChange = transactions.some((tr) => tr.docChanged)
+
+          // Map the chip position through any doc changes
+          const chipPos = hasDocChange
+            ? transactions.reduce((pos, tr) => tr.mapping.map(pos), activePlaceholderPos.value)
+            : activePlaceholderPos.value
+          const node = newState.doc.nodeAt(chipPos)
+
+          // If user typed while chip was active, delete the chip
+          if (hasDocChange && node?.type.name === 'placeholderChip') {
+            clearActivePlaceholder()
+            return newState.tr.delete(chipPos, chipPos + node.nodeSize)
+          }
+
+          // Check if the cursor is still right after the chip
+          const { selection } = newState
+          const isStillAfterChip =
+            node?.type.name === 'placeholderChip' &&
+            selection.empty &&
+            selection.from === chipPos + node.nodeSize
+
+          if (!isStillAfterChip) {
+            clearActivePlaceholder()
+          }
+
+          return null
+        },
+      }),
+    ]
   },
 
   addKeyboardShortcuts() {
