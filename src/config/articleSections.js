@@ -19,7 +19,7 @@ export const articleSections = [
         title: 'Taxonomy in brief',
         description: 'How it is classified scientifically.',
         content:
-          'The Siberian tiger was first described in 1844 by Coenraad Jacob Temminck under the scientific name Felis tigris altaica. It belongs to the family Felidae, order Carnivora, and is one of six living subspecies of tiger recognised today.',
+          'The {{common name}} was first described in {{year first described}} by {{author citation}} under the scientific name {{original scientific name}}. It belongs to the family {{family}}, order {{order}}, and is one of {{number of subspecies}} living subspecies of {{parent taxon common name}} recognised today.',
       },
     ],
   },
@@ -31,13 +31,13 @@ export const articleSections = [
         title: 'Body size',
         description: 'Dimensions and weight of adults.',
         content:
-          'The Siberian tiger is the largest living cat and the largest living member of the genus Panthera. Males measure 195 to 230 centimetres in head-and-body length, with a tail of 95 to 115 centimetres. Adult males can weigh between 180 and 306 kilograms.',
+          'The {{common name}} is the {{size superlative}} living {{higher taxon common name}}. Males measure {{body length range}} in head-and-body length, with a tail of {{tail length range}}. Adult males can weigh between {{weight range}}.',
       },
       {
         title: 'Coat and markings',
         description: 'Fur colour, stripe pattern and seasonal changes.',
         content:
-          'Its coat is pale golden or rusty-yellow, with narrow black transverse stripes. The pattern of stripes is unique to each individual, much like human fingerprints. In winter the fur grows thicker and paler, helping the tiger blend into snow-covered forests.',
+          'Its coat is {{coat base colour}}, with {{marking description}}. The pattern of {{marking type}} is unique to each individual, much like human fingerprints. In winter the fur grows {{seasonal coat change}}, helping the {{common name}} blend into {{seasonal habitat}}.',
       },
     ],
   },
@@ -49,13 +49,13 @@ export const articleSections = [
         title: 'Geographic range',
         description: 'Countries and regions where the tiger is found.',
         content:
-          'Today the Siberian tiger inhabits mainly the birch forests of the Sikhote-Alin mountain range in Primorsky and Khabarovsk Krais of the Russian Far East. A small population also persists in Hunchun National Nature Reserve in Jilin province, Northeast China.',
+          'Today the {{common name}} inhabits mainly the {{primary habitat description}} in {{primary range regions}}. A small population also persists in {{secondary range location}}.',
       },
       {
         title: 'Preferred habitat',
         description: 'Types of terrain and vegetation it occupies.',
         content:
-          'It favours Korean pine broadleaf forests and temperate mixed forests with dense undergrowth and access to water. Elevation ranges from sea level to about 1 000 metres, though individuals have been recorded at higher altitudes during seasonal movements.',
+          'It favours {{preferred vegetation types}} with {{habitat features}}. Elevation ranges from {{elevation range}}, though individuals have been recorded at higher altitudes during {{movement context}}.',
       },
     ],
   },
