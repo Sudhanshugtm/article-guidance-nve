@@ -4,6 +4,7 @@ import { usePasteDetection } from './usePasteDetection'
 import { usePlaceholderDetection } from './usePlaceholderDetection'
 
 const currentCheckIndex = ref(0)
+const cursorInCheckParagraph = ref(false)
 
 export function useEditCheckPagination() {
   const {
@@ -102,13 +103,36 @@ export function useEditCheckPagination() {
     }
   }
 
+  const isAnyCardActive = computed(() => {
+    return isCardVisible.value || isPasteCardVisible.value || isPlaceholderCardVisible.value
+  })
+
+  function updateCursorInCheck(editor) {
+    if (!editor) {
+      cursorInCheckParagraph.value = false
+      return
+    }
+    const pos = editor.state.selection.from
+    for (const check of activeChecks.value) {
+      if (check.range && pos >= check.range.from && pos <= check.range.to) {
+        cursorInCheckParagraph.value = true
+        return
+      }
+    }
+    cursorInCheckParagraph.value = false
+  }
+
   return {
     activeChecks,
     totalChecks,
     currentCheckIndex,
     unifiedRailRect,
+    isAnyCardActive,
+    cursorInCheckParagraph,
     showCheckAtIndex,
     goToNext,
     goToPrev,
+    dismissAllCards,
+    updateCursorInCheck,
   }
 }

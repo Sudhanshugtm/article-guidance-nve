@@ -1,7 +1,7 @@
 <template>
   <div class="editor-page">
     <CdxToolbar @cite="onOpenCiteDefault" />
-    <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen }">
+    <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen, 'check-card-active': isAnyCardActive, 'cursor-in-check': cursorInCheckParagraph }">
       <div class="editor-main" @click="isRailOpen && (isRailOpen = false)">
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
       </div>
@@ -86,8 +86,14 @@ const { getEditor, hasContent, citationClickCount } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { cursorRect } = useCursorRect()
 const { triggerDetectionOnInsert } = usePeacockDetection()
-const { activeChecks, totalChecks, unifiedRailRect, showCheckAtIndex } =
-  useEditCheckPagination()
+const {
+  activeChecks,
+  totalChecks,
+  unifiedRailRect,
+  isAnyCardActive,
+  cursorInCheckParagraph,
+  showCheckAtIndex,
+} = useEditCheckPagination()
 
 // Unified check rail indicator
 const isUnifiedRailVisible = computed(() => {
@@ -107,22 +113,12 @@ const unifiedRailStyle = computed(() => {
   }
 })
 
-const isCursorInAnyCheckParagraph = computed(() => {
-  const editor = getEditor()
-  if (!editor) return false
-  const pos = editor.state.selection.from
-  for (const check of activeChecks.value) {
-    if (check.range && pos >= check.range.from && pos <= check.range.to) return true
-  }
-  return false
-})
-
 const isForceButtonVisible = computed(() => {
   if (!['inline', 'force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value))
     return false
   if (isRailOpen.value || isPopoverOpen.value) return false
   if (!cursorRect.value) return false
-  if (isUnifiedRailVisible.value && isCursorInAnyCheckParagraph.value) return false
+  if (isUnifiedRailVisible.value && cursorInCheckParagraph.value) return false
   return cursorRect.value.visible
 })
 
@@ -302,4 +298,39 @@ watch(outlineLocation, () => {
   line-height: 12px;
   text-align: center;
 }
+
+.editor-wrapper.check-card-active :deep(.peacock-highlight) {
+  background-color: transparent;
+}
+
+.editor-wrapper.check-card-active :deep(.paste-highlight) {
+  background-color: transparent;
+}
+
+.editor-wrapper.check-card-active :deep(.placeholder-detection-highlight) {
+  background-color: transparent;
+}
+
+/* Ensure promoted (warning) highlights always show over the suppression */
+.editor-wrapper.check-card-active :deep(.peacock-highlight-warning) {
+  background-color: var(--background-color-warning-subtle, #fef6e7);
+}
+
+.editor-wrapper.check-card-active :deep(.paste-highlight-warning) {
+  background-color: var(--background-color-warning-subtle, #fef6e7);
+}
+
+.editor-wrapper.check-card-active :deep(.placeholder-detection-highlight-warning) {
+  background-color: var(--background-color-warning-subtle, #fdf2d5);
+}
+
+/* Hide highlight when cursor is in the flagged paragraph and card is closed */
+.editor-wrapper.cursor-in-check:not(.check-card-active) :deep(.peacock-highlight) {
+  background-color: transparent;
+}
+
+.editor-wrapper.cursor-in-check:not(.check-card-active) :deep(.paste-highlight) {
+  background-color: transparent;
+}
+
 </style>

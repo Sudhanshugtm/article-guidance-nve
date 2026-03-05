@@ -87,6 +87,7 @@ import { CitationSuperscript } from '../extensions/citationSuperscript'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
+import { useEditCheckPagination } from '../composables/useEditCheckPagination'
 import { useCursorRect } from '../composables/useCursorRect'
 import { defaultSettings } from '../config/editorSettings'
 import { articleSections } from '../config/articleSections'
@@ -106,6 +107,7 @@ const {
   updatePlaceholderDetectionRect,
   activePlaceholderDetectionRange,
 } = usePlaceholderDetection()
+const { isAnyCardActive, dismissAllCards, updateCursorInCheck } = useEditCheckPagination()
 
 // Track which paragraph the cursor is in so we can detect when it leaves
 let lastParagraphPos = null
@@ -178,6 +180,9 @@ const editor = useEditor({
       updatePlaceholderDetectionRect(editorRef)
     }
     lastParagraphPos = currentParaPos
+
+    // Track whether cursor is inside a flagged paragraph
+    updateCursorInCheck(editorRef)
   },
   onTransaction({ transaction, editor: editorRef }) {
     if (transaction.docChanged) {
@@ -203,7 +208,11 @@ const editor = useEditor({
     }
 
   },
-  onFocus() {
+  onFocus({ editor: editorRef }) {
+    // Dismiss any open check cards when focus returns to the editor
+    if (isAnyCardActive.value) {
+      dismissAllCards(editorRef)
+    }
     setTimeout(() => updateButtonPosition(), 0)
   },
   onBlur({ event }) {
@@ -692,6 +701,10 @@ defineExpose({ editor })
 
 .text-editor :deep(.placeholder-detection-highlight.placeholder-chip) {
   background-color: var(--background-color-interactive-subtle);
+}
+
+.text-editor :deep(.placeholder-detection-highlight.placeholder-chip.placeholder-chip--selected) {
+  background-color: var(--background-color-interactive-subtle--hover);
 }
 
 .text-editor :deep(.placeholder-detection-highlight-warning.placeholder-chip) {
