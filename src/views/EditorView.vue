@@ -21,6 +21,17 @@
       <CdxIcon :icon="cdxIconAdd" />
     </div>
 
+    <!-- Peacock warning rail indicator: spans full paragraph height -->
+    <div
+      v-if="isPeacockRailVisible"
+      class="peacock-rail-indicator"
+      :style="peacockRailStyle"
+      @mousedown.prevent
+      @click.stop="onPeacockRailClick"
+    >
+      <CdxIcon :icon="cdxIconAlert" />
+    </div>
+
     <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" :initial-view="initialView" @content-inserted="onContentInserted" @open-cite-discover="onOpenCiteDiscover" />
     <SettingsDialog v-model:open="settingsDialogOpen" />
     <CiteDialog v-model:open="citeDialogOpen" :initial-tab="citeDialogInitialTab" />
@@ -29,9 +40,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect, nextTick } from 'vue'
 import { CdxIcon } from '@wikimedia/codex'
-import { cdxIconAdd } from '@wikimedia/codex-icons'
+import { cdxIconAdd, cdxIconAlert } from '@wikimedia/codex-icons'
 import TextEditor from '@/components/TextEditor.vue'
 import EditorRail from '@/components/EditorRail.vue'
 import CdxToolbar from '@/components/CdxToolbar.vue'
@@ -43,6 +54,7 @@ import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
 import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
+import { usePeacockDetection } from '@/composables/usePeacockDetection'
 
 
 const { settings } = useEditorSettings()
@@ -54,11 +66,45 @@ const entryPointStyle = computed(() => settings.value.entryPoint.style)
 const { getEditor, hasContent, citationClickCount } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { cursorRect } = useCursorRect()
+const {
+  peacockParagraphRect,
+  activeParagraphRange,
+  activeParagraphId,
+  showCard,
+  triggerDetectionOnInsert,
+} = usePeacockDetection()
+
+// Peacock warning rail indicator
+const isPeacockRailVisible = computed(() => {
+  if (isRailOpen.value || isPopoverOpen.value) return false
+  return peacockParagraphRect.value?.visible === true
+})
+
+const peacockRailStyle = computed(() => {
+  if (!peacockParagraphRect.value) return {}
+  const rect = peacockParagraphRect.value
+  return {
+    position: 'fixed',
+    top: `${rect.top}px`,
+    right: '0px',
+    width: '44px',
+    height: `${rect.height}px`,
+  }
+})
+
+const isCursorInPeacockParagraph = computed(() => {
+  const editor = getEditor()
+  const range = activeParagraphRange.value
+  if (!editor || !range) return false
+  const pos = editor.state.selection.from
+  return pos >= range.from && pos <= range.to
+})
 
 const isForceButtonVisible = computed(() => {
   if (!['inline', 'force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value)) return false
   if (isRailOpen.value || isPopoverOpen.value) return false
   if (!cursorRect.value) return false
+  if (isPeacockRailVisible.value && isCursorInPeacockParagraph.value) return false
   return cursorRect.value.visible
 })
 
@@ -85,6 +131,11 @@ const initialView = ref(null)
 function onForceButtonClick() {
   getEditor()?.commands.blur()
   onOpenOutline()
+}
+
+function onPeacockRailClick() {
+  getEditor()?.commands.blur()
+  showCard(activeParagraphId.value, getEditor())
 }
 
 function onOpenOutline() {
@@ -123,6 +174,12 @@ function onContentInserted() {
     // Set flag so the watcher can re-open the popover if focus-loss closes it
     keepOpenAfterInsert.value = true
   }
+
+  // Check the previous paragraph for peacock words after rail insertion
+  nextTick(() => {
+    const editor = getEditor()
+    if (editor) triggerDetectionOnInsert(editor)
+  })
 }
 
 // When the popover closes due to focus moving to the editor after insertion,
@@ -188,5 +245,20 @@ watch(outlineLocation, () => {
 
 .force-entry-point :deep(.cdx-icon) {
   color: var(--color-base);
+}
+
+.peacock-rail-indicator {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 2px;
+  border-left: 2px solid var(--color-warning);
+  box-sizing: border-box;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.peacock-rail-indicator :deep(.cdx-icon) {
+  color: var(--color-warning);
 }
 </style>

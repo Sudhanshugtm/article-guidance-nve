@@ -51,6 +51,28 @@ export const PeacockHighlight = Extension.create({
                 : DecorationSet.empty
             }
 
+            if (meta?.type === 'promoteParagraph') {
+              const all = []
+              decorationSet.find(0, newState.doc.content.size).forEach((d) => {
+                if (d.spec?.paragraphId === meta.paragraphId) {
+                  all.push(
+                    Decoration.inline(
+                      d.from,
+                      d.to,
+                      {
+                        class: 'peacock-highlight-warning',
+                        'data-paragraph-id': d.spec.paragraphId,
+                      },
+                      { paragraphId: d.spec.paragraphId },
+                    ),
+                  )
+                } else {
+                  all.push(d)
+                }
+              })
+              return all.length ? DecorationSet.create(newState.doc, all) : DecorationSet.empty
+            }
+
             if (meta?.type === 'clearAll') {
               return DecorationSet.empty
             }
@@ -88,6 +110,18 @@ export const PeacockHighlight = Extension.create({
           if (dispatch) {
             tr.setMeta(PeacockHighlightKey, {
               type: 'clearParagraph',
+              paragraphId,
+            })
+          }
+          return true
+        },
+
+      promotePeacockParagraph:
+        (paragraphId) =>
+        ({ tr, dispatch }) => {
+          if (dispatch) {
+            tr.setMeta(PeacockHighlightKey, {
+              type: 'promoteParagraph',
               paragraphId,
             })
           }

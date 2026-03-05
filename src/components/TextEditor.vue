@@ -93,7 +93,7 @@ const { settings } = useEditorSettings()
 const { setEditor, hasContent } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { setCursorRect, clearCursorRect } = useCursorRect()
-const { triggerDetection, showCard } = usePeacockDetection()
+const { triggerDetection, updatePeacockRect, activeParagraphRange } = usePeacockDetection()
 
 const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
@@ -319,6 +319,9 @@ function updateButtonPosition() {
     return
   }
 
+  // Update peacock paragraph rect for warning rail positioning
+  updatePeacockRect(editor.value)
+
   const { state, view } = editor.value
   const { empty } = state.selection
 
@@ -473,6 +476,8 @@ function scheduleShowButton() {
 function onScroll() {
   if (isButtonVisible.value || useForceMode.value) {
     updateButtonPosition()
+  } else if (activeParagraphRange.value) {
+    updatePeacockRect(editor.value)
   }
 }
 
@@ -489,14 +494,6 @@ function onEditorClick(event) {
     hasInteracted.value = true
     editor.value?.commands.blur()
     emit('open-outline')
-  }
-}
-
-function onPeacockClick(event) {
-  const el = event.target.closest?.('.peacock-highlight')
-  if (el) {
-    const paragraphId = el.getAttribute('data-paragraph-id')
-    if (paragraphId) showCard(paragraphId)
   }
 }
 
@@ -526,12 +523,6 @@ onMounted(() => {
     scrollEl.addEventListener('click', onEditorClick)
   }
 
-  // Peacock highlight click listener
-  const editorEl = editorContentRef.value?.$el
-  if (editorEl) {
-    editorEl.addEventListener('click', onPeacockClick)
-  }
-
   // Auto-focus editor on launch if setting is enabled (default: true)
   if (settings.value.entryPoint.autoFocus !== 'false') {
     editor.value?.commands.focus()
@@ -548,10 +539,6 @@ onBeforeUnmount(() => {
   if (scrollEl) {
     scrollEl.removeEventListener('scroll', onScroll)
     scrollEl.removeEventListener('click', onEditorClick)
-  }
-  const editorEl = editorContentRef.value?.$el
-  if (editorEl) {
-    editorEl.removeEventListener('click', onPeacockClick)
   }
   clearTimeout(typingTimer)
   clearInterval(charTimer)
@@ -639,8 +626,11 @@ defineExpose({ editor })
 }
 
 .text-editor :deep(.peacock-highlight) {
+  background-color: var(--background-color-interactive-subtle);
+}
+
+.text-editor :deep(.peacock-highlight-warning) {
   background-color: var(--background-color-warning-subtle, #fef6e7);
-  cursor: pointer;
 }
 
 .settings-btn {

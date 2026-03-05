@@ -7,12 +7,7 @@
             <CdxIcon :icon="cdxIconAlert" class="revise-tone-warning-icon" />
             <span class="revise-tone-title">Revise Tone</span>
           </div>
-          <CdxButton
-            weight="quiet"
-            class="revise-tone-close"
-            aria-label="Close"
-            @click="onDecline"
-          >
+          <CdxButton weight="quiet" class="revise-tone-close" aria-label="Close" @click="onDecline">
             <CdxIcon :icon="cdxIconClose" />
           </CdxButton>
         </div>
@@ -90,8 +85,8 @@ function onDecline() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-50, 8px) var(--spacing-100, 16px);
-  border-bottom: 1px solid var(--border-color-subtle, #c8ccd1);
+  padding: var(--spacing-12) var(--spacing-50) var(--spacing-12) var(--spacing-100);
+  border-bottom: var(--border-subtle);
 }
 
 .revise-tone-header-content {
@@ -108,7 +103,7 @@ function onDecline() {
 }
 
 .revise-tone-warning-icon {
-  color: var(--color-warning, #edab00);
+  color: var(--color-icon-warning, #ab7f2a);
 }
 
 .revise-tone-close {
@@ -144,7 +139,7 @@ function onDecline() {
 
 .revise-tone-disclaimer {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-25, 6px);
   font-size: var(--font-size-small, 14px);
   line-height: var(--line-height-small, 22px);
@@ -155,14 +150,15 @@ function onDecline() {
   flex-shrink: 0;
   width: 16px;
   height: 16px;
-  margin-top: 3px;
+  color: var(--color-placeholder);
+  margin-top: -3px;
 }
 
 .revise-tone-disclaimer a {
   color: var(--color-progressive, #36c);
 }
 
-.slide-up-enter-active,
+/* .slide-up-enter-active,
 .slide-up-leave-active {
   transition: transform 0.3s ease;
 }
@@ -170,5 +166,5 @@ function onDecline() {
 .slide-up-enter-from,
 .slide-up-leave-to {
   transform: translateY(100%);
-}
+} */
 </style>
