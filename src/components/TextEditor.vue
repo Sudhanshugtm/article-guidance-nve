@@ -80,6 +80,8 @@ import { PeacockHighlight } from '../extensions/peacockHighlight'
 import { PasteHighlight } from '../extensions/pasteHighlight'
 import { usePeacockDetection } from '../composables/usePeacockDetection'
 import { usePasteDetection } from '../composables/usePasteDetection'
+import { PlaceholderDetectionHighlight } from '../extensions/placeholderDetectionHighlight'
+import { usePlaceholderDetection } from '../composables/usePlaceholderDetection'
 import { PlaceholderChip } from '../extensions/placeholderChip'
 import { CitationSuperscript } from '../extensions/citationSuperscript'
 import { useEditorSettings } from '../composables/useEditorSettings'
@@ -99,6 +101,11 @@ const { triggerDetection, scanParagraphAtPos, updatePeacockRect, activeParagraph
   usePeacockDetection()
 const { onPaste, triggerPasteDetection, updatePasteRect, activePastedRange } =
   usePasteDetection()
+const {
+  triggerPlaceholderDetection,
+  updatePlaceholderDetectionRect,
+  activePlaceholderDetectionRange,
+} = usePlaceholderDetection()
 
 // Track which paragraph the cursor is in so we can detect when it leaves
 let lastParagraphPos = null
@@ -140,6 +147,7 @@ const editor = useEditor({
     AnnotationHighlight,
     PeacockHighlight,
     PasteHighlight,
+    PlaceholderDetectionHighlight,
     PlaceholderChip,
     CitationSuperscript,
   ],
@@ -163,9 +171,11 @@ const editor = useEditor({
     const currentParaPos = $from.parent.type.name === 'paragraph' ? $from.before() : null
     if (lastParagraphPos !== null && currentParaPos !== lastParagraphPos) {
       scanParagraphAtPos(editorRef, lastParagraphPos)
+      triggerPlaceholderDetection(editorRef, lastParagraphPos)
       // Re-compute the warning rail rects after new highlights are set
       updatePeacockRect(editorRef)
       updatePasteRect(editorRef)
+      updatePlaceholderDetectionRect(editorRef)
     }
     lastParagraphPos = currentParaPos
   },
@@ -350,9 +360,10 @@ function updateButtonPosition() {
     return
   }
 
-  // Update peacock paragraph rect for warning rail positioning
+  // Update paragraph rects for warning rail positioning
   updatePeacockRect(editor.value)
-    updatePasteRect(editor.value)
+  updatePasteRect(editor.value)
+  updatePlaceholderDetectionRect(editor.value)
 
   const { state, view } = editor.value
   const { empty } = state.selection
@@ -508,9 +519,14 @@ function scheduleShowButton() {
 function onScroll() {
   if (isButtonVisible.value || useForceMode.value) {
     updateButtonPosition()
-  } else if (activeParagraphRange.value || activePastedRange.value) {
+  } else if (
+    activeParagraphRange.value ||
+    activePastedRange.value ||
+    activePlaceholderDetectionRange.value
+  ) {
     updatePeacockRect(editor.value)
     updatePasteRect(editor.value)
+    updatePlaceholderDetectionRect(editor.value)
   }
 }
 
@@ -672,6 +688,14 @@ defineExpose({ editor })
 
 .text-editor :deep(.paste-highlight-warning) {
   background-color: var(--background-color-warning-subtle, #fef6e7);
+}
+
+.text-editor :deep(.placeholder-detection-highlight.placeholder-chip) {
+  background-color: var(--background-color-interactive-subtle);
+}
+
+.text-editor :deep(.placeholder-detection-highlight-warning.placeholder-chip) {
+  background-color: var(--background-color-warning-subtle, #fdf2d5);
 }
 
 .settings-btn {

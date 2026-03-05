@@ -49,6 +49,17 @@
       <CdxIcon :icon="cdxIconAlert" />
     </div>
 
+    <!-- Placeholder detection rail indicator: spans full paragraph height -->
+    <div
+      v-if="isPlaceholderDetectionRailVisible"
+      class="peacock-rail-indicator"
+      :style="placeholderDetectionRailStyle"
+      @mousedown.prevent
+      @click.stop="onPlaceholderDetectionRailClick"
+    >
+      <CdxIcon :icon="cdxIconAlert" />
+    </div>
+
     <OutlinePopover
       v-if="outlineLocation === 'popover'"
       v-model:open="isPopoverOpen"
@@ -60,6 +71,7 @@
     <CiteDialog v-model:open="citeDialogOpen" :initial-tab="citeDialogInitialTab" />
     <ReviseToneCard />
     <PastedContentCard />
+    <CompleteSectionCard />
   </div>
 </template>
 
@@ -75,12 +87,14 @@ import CiteDialog from '@/components/CiteDialog.vue'
 import OutlinePopover from '@/components/OutlinePopover.vue'
 import ReviseToneCard from '@/components/ReviseToneCard.vue'
 import PastedContentCard from '@/components/PastedContentCard.vue'
+import CompleteSectionCard from '@/components/CompleteSectionCard.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
 import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
 import { usePeacockDetection } from '@/composables/usePeacockDetection'
 import { usePasteDetection } from '@/composables/usePasteDetection'
+import { usePlaceholderDetection } from '@/composables/usePlaceholderDetection'
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
@@ -106,6 +120,13 @@ const {
   showPasteCard,
   dismissPaste,
 } = usePasteDetection()
+const {
+  placeholderDetectionRect,
+  activePlaceholderDetectionRange,
+  activePlaceholderDetectionId,
+  showPlaceholderCard,
+  dismissPlaceholderCard,
+} = usePlaceholderDetection()
 
 // Peacock warning rail indicator
 const isPeacockRailVisible = computed(() => {
@@ -159,6 +180,32 @@ const isCursorInPasteParagraph = computed(() => {
   return pos >= range.from && pos <= range.to
 })
 
+// Placeholder detection rail indicator
+const isPlaceholderDetectionRailVisible = computed(() => {
+  if (isRailOpen.value || isPopoverOpen.value) return false
+  return placeholderDetectionRect.value?.visible === true
+})
+
+const placeholderDetectionRailStyle = computed(() => {
+  if (!placeholderDetectionRect.value) return {}
+  const rect = placeholderDetectionRect.value
+  return {
+    position: 'fixed',
+    top: `${rect.top}px`,
+    right: '0px',
+    width: '44px',
+    height: `${rect.height}px`,
+  }
+})
+
+const isCursorInPlaceholderDetectionParagraph = computed(() => {
+  const editor = getEditor()
+  const range = activePlaceholderDetectionRange.value
+  if (!editor || !range) return false
+  const pos = editor.state.selection.from
+  return pos >= range.from && pos <= range.to
+})
+
 const isForceButtonVisible = computed(() => {
   if (!['inline', 'force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value))
     return false
@@ -166,6 +213,8 @@ const isForceButtonVisible = computed(() => {
   if (!cursorRect.value) return false
   if (isPeacockRailVisible.value && isCursorInPeacockParagraph.value) return false
   if (isPasteRailVisible.value && isCursorInPasteParagraph.value) return false
+  if (isPlaceholderDetectionRailVisible.value && isCursorInPlaceholderDetectionParagraph.value)
+    return false
   return cursorRect.value.visible
 })
 
@@ -197,17 +246,28 @@ function onForceButtonClick() {
 function onPeacockRailClick() {
   const editor = getEditor()
   editor?.commands.blur()
-  // Close paste card if open before showing peacock card
+  // Close other cards if open before showing peacock card
   if (editor) dismissPaste(editor)
+  if (editor) dismissPlaceholderCard(editor)
   showCard(activeParagraphId.value, editor)
 }
 
 function onPasteRailClick() {
   const editor = getEditor()
   editor?.commands.blur()
-  // Close peacock card if open before showing paste card
+  // Close other cards if open before showing paste card
   if (editor) dismissCard(editor)
+  if (editor) dismissPlaceholderCard(editor)
   showPasteCard(activePastedParagraphId.value, editor)
+}
+
+function onPlaceholderDetectionRailClick() {
+  const editor = getEditor()
+  editor?.commands.blur()
+  // Close other cards if open before showing placeholder card
+  if (editor) dismissCard(editor)
+  if (editor) dismissPaste(editor)
+  showPlaceholderCard(activePlaceholderDetectionId.value, editor)
 }
 
 function onOpenOutline() {
