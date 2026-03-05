@@ -67,6 +67,6 @@ function onDismiss() {
 
 .paste-buttons {
   display: flex;
-  gap: var(--spacing-50, 8px);
+  gap: var(--spacing-75, 12px);
 }
 </style>

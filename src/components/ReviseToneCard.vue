@@ -65,7 +65,7 @@ function onDecline() {
 <style scoped>
 .revise-tone-buttons {
   display: flex;
-  gap: var(--spacing-50, 8px);
+  gap: var(--spacing-75, 12px);
 }
 
 .revise-tone-disclaimer {
