@@ -6,7 +6,13 @@
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
       </div>
       <div class="editor-rail-column">
-        <EditorRail :is-open="isRailOpen" :initial-view="initialView" @content-inserted="onContentInserted" @close="isRailOpen = false" @open-cite-discover="onOpenCiteDiscover" />
+        <EditorRail
+          :is-open="isRailOpen"
+          :initial-view="initialView"
+          @content-inserted="onContentInserted"
+          @close="isRailOpen = false"
+          @open-cite-discover="onOpenCiteDiscover"
+        />
       </div>
     </div>
 
@@ -32,10 +38,28 @@
       <CdxIcon :icon="cdxIconAlert" />
     </div>
 
-    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" :initial-view="initialView" @content-inserted="onContentInserted" @open-cite-discover="onOpenCiteDiscover" />
+    <!-- Paste warning rail indicator: spans full paragraph height -->
+    <div
+      v-if="isPasteRailVisible"
+      class="peacock-rail-indicator"
+      :style="pasteRailStyle"
+      @mousedown.prevent
+      @click.stop="onPasteRailClick"
+    >
+      <CdxIcon :icon="cdxIconAlert" />
+    </div>
+
+    <OutlinePopover
+      v-if="outlineLocation === 'popover'"
+      v-model:open="isPopoverOpen"
+      :initial-view="initialView"
+      @content-inserted="onContentInserted"
+      @open-cite-discover="onOpenCiteDiscover"
+    />
     <SettingsDialog v-model:open="settingsDialogOpen" />
     <CiteDialog v-model:open="citeDialogOpen" :initial-tab="citeDialogInitialTab" />
     <ReviseToneCard />
+    <PastedContentCard />
   </div>
 </template>
 
@@ -50,12 +74,13 @@ import SettingsDialog from '@/components/SettingsDialog.vue'
 import CiteDialog from '@/components/CiteDialog.vue'
 import OutlinePopover from '@/components/OutlinePopover.vue'
 import ReviseToneCard from '@/components/ReviseToneCard.vue'
+import PastedContentCard from '@/components/PastedContentCard.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
 import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
 import { usePeacockDetection } from '@/composables/usePeacockDetection'
-
+import { usePasteDetection } from '@/composables/usePasteDetection'
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
@@ -71,8 +96,16 @@ const {
   activeParagraphRange,
   activeParagraphId,
   showCard,
+  dismissCard,
   triggerDetectionOnInsert,
 } = usePeacockDetection()
+const {
+  pasteParagraphRect,
+  activePastedRange,
+  activePastedParagraphId,
+  showPasteCard,
+  dismissPaste,
+} = usePasteDetection()
 
 // Peacock warning rail indicator
 const isPeacockRailVisible = computed(() => {
@@ -100,11 +133,39 @@ const isCursorInPeacockParagraph = computed(() => {
   return pos >= range.from && pos <= range.to
 })
 
+// Paste warning rail indicator
+const isPasteRailVisible = computed(() => {
+  if (isRailOpen.value || isPopoverOpen.value) return false
+  return pasteParagraphRect.value?.visible === true
+})
+
+const pasteRailStyle = computed(() => {
+  if (!pasteParagraphRect.value) return {}
+  const rect = pasteParagraphRect.value
+  return {
+    position: 'fixed',
+    top: `${rect.top}px`,
+    right: '0px',
+    width: '44px',
+    height: `${rect.height}px`,
+  }
+})
+
+const isCursorInPasteParagraph = computed(() => {
+  const editor = getEditor()
+  const range = activePastedRange.value
+  if (!editor || !range) return false
+  const pos = editor.state.selection.from
+  return pos >= range.from && pos <= range.to
+})
+
 const isForceButtonVisible = computed(() => {
-  if (!['inline', 'force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value)) return false
+  if (!['inline', 'force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value))
+    return false
   if (isRailOpen.value || isPopoverOpen.value) return false
   if (!cursorRect.value) return false
   if (isPeacockRailVisible.value && isCursorInPeacockParagraph.value) return false
+  if (isPasteRailVisible.value && isCursorInPasteParagraph.value) return false
   return cursorRect.value.visible
 })
 
@@ -134,8 +195,19 @@ function onForceButtonClick() {
 }
 
 function onPeacockRailClick() {
-  getEditor()?.commands.blur()
-  showCard(activeParagraphId.value, getEditor())
+  const editor = getEditor()
+  editor?.commands.blur()
+  // Close paste card if open before showing peacock card
+  if (editor) dismissPaste(editor)
+  showCard(activeParagraphId.value, editor)
+}
+
+function onPasteRailClick() {
+  const editor = getEditor()
+  editor?.commands.blur()
+  // Close peacock card if open before showing paste card
+  if (editor) dismissCard(editor)
+  showPasteCard(activePastedParagraphId.value, editor)
 }
 
 function onOpenOutline() {
@@ -251,7 +323,6 @@ watch(outlineLocation, () => {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 2px;
   border-left: 2px solid var(--color-warning);
   box-sizing: border-box;
   cursor: pointer;

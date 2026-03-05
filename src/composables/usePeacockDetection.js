@@ -66,6 +66,27 @@ function findPreviousParagraphFromCursor(editor) {
   return { node: prevNode, pos }
 }
 
+function scanParagraphAtPos(editor, paragraphPos) {
+  try {
+    const node = editor.state.doc.nodeAt(paragraphPos)
+    if (!node || node.type.name !== 'paragraph' || node.content.size === 0) return
+
+    const text = node.textContent
+    if (!pattern.test(text)) return
+
+    const paragraphId = 'p-' + Math.random().toString(36).slice(2, 8)
+    const from = paragraphPos + 1
+    const to = paragraphPos + node.nodeSize - 1
+
+    editor.commands.setPeacockHighlights([{ from, to, paragraphId }])
+
+    activeParagraphId.value = paragraphId
+    activeParagraphRange.value = { from, to }
+  } catch {
+    // Position may be invalid after doc changes
+  }
+}
+
 function triggerDetectionOnInsert(editor) {
   const prev = findPreviousParagraphFromCursor(editor)
   if (!prev) return
@@ -132,7 +153,7 @@ function showCard(paragraphId, editor) {
 function revise(editor) {
   if (activeParagraphRange.value) {
     const { from, to } = activeParagraphRange.value
-    editor.chain().focus().setTextSelection({ from, to }).run()
+    editor.chain().focus().setTextSelection(to).run()
   }
   if (activeParagraphId.value) {
     editor.commands.clearPeacockParagraph(activeParagraphId.value)
@@ -141,6 +162,13 @@ function revise(editor) {
   activeParagraphId.value = null
   activeParagraphRange.value = null
   peacockParagraphRect.value = null
+}
+
+function dismissCard(editor) {
+  isCardVisible.value = false
+  if (editor && activeParagraphId.value) {
+    editor.commands.demotePeacockParagraph(activeParagraphId.value)
+  }
 }
 
 function decline(editor) {
@@ -161,8 +189,10 @@ export function usePeacockDetection() {
     peacockParagraphRect,
     triggerDetection,
     triggerDetectionOnInsert,
+    scanParagraphAtPos,
     updatePeacockRect,
     showCard,
+    dismissCard,
     revise,
     decline,
   }

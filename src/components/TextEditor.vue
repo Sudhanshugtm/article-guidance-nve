@@ -77,7 +77,9 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { AnnotationHighlight } from '../extensions/annotationHighlight'
 import { PeacockHighlight } from '../extensions/peacockHighlight'
+import { PasteHighlight } from '../extensions/pasteHighlight'
 import { usePeacockDetection } from '../composables/usePeacockDetection'
+import { usePasteDetection } from '../composables/usePasteDetection'
 import { PlaceholderChip } from '../extensions/placeholderChip'
 import { CitationSuperscript } from '../extensions/citationSuperscript'
 import { useEditorSettings } from '../composables/useEditorSettings'
@@ -93,7 +95,13 @@ const { settings } = useEditorSettings()
 const { setEditor, hasContent } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { setCursorRect, clearCursorRect } = useCursorRect()
-const { triggerDetection, updatePeacockRect, activeParagraphRange } = usePeacockDetection()
+const { triggerDetection, scanParagraphAtPos, updatePeacockRect, activeParagraphRange } =
+  usePeacockDetection()
+const { onPaste, triggerPasteDetection, updatePasteRect, activePastedRange } =
+  usePasteDetection()
+
+// Track which paragraph the cursor is in so we can detect when it leaves
+let lastParagraphPos = null
 
 const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
@@ -131,13 +139,35 @@ const editor = useEditor({
     }),
     AnnotationHighlight,
     PeacockHighlight,
+    PasteHighlight,
     PlaceholderChip,
     CitationSuperscript,
   ],
-  onSelectionUpdate() {
+  editorProps: {
+    handlePaste: (view) => {
+      // After the paste transaction is applied, flag the paragraph
+      setTimeout(() => {
+        const editorInstance = editor.value
+        if (editorInstance) onPaste(editorInstance)
+      }, 0)
+      return false // let TipTap handle the actual paste
+    },
+  },
+  onSelectionUpdate({ editor: editorRef }) {
     if (!typingTimer) {
       updateButtonPosition()
     }
+
+    // Detect when cursor moves to a different paragraph and scan the one it left
+    const { $from } = editorRef.state.selection
+    const currentParaPos = $from.parent.type.name === 'paragraph' ? $from.before() : null
+    if (lastParagraphPos !== null && currentParaPos !== lastParagraphPos) {
+      scanParagraphAtPos(editorRef, lastParagraphPos)
+      // Re-compute the warning rail rects after new highlights are set
+      updatePeacockRect(editorRef)
+      updatePasteRect(editorRef)
+    }
+    lastParagraphPos = currentParaPos
   },
   onTransaction({ transaction, editor: editorRef }) {
     if (transaction.docChanged) {
@@ -153,11 +183,12 @@ const editor = useEditor({
         scheduleShowButton()
       }
 
-      // Detect new paragraph creation and scan previous paragraph for peacock words
+      // Detect new paragraph creation and scan previous paragraph for checks
       const { $from } = editorRef.state.selection
       const currentNode = $from.parent
       if (currentNode.type.name === 'paragraph' && currentNode.content.size === 0) {
         triggerDetection(editorRef)
+        triggerPasteDetection(editorRef)
       }
     }
 
@@ -321,6 +352,7 @@ function updateButtonPosition() {
 
   // Update peacock paragraph rect for warning rail positioning
   updatePeacockRect(editor.value)
+    updatePasteRect(editor.value)
 
   const { state, view } = editor.value
   const { empty } = state.selection
@@ -476,8 +508,9 @@ function scheduleShowButton() {
 function onScroll() {
   if (isButtonVisible.value || useForceMode.value) {
     updateButtonPosition()
-  } else if (activeParagraphRange.value) {
+  } else if (activeParagraphRange.value || activePastedRange.value) {
     updatePeacockRect(editor.value)
+    updatePasteRect(editor.value)
   }
 }
 
@@ -630,6 +663,14 @@ defineExpose({ editor })
 }
 
 .text-editor :deep(.peacock-highlight-warning) {
+  background-color: var(--background-color-warning-subtle, #fef6e7);
+}
+
+.text-editor :deep(.paste-highlight) {
+  background-color: var(--background-color-interactive-subtle);
+}
+
+.text-editor :deep(.paste-highlight-warning) {
   background-color: var(--background-color-warning-subtle, #fef6e7);
 }
 

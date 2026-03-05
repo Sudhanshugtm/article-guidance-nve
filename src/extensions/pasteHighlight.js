@@ -2,15 +2,15 @@ import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
-export const PeacockHighlightKey = new PluginKey('peacockHighlight')
+export const PasteHighlightKey = new PluginKey('pasteHighlight')
 
-export const PeacockHighlight = Extension.create({
-  name: 'peacockHighlight',
+export const PasteHighlight = Extension.create({
+  name: 'pasteHighlight',
 
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: PeacockHighlightKey,
+        key: PasteHighlightKey,
 
         state: {
           init() {
@@ -18,37 +18,24 @@ export const PeacockHighlight = Extension.create({
           },
 
           apply(tr, decorationSet, oldState, newState) {
-            const meta = tr.getMeta(PeacockHighlightKey)
+            const meta = tr.getMeta(PasteHighlightKey)
 
-            if (meta?.type === 'setHighlights') {
-              const decorations = meta.highlights
-                .filter((h) => h.from < h.to && h.to <= newState.doc.content.size)
-                .map((h) =>
-                  Decoration.inline(
-                    h.from,
-                    h.to,
-                    { class: 'peacock-highlight', 'data-paragraph-id': h.paragraphId },
-                    { paragraphId: h.paragraphId },
-                  ),
-                )
-              // Merge with existing decorations (other paragraphs)
+            if (meta?.type === 'setHighlight') {
+              const { from, to, paragraphId } = meta
+              if (from >= to || to > newState.doc.content.size) {
+                return decorationSet.map(tr.mapping, tr.doc)
+              }
+              const decoration = Decoration.inline(
+                from,
+                to,
+                { class: 'paste-highlight', 'data-paragraph-id': paragraphId },
+                { paragraphId },
+              )
               const existing = decorationSet.map(tr.mapping, tr.doc)
               const all = []
               existing.find(0, newState.doc.content.size).forEach((d) => all.push(d))
-              decorations.forEach((d) => all.push(d))
+              all.push(decoration)
               return DecorationSet.create(newState.doc, all)
-            }
-
-            if (meta?.type === 'clearParagraph') {
-              const remaining = []
-              decorationSet.find(0, newState.doc.content.size).forEach((d) => {
-                if (d.spec?.paragraphId !== meta.paragraphId) {
-                  remaining.push(d)
-                }
-              })
-              return remaining.length
-                ? DecorationSet.create(newState.doc, remaining)
-                : DecorationSet.empty
             }
 
             if (meta?.type === 'promoteParagraph') {
@@ -60,7 +47,7 @@ export const PeacockHighlight = Extension.create({
                       d.from,
                       d.to,
                       {
-                        class: 'peacock-highlight-warning',
+                        class: 'paste-highlight-warning',
                         'data-paragraph-id': d.spec.paragraphId,
                       },
                       { paragraphId: d.spec.paragraphId },
@@ -82,7 +69,7 @@ export const PeacockHighlight = Extension.create({
                       d.from,
                       d.to,
                       {
-                        class: 'peacock-highlight',
+                        class: 'paste-highlight',
                         'data-paragraph-id': d.spec.paragraphId,
                       },
                       { paragraphId: d.spec.paragraphId },
@@ -95,6 +82,18 @@ export const PeacockHighlight = Extension.create({
               return all.length ? DecorationSet.create(newState.doc, all) : DecorationSet.empty
             }
 
+            if (meta?.type === 'clearParagraph') {
+              const remaining = []
+              decorationSet.find(0, newState.doc.content.size).forEach((d) => {
+                if (d.spec?.paragraphId !== meta.paragraphId) {
+                  remaining.push(d)
+                }
+              })
+              return remaining.length
+                ? DecorationSet.create(newState.doc, remaining)
+                : DecorationSet.empty
+            }
+
             if (meta?.type === 'clearAll') {
               return DecorationSet.empty
             }
@@ -105,7 +104,7 @@ export const PeacockHighlight = Extension.create({
 
         props: {
           decorations(state) {
-            return PeacockHighlightKey.getState(state)
+            return PasteHighlightKey.getState(state)
           },
         },
       }),
@@ -114,59 +113,47 @@ export const PeacockHighlight = Extension.create({
 
   addCommands() {
     return {
-      setPeacockHighlights:
-        (highlights) =>
+      setPasteHighlight:
+        ({ from, to, paragraphId }) =>
         ({ tr, dispatch }) => {
           if (dispatch) {
-            tr.setMeta(PeacockHighlightKey, {
-              type: 'setHighlights',
-              highlights,
-            })
+            tr.setMeta(PasteHighlightKey, { type: 'setHighlight', from, to, paragraphId })
           }
           return true
         },
 
-      clearPeacockParagraph:
+      promotePasteParagraph:
         (paragraphId) =>
         ({ tr, dispatch }) => {
           if (dispatch) {
-            tr.setMeta(PeacockHighlightKey, {
-              type: 'clearParagraph',
-              paragraphId,
-            })
+            tr.setMeta(PasteHighlightKey, { type: 'promoteParagraph', paragraphId })
           }
           return true
         },
 
-      promotePeacockParagraph:
+      demotePasteParagraph:
         (paragraphId) =>
         ({ tr, dispatch }) => {
           if (dispatch) {
-            tr.setMeta(PeacockHighlightKey, {
-              type: 'promoteParagraph',
-              paragraphId,
-            })
+            tr.setMeta(PasteHighlightKey, { type: 'demoteParagraph', paragraphId })
           }
           return true
         },
 
-      demotePeacockParagraph:
+      clearPasteParagraph:
         (paragraphId) =>
         ({ tr, dispatch }) => {
           if (dispatch) {
-            tr.setMeta(PeacockHighlightKey, {
-              type: 'demoteParagraph',
-              paragraphId,
-            })
+            tr.setMeta(PasteHighlightKey, { type: 'clearParagraph', paragraphId })
           }
           return true
         },
 
-      clearPeacockHighlights:
+      clearPasteHighlights:
         () =>
         ({ tr, dispatch }) => {
           if (dispatch) {
-            tr.setMeta(PeacockHighlightKey, { type: 'clearAll' })
+            tr.setMeta(PasteHighlightKey, { type: 'clearAll' })
           }
           return true
         },
