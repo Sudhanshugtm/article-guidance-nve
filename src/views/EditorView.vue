@@ -27,37 +27,16 @@
       <CdxIcon :icon="cdxIconAdd" />
     </div>
 
-    <!-- Peacock warning rail indicator: spans full paragraph height -->
+    <!-- Unified check rail indicator: single indicator with badge for multiple checks -->
     <div
-      v-if="isPeacockRailVisible"
+      v-if="isUnifiedRailVisible"
       class="peacock-rail-indicator"
-      :style="peacockRailStyle"
+      :style="unifiedRailStyle"
       @mousedown.prevent
-      @click.stop="onPeacockRailClick"
+      @click.stop="onUnifiedRailClick"
     >
       <CdxIcon :icon="cdxIconAlert" />
-    </div>
-
-    <!-- Paste warning rail indicator: spans full paragraph height -->
-    <div
-      v-if="isPasteRailVisible"
-      class="peacock-rail-indicator"
-      :style="pasteRailStyle"
-      @mousedown.prevent
-      @click.stop="onPasteRailClick"
-    >
-      <CdxIcon :icon="cdxIconAlert" />
-    </div>
-
-    <!-- Placeholder detection rail indicator: spans full paragraph height -->
-    <div
-      v-if="isPlaceholderDetectionRailVisible"
-      class="peacock-rail-indicator"
-      :style="placeholderDetectionRailStyle"
-      @mousedown.prevent
-      @click.stop="onPlaceholderDetectionRailClick"
-    >
-      <CdxIcon :icon="cdxIconAlert" />
+      <span v-if="totalChecks > 1" class="rail-badge">{{ totalChecks }}</span>
     </div>
 
     <OutlinePopover
@@ -76,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, watchEffect, nextTick } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd, cdxIconAlert } from '@wikimedia/codex-icons'
 import TextEditor from '@/components/TextEditor.vue'
@@ -93,8 +72,7 @@ import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
 import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
 import { usePeacockDetection } from '@/composables/usePeacockDetection'
-import { usePasteDetection } from '@/composables/usePasteDetection'
-import { usePlaceholderDetection } from '@/composables/usePlaceholderDetection'
+import { useEditCheckPagination } from '@/composables/useEditCheckPagination'
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
@@ -105,38 +83,19 @@ const entryPointStyle = computed(() => settings.value.entryPoint.style)
 const { getEditor, hasContent, citationClickCount } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { cursorRect } = useCursorRect()
-const {
-  peacockParagraphRect,
-  activeParagraphRange,
-  activeParagraphId,
-  showCard,
-  dismissCard,
-  triggerDetectionOnInsert,
-} = usePeacockDetection()
-const {
-  pasteParagraphRect,
-  activePastedRange,
-  activePastedParagraphId,
-  showPasteCard,
-  dismissPaste,
-} = usePasteDetection()
-const {
-  placeholderDetectionRect,
-  activePlaceholderDetectionRange,
-  activePlaceholderDetectionId,
-  showPlaceholderCard,
-  dismissPlaceholderCard,
-} = usePlaceholderDetection()
+const { triggerDetectionOnInsert } = usePeacockDetection()
+const { activeChecks, totalChecks, unifiedRailRect, showCheckAtIndex } =
+  useEditCheckPagination()
 
-// Peacock warning rail indicator
-const isPeacockRailVisible = computed(() => {
+// Unified check rail indicator
+const isUnifiedRailVisible = computed(() => {
   if (isRailOpen.value || isPopoverOpen.value) return false
-  return peacockParagraphRect.value?.visible === true
+  return totalChecks.value > 0
 })
 
-const peacockRailStyle = computed(() => {
-  if (!peacockParagraphRect.value) return {}
-  const rect = peacockParagraphRect.value
+const unifiedRailStyle = computed(() => {
+  if (!unifiedRailRect.value) return {}
+  const rect = unifiedRailRect.value
   return {
     position: 'fixed',
     top: `${rect.top}px`,
@@ -146,64 +105,14 @@ const peacockRailStyle = computed(() => {
   }
 })
 
-const isCursorInPeacockParagraph = computed(() => {
+const isCursorInAnyCheckParagraph = computed(() => {
   const editor = getEditor()
-  const range = activeParagraphRange.value
-  if (!editor || !range) return false
+  if (!editor) return false
   const pos = editor.state.selection.from
-  return pos >= range.from && pos <= range.to
-})
-
-// Paste warning rail indicator
-const isPasteRailVisible = computed(() => {
-  if (isRailOpen.value || isPopoverOpen.value) return false
-  return pasteParagraphRect.value?.visible === true
-})
-
-const pasteRailStyle = computed(() => {
-  if (!pasteParagraphRect.value) return {}
-  const rect = pasteParagraphRect.value
-  return {
-    position: 'fixed',
-    top: `${rect.top}px`,
-    right: '0px',
-    width: '44px',
-    height: `${rect.height}px`,
+  for (const check of activeChecks.value) {
+    if (check.range && pos >= check.range.from && pos <= check.range.to) return true
   }
-})
-
-const isCursorInPasteParagraph = computed(() => {
-  const editor = getEditor()
-  const range = activePastedRange.value
-  if (!editor || !range) return false
-  const pos = editor.state.selection.from
-  return pos >= range.from && pos <= range.to
-})
-
-// Placeholder detection rail indicator
-const isPlaceholderDetectionRailVisible = computed(() => {
-  if (isRailOpen.value || isPopoverOpen.value) return false
-  return placeholderDetectionRect.value?.visible === true
-})
-
-const placeholderDetectionRailStyle = computed(() => {
-  if (!placeholderDetectionRect.value) return {}
-  const rect = placeholderDetectionRect.value
-  return {
-    position: 'fixed',
-    top: `${rect.top}px`,
-    right: '0px',
-    width: '44px',
-    height: `${rect.height}px`,
-  }
-})
-
-const isCursorInPlaceholderDetectionParagraph = computed(() => {
-  const editor = getEditor()
-  const range = activePlaceholderDetectionRange.value
-  if (!editor || !range) return false
-  const pos = editor.state.selection.from
-  return pos >= range.from && pos <= range.to
+  return false
 })
 
 const isForceButtonVisible = computed(() => {
@@ -211,10 +120,7 @@ const isForceButtonVisible = computed(() => {
     return false
   if (isRailOpen.value || isPopoverOpen.value) return false
   if (!cursorRect.value) return false
-  if (isPeacockRailVisible.value && isCursorInPeacockParagraph.value) return false
-  if (isPasteRailVisible.value && isCursorInPasteParagraph.value) return false
-  if (isPlaceholderDetectionRailVisible.value && isCursorInPlaceholderDetectionParagraph.value)
-    return false
+  if (isUnifiedRailVisible.value && isCursorInAnyCheckParagraph.value) return false
   return cursorRect.value.visible
 })
 
@@ -243,31 +149,10 @@ function onForceButtonClick() {
   onOpenOutline()
 }
 
-function onPeacockRailClick() {
+function onUnifiedRailClick() {
   const editor = getEditor()
   editor?.commands.blur()
-  // Close other cards if open before showing peacock card
-  if (editor) dismissPaste(editor)
-  if (editor) dismissPlaceholderCard(editor)
-  showCard(activeParagraphId.value, editor)
-}
-
-function onPasteRailClick() {
-  const editor = getEditor()
-  editor?.commands.blur()
-  // Close other cards if open before showing paste card
-  if (editor) dismissCard(editor)
-  if (editor) dismissPlaceholderCard(editor)
-  showPasteCard(activePastedParagraphId.value, editor)
-}
-
-function onPlaceholderDetectionRailClick() {
-  const editor = getEditor()
-  editor?.commands.blur()
-  // Close other cards if open before showing placeholder card
-  if (editor) dismissCard(editor)
-  if (editor) dismissPaste(editor)
-  showPlaceholderCard(activePlaceholderDetectionId.value, editor)
+  showCheckAtIndex(0, editor)
 }
 
 function onOpenOutline() {
@@ -380,6 +265,7 @@ watch(outlineLocation, () => {
 }
 
 .peacock-rail-indicator {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -391,5 +277,22 @@ watch(outlineLocation, () => {
 
 .peacock-rail-indicator :deep(.cdx-icon) {
   color: var(--color-warning);
+}
+
+.rail-badge {
+  position: absolute;
+  bottom: 0;
+  right: 2px;
+  min-width: 12px;
+  min-height: 12px;
+  padding: 1px 2px;
+  background-color: var(--background-color-progressive, #36c);
+  border: 1px solid var(--border-color-inverted, #fff);
+  border-radius: var(--border-radius-base, 2px);
+  color: var(--color-inverted, #fff);
+  font-size: var(--font-size-x-small, 12px);
+  font-weight: var(--font-weight-bold, 700);
+  line-height: 12px;
+  text-align: center;
 }
 </style>

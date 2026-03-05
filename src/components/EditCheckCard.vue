@@ -27,6 +27,29 @@
             <slot name="footer" />
           </div>
         </div>
+        <div v-if="totalChecks > 1" class="edit-check-pagination">
+          <span class="pagination-text">{{ currentCheckIndex + 1 }} of {{ totalChecks }}</span>
+          <div class="pagination-buttons">
+            <CdxButton
+              weight="quiet"
+              class="pagination-btn"
+              :disabled="currentCheckIndex <= 0"
+              aria-label="Previous check"
+              @click="onPrev"
+            >
+              <CdxIcon :icon="cdxIconCollapse" />
+            </CdxButton>
+            <CdxButton
+              weight="quiet"
+              class="pagination-btn"
+              :disabled="currentCheckIndex >= totalChecks - 1"
+              aria-label="Next check"
+              @click="onNext"
+            >
+              <CdxIcon :icon="cdxIconExpand" />
+            </CdxButton>
+          </div>
+        </div>
       </div>
     </Transition>
   </Teleport>
@@ -34,7 +57,9 @@
 
 <script setup>
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
-import { cdxIconClose, cdxIconAlert } from '@wikimedia/codex-icons'
+import { cdxIconClose, cdxIconAlert, cdxIconCollapse, cdxIconExpand } from '@wikimedia/codex-icons'
+import { useEditCheckPagination } from '../composables/useEditCheckPagination'
+import { useEditorInstance } from '../composables/useEditorInstance'
 
 defineProps({
   title: { type: String, required: true },
@@ -42,6 +67,19 @@ defineProps({
 })
 
 defineEmits(['close'])
+
+const { totalChecks, currentCheckIndex, goToNext, goToPrev } = useEditCheckPagination()
+const { getEditor } = useEditorInstance()
+
+function onPrev() {
+  const editor = getEditor()
+  if (editor) goToPrev(editor)
+}
+
+function onNext() {
+  const editor = getEditor()
+  if (editor) goToNext(editor)
+}
 </script>
 
 <style scoped>
@@ -107,5 +145,34 @@ defineEmits(['close'])
 
 .edit-check-description :deep(a) {
   color: var(--color-progressive, #36c);
+}
+
+.edit-check-pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-100, 16px);
+  padding: var(--spacing-25, 6px) var(--spacing-100, 16px);
+  border-top: 1px solid var(--border-color-subtle, #c8ccd1);
+}
+
+.pagination-text {
+  flex: 1;
+  text-align: right;
+  font-size: var(--font-size-medium, 16px);
+  line-height: var(--line-height-small, 22px);
+  color: var(--color-subtle, #54595d);
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: var(--spacing-100, 16px);
+}
+
+.pagination-btn {
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px;
+  max-height: 32px;
+  padding: var(--spacing-25, 5px) !important;
 }
 </style>
