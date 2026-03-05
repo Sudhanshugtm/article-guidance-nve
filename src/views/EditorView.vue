@@ -35,8 +35,10 @@
       @mousedown.prevent
       @click.stop="onUnifiedRailClick"
     >
-      <CdxIcon :icon="cdxIconAlert" />
-      <span v-if="totalChecks > 1" class="rail-badge">{{ totalChecks }}</span>
+      <span class="rail-icon-wrapper">
+        <CdxIcon :icon="cdxIconAlert" />
+        <span v-if="totalChecks > 1" class="rail-badge">{{ totalChecks }}</span>
+      </span>
     </div>
 
     <OutlinePopover
@@ -275,14 +277,19 @@ watch(outlineLocation, () => {
   z-index: 2;
 }
 
+.rail-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
 .peacock-rail-indicator :deep(.cdx-icon) {
   color: var(--color-warning);
 }
 
 .rail-badge {
   position: absolute;
-  bottom: 0;
-  right: 2px;
+  bottom: -8px;
+  right: -8px;
   min-width: 12px;
   min-height: 12px;
   padding: 1px 2px;
