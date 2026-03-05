@@ -13,8 +13,10 @@
       </p>
     </template>
     <template #actions>
-      <CdxButton @click="onRevise">Revise</CdxButton>
-      <CdxButton @click="onDecline">Decline</CdxButton>
+      <div class="revise-tone-buttons">
+        <CdxButton @click="onRevise">Revise</CdxButton>
+        <CdxButton @click="onDecline">Decline</CdxButton>
+      </div>
     </template>
     <template #footer>
       <div class="revise-tone-disclaimer">
@@ -61,6 +63,11 @@ function onDecline() {
 </script>
 
 <style scoped>
+.revise-tone-buttons {
+  display: flex;
+  gap: var(--spacing-50, 8px);
+}
+
 .revise-tone-disclaimer {
   display: flex;
   align-items: center;
