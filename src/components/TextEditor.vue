@@ -76,6 +76,8 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { AnnotationHighlight } from '../extensions/annotationHighlight'
+import { PeacockHighlight } from '../extensions/peacockHighlight'
+import { usePeacockDetection } from '../composables/usePeacockDetection'
 import { PlaceholderChip } from '../extensions/placeholderChip'
 import { CitationSuperscript } from '../extensions/citationSuperscript'
 import { useEditorSettings } from '../composables/useEditorSettings'
@@ -91,6 +93,7 @@ const { settings } = useEditorSettings()
 const { setEditor, hasContent } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { setCursorRect, clearCursorRect } = useCursorRect()
+const { triggerDetection, showCard } = usePeacockDetection()
 
 const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
@@ -127,6 +130,7 @@ const editor = useEditor({
       placeholder: 'Start writing or tap the +',
     }),
     AnnotationHighlight,
+    PeacockHighlight,
     PlaceholderChip,
     CitationSuperscript,
   ],
@@ -148,7 +152,15 @@ const editor = useEditor({
         hideButton()
         scheduleShowButton()
       }
+
+      // Detect new paragraph creation and scan previous paragraph for peacock words
+      const { $from } = editorRef.state.selection
+      const currentNode = $from.parent
+      if (currentNode.type.name === 'paragraph' && currentNode.content.size === 0) {
+        triggerDetection(editorRef)
+      }
     }
+
   },
   onFocus() {
     setTimeout(() => updateButtonPosition(), 0)
@@ -480,6 +492,14 @@ function onEditorClick(event) {
   }
 }
 
+function onPeacockClick(event) {
+  const el = event.target.closest?.('.peacock-highlight')
+  if (el) {
+    const paragraphId = el.getAttribute('data-paragraph-id')
+    if (paragraphId) showCard(paragraphId)
+  }
+}
+
 // Start typewriter on first button appearance (not on mount)
 watch(isButtonVisible, (visible) => {
   if (visible && !cyclingStarted && isCycling.value) {
@@ -506,6 +526,12 @@ onMounted(() => {
     scrollEl.addEventListener('click', onEditorClick)
   }
 
+  // Peacock highlight click listener
+  const editorEl = editorContentRef.value?.$el
+  if (editorEl) {
+    editorEl.addEventListener('click', onPeacockClick)
+  }
+
   // Auto-focus editor on launch if setting is enabled (default: true)
   if (settings.value.entryPoint.autoFocus !== 'false') {
     editor.value?.commands.focus()
@@ -522,6 +548,10 @@ onBeforeUnmount(() => {
   if (scrollEl) {
     scrollEl.removeEventListener('scroll', onScroll)
     scrollEl.removeEventListener('click', onEditorClick)
+  }
+  const editorEl = editorContentRef.value?.$el
+  if (editorEl) {
+    editorEl.removeEventListener('click', onPeacockClick)
   }
   clearTimeout(typingTimer)
   clearInterval(charTimer)
@@ -606,6 +636,11 @@ defineExpose({ editor })
 .text-editor :deep(.annotation-highlight) {
   background-color: var(--background-color-warning-subtle, #fef6e7);
   border-radius: 2px;
+}
+
+.text-editor :deep(.peacock-highlight) {
+  background-color: var(--background-color-warning-subtle, #fef6e7);
+  cursor: pointer;
 }
 
 .settings-btn {

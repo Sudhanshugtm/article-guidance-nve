@@ -24,6 +24,7 @@
     <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" :initial-view="initialView" @content-inserted="onContentInserted" @open-cite-discover="onOpenCiteDiscover" />
     <SettingsDialog v-model:open="settingsDialogOpen" />
     <CiteDialog v-model:open="citeDialogOpen" :initial-tab="citeDialogInitialTab" />
+    <ReviseToneCard />
   </div>
 </template>
 
@@ -37,6 +38,7 @@ import CdxToolbar from '@/components/CdxToolbar.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
 import CiteDialog from '@/components/CiteDialog.vue'
 import OutlinePopover from '@/components/OutlinePopover.vue'
+import ReviseToneCard from '@/components/ReviseToneCard.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
