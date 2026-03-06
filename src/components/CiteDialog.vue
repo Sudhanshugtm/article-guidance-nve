@@ -33,8 +33,43 @@
           </div>
         </CdxTab>
         <CdxTab name="reuse" label="Re-use">
-          <div class="cite-dialog__tab-content">
-            <p class="cite-dialog__description">Re-use an existing citation</p>
+          <div class="cite-dialog__reuse">
+            <div class="cite-dialog__reuse-search">
+              <CdxSearchInput
+                v-model="reuseSearchQuery"
+                placeholder="Search within current citations"
+              />
+            </div>
+            <div class="cite-dialog__reuse-list">
+              <div
+                v-for="(citation, index) in allCitations"
+                :key="citation.id"
+                class="cite-dialog__reuse-item"
+                :class="{ 'cite-dialog__reuse-item--clipped': index === 1 }"
+              >
+                <span class="cite-dialog__reuse-number">[{{ index + 1 }}]</span>
+                <span class="cite-dialog__reuse-text">
+                  <template v-for="(segment, sIndex) in citation.segments" :key="sIndex">
+                    <a
+                      v-if="segment.style === 'link'"
+                      class="cite-dialog__reuse-link"
+                      href="#"
+                      @click.prevent
+                      >{{ segment.text }}</a
+                    >
+                    <a
+                      v-else-if="segment.style === 'link-italic'"
+                      class="cite-dialog__reuse-link"
+                      href="#"
+                      @click.prevent
+                      ><i>{{ segment.text }}</i></a
+                    >
+                    <i v-else-if="segment.style === 'italic'">{{ segment.text }}</i>
+                    <span v-else>{{ segment.text }}</span>
+                  </template>
+                </span>
+              </div>
+            </div>
           </div>
         </CdxTab>
         <CdxTab name="discover" label="Discover">
@@ -51,6 +86,7 @@
 import { ref, watch } from 'vue'
 import { CdxDialog, CdxTabs, CdxTab, CdxSearchInput, CdxButton, CdxIcon } from '@wikimedia/codex'
 import { cdxIconLogoWikidata } from '@wikimedia/codex-icons'
+import { useCitationRegistry } from '@/composables/useCitationRegistry'
 
 const props = defineProps({
   initialTab: {
@@ -59,9 +95,12 @@ const props = defineProps({
   },
 })
 
+const { allCitations } = useCitationRegistry()
+
 const open = defineModel('open', { type: Boolean, default: false })
 const activeTab = ref(props.initialTab)
 const searchQuery = ref('')
+const reuseSearchQuery = ref('')
 
 watch(open, (isOpen) => {
   if (isOpen) {
@@ -102,5 +141,55 @@ watch(open, (isOpen) => {
   line-height: var(--line-height-medium);
   color: var(--color-base);
   margin: 0;
+}
+
+.cite-dialog__reuse {
+  display: flex;
+  flex-direction: column;
+}
+
+.cite-dialog__reuse-search {
+  padding: var(--spacing-75) var(--spacing-100);
+  border-bottom: var(--border-width-base) var(--border-style-base) var(--border-color-subtle);
+  box-shadow:
+    0 4px 4px rgba(0, 0, 0, 0.06),
+    0 0 8px rgba(0, 0, 0, 0.06);
+}
+
+.cite-dialog__reuse-list {
+  padding: var(--spacing-75) var(--spacing-100) var(--spacing-100);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-100);
+}
+
+.cite-dialog__reuse-item {
+  padding-bottom: var(--spacing-100);
+  border-bottom: var(--border-width-base) var(--border-style-base) var(--border-color-subtle);
+  line-height: var(--line-height-small);
+  color: var(--color-emphasized);
+}
+
+.cite-dialog__reuse-item--clipped {
+  max-height: 208px;
+  overflow: hidden;
+}
+
+.cite-dialog__reuse-number {
+  margin-right: var(--spacing-50);
+}
+
+.cite-dialog__reuse-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.cite-dialog__reuse-link {
+  color: var(--color-progressive);
+  text-decoration: none;
+}
+
+.cite-dialog__reuse-link:hover {
+  text-decoration: underline;
 }
 </style>
