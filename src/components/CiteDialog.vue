@@ -41,27 +41,57 @@
               />
             </div>
             <div class="cite-dialog__reuse-list">
+              <!-- Used citations: numbered, shown first -->
               <div
-                v-for="(citation, index) in allCitations"
+                v-for="citation in usedCitations"
                 :key="citation.id"
-                class="cite-dialog__reuse-item"
-                :class="{ 'cite-dialog__reuse-item--clipped': index === 1 }"
+                class="cite-dialog__reuse-item cite-dialog__reuse-item--clickable"
+                @click="onSelectCitation(citation)"
               >
-                <span class="cite-dialog__reuse-number">[{{ index + 1 }}]</span>
+                <span class="cite-dialog__reuse-number">[{{ citation.referenceNumber }}]</span>
                 <span class="cite-dialog__reuse-text">
                   <template v-for="(segment, sIndex) in citation.segments" :key="sIndex">
                     <a
                       v-if="segment.style === 'link'"
                       class="cite-dialog__reuse-link"
                       href="#"
-                      @click.prevent
+                      @click.prevent.stop
                       >{{ segment.text }}</a
                     >
                     <a
                       v-else-if="segment.style === 'link-italic'"
                       class="cite-dialog__reuse-link"
                       href="#"
-                      @click.prevent
+                      @click.prevent.stop
+                      ><i>{{ segment.text }}</i></a
+                    >
+                    <i v-else-if="segment.style === 'italic'">{{ segment.text }}</i>
+                    <span v-else>{{ segment.text }}</span>
+                  </template>
+                </span>
+              </div>
+
+              <!-- Available citations: no number -->
+              <div
+                v-for="citation in availableCitations"
+                :key="citation.id"
+                class="cite-dialog__reuse-item cite-dialog__reuse-item--clickable"
+                @click="onSelectCitation(citation)"
+              >
+                <span class="cite-dialog__reuse-text">
+                  <template v-for="(segment, sIndex) in citation.segments" :key="sIndex">
+                    <a
+                      v-if="segment.style === 'link'"
+                      class="cite-dialog__reuse-link"
+                      href="#"
+                      @click.prevent.stop
+                      >{{ segment.text }}</a
+                    >
+                    <a
+                      v-else-if="segment.style === 'link-italic'"
+                      class="cite-dialog__reuse-link"
+                      href="#"
+                      @click.prevent.stop
                       ><i>{{ segment.text }}</i></a
                     >
                     <i v-else-if="segment.style === 'italic'">{{ segment.text }}</i>
@@ -99,7 +129,7 @@
                 </div>
                 <p class="cite-dialog__discover-text">{{ ref.text }}</p>
                 <div class="cite-dialog__discover-actions">
-                  <CdxButton>
+                  <CdxButton @click="onAddDiscoverReference(ref)">
                     <CdxIcon :icon="cdxIconAdd" />
                     Add
                   </CdxButton>
@@ -131,7 +161,9 @@ const props = defineProps({
   },
 })
 
-const { allCitations } = useCitationRegistry()
+const emit = defineEmits(['update:open', 'citation-selected'])
+
+const { usedCitations, availableCitations } = useCitationRegistry()
 
 const open = defineModel('open', { type: Boolean, default: false })
 const activeTab = ref(props.initialTab)
@@ -149,6 +181,20 @@ const discoverReferences = computed(() =>
     })),
   ),
 )
+
+function onSelectCitation(citation) {
+  emit('citation-selected', citation)
+  open.value = false
+}
+
+function onAddDiscoverReference(discoverRef) {
+  const citation = {
+    id: discoverRef.id,
+    segments: [{ text: discoverRef.text, style: 'normal' }],
+  }
+  emit('citation-selected', citation)
+  open.value = false
+}
 
 watch(open, (isOpen) => {
   if (isOpen) {
@@ -200,9 +246,9 @@ watch(open, (isOpen) => {
 .cite-dialog__reuse-search {
   padding: var(--spacing-75) var(--spacing-100);
   border-bottom: var(--border-width-base) var(--border-style-base) var(--border-color-subtle);
-  box-shadow:
+  /* box-shadow:
     0 4px 4px rgba(0, 0, 0, 0.06),
-    0 0 8px rgba(0, 0, 0, 0.06);
+    0 0 8px rgba(0, 0, 0, 0.06); */
 }
 
 .cite-dialog__reuse-list {
@@ -219,9 +265,13 @@ watch(open, (isOpen) => {
   color: var(--color-emphasized);
 }
 
-.cite-dialog__reuse-item--clipped {
-  max-height: 208px;
-  overflow: hidden;
+.cite-dialog__reuse-item--clickable {
+  cursor: pointer;
+  border-radius: var(--border-radius-base);
+}
+
+.cite-dialog__reuse-item--clickable:active {
+  background-color: var(--background-color-interactive-subtle);
 }
 
 .cite-dialog__reuse-number {
@@ -236,6 +286,7 @@ watch(open, (isOpen) => {
 .cite-dialog__reuse-link {
   color: var(--color-progressive);
   text-decoration: none;
+  word-wrap: break-word;
 }
 
 .cite-dialog__reuse-link:hover {

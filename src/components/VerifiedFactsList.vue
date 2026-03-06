@@ -29,14 +29,32 @@ import { cdxIconAdd } from '@wikimedia/codex-icons'
 import { verifiedFacts } from '../config/verifiedFacts.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
+import { useCitationRegistry } from '../composables/useCitationRegistry'
 
 const emit = defineEmits(['content-inserted'])
 const { getEditor, insertContent } = useEditorInstance()
 const { activePlaceholderPos, clearActivePlaceholder } = usePlaceholderInteraction()
+const { insertCitation } = useCitationRegistry()
 
 function onInsertFact(fact) {
   const chipPos = activePlaceholderPos.value
   const editor = getEditor()
+
+  // Build citation superscript nodes for each reference
+  const citationNodes = fact.references.map((ref) => {
+    const citation = {
+      id: `fact-ref-${ref.url}`,
+      segments: [{ text: ref.url, style: 'link' }],
+    }
+    const refNumber = insertCitation(citation)
+    return {
+      type: 'citationSuperscript',
+      attrs: { label: String(refNumber) },
+    }
+  })
+
+  // Build content: fact title text + citation superscripts
+  const contentNodes = [{ type: 'text', text: fact.title }, ...citationNodes]
 
   if (chipPos !== null && editor) {
     const node = editor.state.doc.nodeAt(chipPos)
@@ -48,7 +66,7 @@ function onInsertFact(fact) {
           tr.delete(chipPos, chipPos + node.nodeSize)
           return true
         })
-        .insertContentAt(chipPos, fact.title)
+        .insertContentAt(chipPos, contentNodes)
         .run()
       clearActivePlaceholder()
       emit('content-inserted')
@@ -56,7 +74,7 @@ function onInsertFact(fact) {
     }
   }
 
-  insertContent(fact.title)
+  insertContent(contentNodes)
   emit('content-inserted')
 }
 </script>

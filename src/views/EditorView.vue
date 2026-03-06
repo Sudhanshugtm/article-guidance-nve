@@ -64,7 +64,11 @@
       @open-cite-discover="onOpenCiteDiscover"
     />
     <SettingsDialog v-model:open="settingsDialogOpen" />
-    <CiteDialog v-model:open="citeDialogOpen" :initial-tab="citeDialogInitialTab" />
+    <CiteDialog
+      v-model:open="citeDialogOpen"
+      :initial-tab="citeDialogInitialTab"
+      @citation-selected="onCitationSelected"
+    />
     <ReviseToneCard />
     <PastedContentCard />
     <CompleteSectionCard />
@@ -107,7 +111,13 @@ function onKeyboardHeightChange(height) {
 // Force entry point
 const { getEditor, hasContent, citationClickCount } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
-const { allCitations } = useCitationRegistry()
+const {
+  usedCitations,
+  availableCitations,
+  insertCitation,
+  clickedCitationPos,
+  clearClickedCitationPos,
+} = useCitationRegistry()
 const { cursorRect } = useCursorRect()
 const { triggerDetectionOnInsert } = usePeacockDetection()
 const {
@@ -191,7 +201,8 @@ function onOpenOutline() {
 }
 
 function onOpenCiteDefault() {
-  citeDialogInitialTab.value = allCitations.value.length > 0 ? 'reuse' : 'automatic'
+  const hasCitations = usedCitations.value.length > 0 || availableCitations.value.length > 0
+  citeDialogInitialTab.value = hasCitations ? 'reuse' : 'automatic'
   citeDialogOpen.value = true
 }
 
@@ -232,6 +243,48 @@ watch(isPopoverOpen, (newVal) => {
 watch(citationClickCount, () => {
   onOpenCiteDefault()
 })
+
+// Clear clicked citation position when dialog closes without selection
+watch(citeDialogOpen, (isOpen) => {
+  if (!isOpen) {
+    clearClickedCitationPos()
+  }
+})
+
+function onCitationSelected(citation) {
+  const editor = getEditor()
+  if (!editor) return
+
+  const refNumber = insertCitation(citation)
+  const label = String(refNumber)
+  const pos = clickedCitationPos.value
+
+  if (pos !== null) {
+    // Replace the clicked "Add a citation" placeholder node
+    const node = editor.state.doc.nodeAt(pos)
+    if (node && node.type.name === 'citationSuperscript') {
+      editor
+        .chain()
+        .focus()
+        .command(({ tr }) => {
+          tr.setNodeMarkup(pos, null, { label })
+          return true
+        })
+        .run()
+    }
+    clearClickedCitationPos()
+  } else {
+    // No placeholder was clicked — insert at current cursor position
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'citationSuperscript',
+        attrs: { label },
+      })
+      .run()
+  }
+}
 
 watch(outlineLocation, () => {
   isRailOpen.value = false
