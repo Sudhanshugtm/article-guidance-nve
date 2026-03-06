@@ -353,8 +353,8 @@ const floatingButtonStyle = computed(() => ({
 }))
 
 function getEditorScrollEl() {
-  // The EditorContent wrapper is the scrollable element (.text-editor has overflow-y: auto)
-  return editorContentRef.value?.$el || null
+  // The actual scrollable element is the .ProseMirror div (editor.view.dom)
+  return editor.value?.view?.dom || null
 }
 
 function updateButtonPosition() {
@@ -528,7 +528,8 @@ function scheduleShowButton() {
 function onScroll() {
   if (isButtonVisible.value || useForceMode.value) {
     updateButtonPosition()
-  } else if (
+  }
+  if (
     activeParagraphRange.value ||
     activePastedRange.value ||
     placeholderDetections.value.size > 0

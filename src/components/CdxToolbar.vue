@@ -4,7 +4,12 @@
       <CdxButton class="cdx-toolbar__btn cdx-toolbar__btn--close" weight="quiet" aria-label="Close">
         <CdxIcon :icon="cdxIconClose" />
       </CdxButton>
-      <CdxButton class="cdx-toolbar__btn" weight="quiet" aria-label="Undo" @click="getEditor()?.chain().focus().undo().run()">
+      <CdxButton
+        class="cdx-toolbar__btn"
+        weight="quiet"
+        aria-label="Undo"
+        @click="getEditor()?.chain().focus().undo().run()"
+      >
         <CdxIcon :icon="cdxIconUndo" />
       </CdxButton>
       <CdxButton
@@ -74,7 +79,7 @@ import {
 <style scoped>
 .cdx-toolbar {
   position: fixed;
-  z-index: 1;
+  z-index: 3;
   display: flex;
   height: 48px;
   background-color: var(--background-color-base, #fff);
