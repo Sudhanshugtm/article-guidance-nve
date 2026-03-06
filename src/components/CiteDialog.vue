@@ -101,7 +101,7 @@
                 <div class="cite-dialog__discover-actions">
                   <CdxButton>
                     <CdxIcon :icon="cdxIconAdd" />
-                    Insert
+                    Add
                   </CdxButton>
                   <CdxButton weight="quiet">
                     <CdxIcon :icon="cdxIconBook" />
