@@ -27,8 +27,8 @@
             <slot name="footer" />
           </div>
         </div>
-        <div v-if="totalChecks > 1" class="edit-check-pagination">
-          <span class="pagination-text">{{ currentCheckIndex + 1 }} of {{ totalChecks }}</span>
+        <div v-if="activeGroupCheckCount > 1" class="edit-check-pagination">
+          <span class="pagination-text">{{ currentCheckIndex + 1 }} of {{ activeGroupCheckCount }}</span>
           <div class="pagination-buttons">
             <CdxButton
               weight="quiet"
@@ -42,7 +42,7 @@
             <CdxButton
               weight="quiet"
               class="pagination-btn"
-              :disabled="currentCheckIndex >= totalChecks - 1"
+              :disabled="currentCheckIndex >= activeGroupCheckCount - 1"
               aria-label="Next check"
               @click="onNext"
             >
@@ -68,7 +68,7 @@ defineProps({
 
 defineEmits(['close'])
 
-const { totalChecks, currentCheckIndex, goToNext, goToPrev } = useEditCheckPagination()
+const { activeGroupCheckCount, currentCheckIndex, goToNext, goToPrev } = useEditCheckPagination()
 const { getEditor } = useEditorInstance()
 
 function onPrev() {

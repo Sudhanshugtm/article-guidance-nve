@@ -3,8 +3,20 @@ import { usePeacockDetection } from './usePeacockDetection'
 import { usePasteDetection } from './usePasteDetection'
 import { usePlaceholderDetection } from './usePlaceholderDetection'
 
+const currentGroupIndex = ref(0)
 const currentCheckIndex = ref(0)
 const cursorInCheckParagraph = ref(false)
+
+function rangesOverlap(a, b) {
+  if (!a || !b) return false
+  return a.from <= b.to && b.from <= a.to
+}
+
+function unionRect(rects) {
+  const top = Math.min(...rects.map((r) => r.top))
+  const bottom = Math.max(...rects.map((r) => r.bottom))
+  return { top, bottom, height: bottom - top, visible: true }
+}
 
 export function useEditCheckPagination() {
   const {
@@ -26,9 +38,7 @@ export function useEditCheckPagination() {
   } = usePasteDetection()
 
   const {
-    placeholderDetectionRect,
-    activePlaceholderDetectionId,
-    activePlaceholderDetectionRange,
+    placeholderDetections,
     isPlaceholderCardVisible,
     showPlaceholderCard,
     dismissPlaceholderCard,
@@ -38,34 +48,68 @@ export function useEditCheckPagination() {
   const activeChecks = computed(() => {
     const checks = []
     if (peacockParagraphRect.value?.visible) {
-      checks.push({ type: 'peacock', range: activeParagraphRange.value })
+      checks.push({
+        type: 'peacock',
+        range: activeParagraphRange.value,
+        rect: peacockParagraphRect.value,
+      })
     }
     if (pasteParagraphRect.value?.visible) {
-      checks.push({ type: 'paste', range: activePastedRange.value })
+      checks.push({
+        type: 'paste',
+        range: activePastedRange.value,
+        rect: pasteParagraphRect.value,
+      })
     }
-    if (placeholderDetectionRect.value?.visible) {
-      checks.push({ type: 'placeholder', range: activePlaceholderDetectionRange.value })
+    for (const [id, det] of placeholderDetections.value) {
+      if (det.rect?.visible) {
+        checks.push({
+          type: 'placeholder',
+          detectionId: id,
+          range: det.range,
+          rect: det.rect,
+        })
+      }
     }
     return checks
   })
 
-  const totalChecks = computed(() => activeChecks.value.length)
-
-  // Union of all active rects for positioning the single rail indicator
-  const unifiedRailRect = computed(() => {
-    const rects = []
-    if (peacockParagraphRect.value?.visible) rects.push(peacockParagraphRect.value)
-    if (pasteParagraphRect.value?.visible) rects.push(pasteParagraphRect.value)
-    if (placeholderDetectionRect.value?.visible) rects.push(placeholderDetectionRect.value)
-    if (rects.length === 0) return null
-
-    const top = Math.min(...rects.map((r) => r.top))
-    const bottom = Math.max(...rects.map((r) => r.bottom))
-    return { top, bottom, height: bottom - top, visible: true }
+  // Group checks by paragraph (overlapping ranges = same paragraph)
+  const checkGroups = computed(() => {
+    const groups = []
+    for (const check of activeChecks.value) {
+      const existing = groups.find((g) =>
+        g.checks.some((c) => rangesOverlap(c.range, check.range)),
+      )
+      if (existing) {
+        existing.checks.push(check)
+      } else {
+        groups.push({ checks: [check] })
+      }
+    }
+    return groups.map((g) => ({
+      checks: g.checks,
+      rect: unionRect(g.checks.map((c) => c.rect)),
+      count: g.checks.length,
+    }))
   })
 
-  // Reset index when checks change
-  watch(totalChecks, (n) => {
+  const totalGroups = computed(() => checkGroups.value.length)
+
+  // The active group's check count (for card pagination)
+  const activeGroupCheckCount = computed(() => {
+    const group = checkGroups.value[currentGroupIndex.value]
+    return group ? group.count : 0
+  })
+
+  // Reset indices when groups change
+  watch(totalGroups, (n) => {
+    if (currentGroupIndex.value >= n) {
+      currentGroupIndex.value = Math.max(0, n - 1)
+    }
+  })
+
+  watch(activeGroupCheckCount, (n) => {
     if (currentCheckIndex.value >= n) {
       currentCheckIndex.value = Math.max(0, n - 1)
     }
@@ -77,29 +121,38 @@ export function useEditCheckPagination() {
     if (isPlaceholderCardVisible.value) dismissPlaceholderCard(editor)
   }
 
-  function showCheckByType(type, editor) {
-    if (type === 'peacock') showPeacockCard(activeParagraphId.value, editor)
-    else if (type === 'paste') showPasteCard(activePastedParagraphId.value, editor)
-    else if (type === 'placeholder')
-      showPlaceholderCard(activePlaceholderDetectionId.value, editor)
+  function showCheck(check, editor) {
+    if (check.type === 'peacock') showPeacockCard(activeParagraphId.value, editor)
+    else if (check.type === 'paste') showPasteCard(activePastedParagraphId.value, editor)
+    else if (check.type === 'placeholder') showPlaceholderCard(check.detectionId, editor)
   }
 
-  function showCheckAtIndex(index, editor) {
+  // Show a check within the active group by its index within that group
+  function showCheckInGroup(groupIndex, checkIndex, editor) {
     dismissAllCards(editor)
-    currentCheckIndex.value = index
-    const check = activeChecks.value[index]
-    if (check) showCheckByType(check.type, editor)
+    currentGroupIndex.value = groupIndex
+    currentCheckIndex.value = checkIndex
+    const group = checkGroups.value[groupIndex]
+    if (group) {
+      const check = group.checks[checkIndex]
+      if (check) showCheck(check, editor)
+    }
+  }
+
+  // Show the first check of a specific group (used by rail indicator click)
+  function showGroupAtIndex(groupIndex, editor) {
+    showCheckInGroup(groupIndex, 0, editor)
   }
 
   function goToNext(editor) {
-    if (currentCheckIndex.value < totalChecks.value - 1) {
-      showCheckAtIndex(currentCheckIndex.value + 1, editor)
+    if (currentCheckIndex.value < activeGroupCheckCount.value - 1) {
+      showCheckInGroup(currentGroupIndex.value, currentCheckIndex.value + 1, editor)
     }
   }
 
   function goToPrev(editor) {
     if (currentCheckIndex.value > 0) {
-      showCheckAtIndex(currentCheckIndex.value - 1, editor)
+      showCheckInGroup(currentGroupIndex.value, currentCheckIndex.value - 1, editor)
     }
   }
 
@@ -124,12 +177,14 @@ export function useEditCheckPagination() {
 
   return {
     activeChecks,
-    totalChecks,
+    checkGroups,
+    totalGroups,
+    activeGroupCheckCount,
     currentCheckIndex,
-    unifiedRailRect,
+    currentGroupIndex,
     isAnyCardActive,
     cursorInCheckParagraph,
-    showCheckAtIndex,
+    showGroupAtIndex,
     goToNext,
     goToPrev,
     dismissAllCards,

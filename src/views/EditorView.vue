@@ -27,19 +27,22 @@
       <CdxIcon :icon="cdxIconAdd" />
     </div>
 
-    <!-- Unified check rail indicator: single indicator with badge for multiple checks -->
-    <div
-      v-if="isUnifiedRailVisible"
-      class="peacock-rail-indicator"
-      :style="unifiedRailStyle"
-      @mousedown.prevent
-      @click.stop="onUnifiedRailClick"
-    >
-      <span class="rail-icon-wrapper">
-        <CdxIcon :icon="cdxIconAlert" />
-        <span v-if="totalChecks > 1" class="rail-badge">{{ totalChecks }}</span>
-      </span>
-    </div>
+    <!-- Per-paragraph check rail indicators -->
+    <template v-if="areRailIndicatorsVisible">
+      <div
+        v-for="(group, gi) in checkGroups"
+        :key="gi"
+        class="peacock-rail-indicator"
+        :style="railStyleForGroup(group)"
+        @mousedown.prevent
+        @click.stop="onGroupRailClick(gi)"
+      >
+        <span class="rail-icon-wrapper">
+          <CdxIcon :icon="cdxIconAlert" />
+          <span v-if="group.count > 1" class="rail-badge">{{ group.count }}</span>
+        </span>
+      </div>
+    </template>
 
     <OutlinePopover
       v-if="outlineLocation === 'popover'"
@@ -88,37 +91,36 @@ const { cursorRect } = useCursorRect()
 const { triggerDetectionOnInsert } = usePeacockDetection()
 const {
   activeChecks,
-  totalChecks,
-  unifiedRailRect,
+  checkGroups,
+  totalGroups,
   isAnyCardActive,
   cursorInCheckParagraph,
-  showCheckAtIndex,
+  showGroupAtIndex,
 } = useEditCheckPagination()
 
-// Unified check rail indicator
-const isUnifiedRailVisible = computed(() => {
+// Per-paragraph rail indicators
+const areRailIndicatorsVisible = computed(() => {
   if (isRailOpen.value || isPopoverOpen.value) return false
-  return totalChecks.value > 0
+  return totalGroups.value > 0
 })
 
-const unifiedRailStyle = computed(() => {
-  if (!unifiedRailRect.value) return {}
-  const rect = unifiedRailRect.value
+function railStyleForGroup(group) {
+  if (!group.rect) return {}
   return {
     position: 'fixed',
-    top: `${rect.top}px`,
+    top: `${group.rect.top}px`,
     right: '0px',
     width: '44px',
-    height: `${rect.height}px`,
+    height: `${group.rect.height}px`,
   }
-})
+}
 
 const isForceButtonVisible = computed(() => {
   if (!['inline', 'force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value))
     return false
   if (isRailOpen.value || isPopoverOpen.value) return false
   if (!cursorRect.value) return false
-  if (isUnifiedRailVisible.value && cursorInCheckParagraph.value) return false
+  if (areRailIndicatorsVisible.value && cursorInCheckParagraph.value) return false
   return cursorRect.value.visible
 })
 
@@ -147,10 +149,10 @@ function onForceButtonClick() {
   onOpenOutline()
 }
 
-function onUnifiedRailClick() {
+function onGroupRailClick(groupIndex) {
   const editor = getEditor()
   editor?.commands.blur()
-  showCheckAtIndex(0, editor)
+  showGroupAtIndex(groupIndex, editor)
 }
 
 function onOpenOutline() {

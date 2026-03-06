@@ -105,7 +105,7 @@ const { onPaste, triggerPasteDetection, updatePasteRect, activePastedRange } =
 const {
   triggerPlaceholderDetection,
   updatePlaceholderDetectionRect,
-  activePlaceholderDetectionRange,
+  placeholderDetections,
 } = usePlaceholderDetection()
 const { isAnyCardActive, dismissAllCards, updateCursorInCheck } = useEditCheckPagination()
 
@@ -531,7 +531,7 @@ function onScroll() {
   } else if (
     activeParagraphRange.value ||
     activePastedRange.value ||
-    activePlaceholderDetectionRange.value
+    placeholderDetections.value.size > 0
   ) {
     updatePeacockRect(editor.value)
     updatePasteRect(editor.value)

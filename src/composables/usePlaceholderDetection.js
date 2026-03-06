@@ -1,9 +1,9 @@
-import { ref, shallowRef } from 'vue'
+import { ref, triggerRef } from 'vue'
 
 const isPlaceholderCardVisible = ref(false)
-const activePlaceholderDetectionId = ref(null)
-const activePlaceholderDetectionRange = ref(null)
-const placeholderDetectionRect = shallowRef(null)
+const activeCardDetectionId = ref(null)
+// Map of detectionId → { range: { from, to }, rect: { top, bottom, height, visible } | null }
+const placeholderDetections = ref(new Map())
 
 /**
  * Check if a paragraph node contains any placeholderChip nodes.
@@ -19,6 +19,11 @@ function paragraphHasPlaceholders(node) {
   return found
 }
 
+function rangesOverlap(a, b) {
+  if (!a || !b) return false
+  return a.from <= b.to && b.from <= a.to
+}
+
 /**
  * Check the paragraph at the given position for unfilled placeholders.
  * Called when the cursor leaves a paragraph (from onSelectionUpdate).
@@ -32,46 +37,54 @@ function triggerPlaceholderDetection(editor, paragraphPos) {
 
     if (!paragraphHasPlaceholders(node)) return
 
-    // Skip if we already have an active detection (prevents duplicate triggers)
-    if (activePlaceholderDetectionId.value) return
-
-    const detectionId = 'pd-' + Math.random().toString(36).slice(2, 8)
     const from = paragraphPos + 1
     const to = paragraphPos + node.nodeSize - 1
+    const newRange = { from, to }
+
+    // Skip if this paragraph already has a detection
+    for (const [, det] of placeholderDetections.value) {
+      if (rangesOverlap(det.range, newRange)) return
+    }
+
+    const detectionId = 'pd-' + Math.random().toString(36).slice(2, 8)
 
     editor.commands.setPlaceholderDetectionHighlights({ from, to, detectionId })
 
-    activePlaceholderDetectionId.value = detectionId
-    activePlaceholderDetectionRange.value = { from, to }
+    placeholderDetections.value.set(detectionId, { range: newRange, rect: null })
+    triggerRef(placeholderDetections)
   } catch {
     // Position may be invalid after doc changes
   }
 }
 
 /**
- * Compute visual position of the active detected paragraph for rail indicator positioning.
+ * Compute visual positions of all detected paragraphs for rail indicator positioning.
  */
 function updatePlaceholderDetectionRect(editor) {
-  if (!activePlaceholderDetectionRange.value || !editor) {
-    placeholderDetectionRect.value = null
-    return
-  }
+  if (!editor || placeholderDetections.value.size === 0) return
 
-  try {
-    const { from, to } = activePlaceholderDetectionRange.value
-    const startCoords = editor.view.coordsAtPos(from)
-    const endCoords = editor.view.coordsAtPos(to)
-    const top = startCoords.top
-    const bottom = endCoords.bottom
-    placeholderDetectionRect.value = {
-      top,
-      bottom,
-      height: bottom - top,
-      visible: true,
+  let changed = false
+  for (const [id, det] of placeholderDetections.value) {
+    try {
+      const { from, to } = det.range
+      const startCoords = editor.view.coordsAtPos(from)
+      const endCoords = editor.view.coordsAtPos(to)
+      const top = startCoords.top
+      const bottom = endCoords.bottom
+      const newRect = { top, bottom, height: bottom - top, visible: true }
+      if (!det.rect || det.rect.top !== top || det.rect.bottom !== bottom) {
+        det.rect = newRect
+        changed = true
+      }
+    } catch {
+      if (det.rect !== null) {
+        det.rect = null
+        changed = true
+      }
+      // Position invalid — will be cleaned up or ignored by pagination
     }
-  } catch {
-    placeholderDetectionRect.value = null
   }
+  if (changed) triggerRef(placeholderDetections)
 }
 
 /**
@@ -79,7 +92,7 @@ function updatePlaceholderDetectionRect(editor) {
  * Promotes placeholder chip highlights to warning style.
  */
 function showPlaceholderCard(detectionId, editor) {
-  activePlaceholderDetectionId.value = detectionId
+  activeCardDetectionId.value = detectionId
   isPlaceholderCardVisible.value = true
   if (editor) editor.commands.promotePlaceholderDetection(detectionId)
 }
@@ -89,8 +102,11 @@ function showPlaceholderCard(detectionId, editor) {
  * clear highlights, dismiss card.
  */
 function editPlaceholder(editor) {
-  if (activePlaceholderDetectionRange.value) {
-    const { from, to } = activePlaceholderDetectionRange.value
+  const detectionId = activeCardDetectionId.value
+  const det = detectionId ? placeholderDetections.value.get(detectionId) : null
+
+  if (det) {
+    const { from, to } = det.range
     // Find the first placeholderChip node in the range
     let firstChipPos = null
     editor.state.doc.nodesBetween(from, to, (node, pos) => {
@@ -103,13 +119,15 @@ function editPlaceholder(editor) {
       editor.chain().focus().setTextSelection(firstChipPos).run()
     }
   }
-  if (activePlaceholderDetectionId.value) {
-    editor.commands.clearPlaceholderDetection(activePlaceholderDetectionId.value)
+
+  if (detectionId) {
+    editor.commands.clearPlaceholderDetection(detectionId)
+    placeholderDetections.value.delete(detectionId)
+    triggerRef(placeholderDetections)
   }
+
   isPlaceholderCardVisible.value = false
-  activePlaceholderDetectionId.value = null
-  activePlaceholderDetectionRange.value = null
-  placeholderDetectionRect.value = null
+  activeCardDetectionId.value = null
 }
 
 /**
@@ -117,17 +135,17 @@ function editPlaceholder(editor) {
  */
 function dismissPlaceholderCard(editor) {
   isPlaceholderCardVisible.value = false
-  if (editor && activePlaceholderDetectionId.value) {
-    editor.commands.demotePlaceholderDetection(activePlaceholderDetectionId.value)
+  if (editor && activeCardDetectionId.value) {
+    editor.commands.demotePlaceholderDetection(activeCardDetectionId.value)
   }
+  activeCardDetectionId.value = null
 }
 
 export function usePlaceholderDetection() {
   return {
     isPlaceholderCardVisible,
-    activePlaceholderDetectionId,
-    activePlaceholderDetectionRange,
-    placeholderDetectionRect,
+    activeCardDetectionId,
+    placeholderDetections,
     triggerPlaceholderDetection,
     updatePlaceholderDetectionRect,
     showPlaceholderCard,
