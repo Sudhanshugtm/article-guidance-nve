@@ -39,7 +39,7 @@ export const CitationSuperscript = Node.create({
   },
 
   addProseMirrorPlugins() {
-    const { reconcileCitations } = useCitationRegistry()
+    const { reconcileCitations, usedCitations } = useCitationRegistry()
 
     return [
       new Plugin({
@@ -66,28 +66,59 @@ export const CitationSuperscript = Node.create({
           // Reconcile with the registry (pass document-ordered unique IDs)
           const labelMap = reconcileCitations(orderedIds)
 
-          // Check if any labels need updating
-          let needsUpdate = false
-          for (const { node } of nodePositions) {
-            const expectedLabel = labelMap.get(node.attrs.citationId)
-            if (expectedLabel && node.attrs.label !== expectedLabel) {
-              needsUpdate = true
-              break
-            }
-          }
+          // Build a transaction lazily — only if label updates or references changes needed
+          let tr = null
 
-          if (!needsUpdate) return null
-
-          // Build a transaction to update stale labels
-          const { tr } = newState
+          // Update stale citation labels
           for (const { pos, node } of nodePositions) {
             const expectedLabel = labelMap.get(node.attrs.citationId)
             if (expectedLabel && node.attrs.label !== expectedLabel) {
+              if (!tr) tr = newState.tr
               tr.setNodeMarkup(pos, null, {
                 ...node.attrs,
                 label: expectedLabel,
               })
             }
+          }
+
+          // Manage the References section
+          const hasCitations = orderedIds.length > 0
+          let refNodePos = null
+          let refNode = null
+
+          newState.doc.descendants((node, pos) => {
+            if (node.type.name === 'referencesSection') {
+              refNodePos = pos
+              refNode = node
+              return false
+            }
+          })
+
+          if (hasCitations) {
+            const citationsJson = JSON.stringify(
+              usedCitations.value.map((c) => ({
+                id: c.id,
+                segments: c.segments,
+                referenceNumber: c.referenceNumber,
+              })),
+            )
+
+            if (refNode) {
+              if (refNode.attrs.citations !== citationsJson) {
+                if (!tr) tr = newState.tr
+                const mappedPos = tr.mapping.map(refNodePos)
+                tr.setNodeMarkup(mappedPos, null, { citations: citationsJson })
+              }
+            } else {
+              if (!tr) tr = newState.tr
+              const refNodeType = newState.schema.nodes.referencesSection
+              const node = refNodeType.create({ citations: citationsJson })
+              tr.insert(tr.doc.content.size, node)
+            }
+          } else if (refNode) {
+            if (!tr) tr = newState.tr
+            const mappedPos = tr.mapping.map(refNodePos)
+            tr.delete(mappedPos, mappedPos + refNode.nodeSize)
           }
 
           return tr

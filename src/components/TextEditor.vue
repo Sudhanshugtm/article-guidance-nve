@@ -84,6 +84,7 @@ import { PlaceholderDetectionHighlight } from '../extensions/placeholderDetectio
 import { usePlaceholderDetection } from '../composables/usePlaceholderDetection'
 import { PlaceholderChip } from '../extensions/placeholderChip'
 import { CitationSuperscript } from '../extensions/citationSuperscript'
+import { ReferencesSection } from '../extensions/referencesSection'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
@@ -152,6 +153,7 @@ const editor = useEditor({
     PlaceholderDetectionHighlight,
     PlaceholderChip,
     CitationSuperscript,
+    ReferencesSection,
   ],
   editorProps: {
     handlePaste: (view) => {
