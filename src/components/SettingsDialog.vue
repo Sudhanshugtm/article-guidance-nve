@@ -71,6 +71,20 @@
           {{ label }}
         </CdxRadio>
       </div>
+      <!-- Soft keyboard section -->
+      <div class="field-group">
+        <CdxLabel>Soft keyboard</CdxLabel>
+        <CdxRadio
+          v-for="(label, displayKey) in keyboardDisplayLabels"
+          :key="displayKey"
+          v-model="localSettings.keyboard.display"
+          :input-value="displayKey"
+          name="keyboard-display"
+          @update:model-value="onSettingChange"
+        >
+          {{ label }}
+        </CdxRadio>
+      </div>
     </div>
   </CdxDialog>
 </template>
@@ -85,6 +99,7 @@ import {
   outlineLocationLabels,
   outlinePersistenceLabels,
   placeholderCursorLabels,
+  keyboardDisplayLabels,
 } from '../config/editorSettings'
 
 const open = defineModel('open', { type: Boolean, default: false })

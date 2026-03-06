@@ -2,7 +2,7 @@
   <div class="editor-page">
     <CdxToolbar @cite="onOpenCiteDefault" />
     <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen, 'check-card-active': isAnyCardActive, 'cursor-in-check': cursorInCheckParagraph }">
-      <div class="editor-main" @click="isRailOpen && (isRailOpen = false)">
+      <div class="editor-main" :class="{ 'keyboard-visible': showSoftKeyboard }" @click="isRailOpen && (isRailOpen = false)">
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
       </div>
       <div class="editor-rail-column">
@@ -56,6 +56,7 @@
     <ReviseToneCard />
     <PastedContentCard />
     <CompleteSectionCard />
+    <SoftKeyboard v-if="showSoftKeyboard" />
   </div>
 </template>
 
@@ -72,6 +73,7 @@ import OutlinePopover from '@/components/OutlinePopover.vue'
 import ReviseToneCard from '@/components/ReviseToneCard.vue'
 import PastedContentCard from '@/components/PastedContentCard.vue'
 import CompleteSectionCard from '@/components/CompleteSectionCard.vue'
+import SoftKeyboard from '@/components/SoftKeyboard.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
@@ -84,6 +86,7 @@ const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
 const outlinePersistence = computed(() => settings.value.outline.persistence)
 const entryPointStyle = computed(() => settings.value.entryPoint.style)
+const showSoftKeyboard = computed(() => settings.value.keyboard.display === 'visible')
 
 // Force entry point
 const { getEditor, hasContent, citationClickCount } = useEditorInstance()
@@ -250,6 +253,10 @@ watch(outlineLocation, () => {
   flex: 0 0 calc(100vw - 44px);
   display: flex;
   flex-direction: column;
+}
+
+.editor-main.keyboard-visible :deep(.ProseMirror) {
+  padding-bottom: 260px;
 }
 
 .force-entry-point {
