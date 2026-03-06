@@ -78,6 +78,7 @@ import { useCursorRect } from '@/composables/useCursorRect'
 import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
 import { usePeacockDetection } from '@/composables/usePeacockDetection'
 import { useEditCheckPagination } from '@/composables/useEditCheckPagination'
+import { useCitationRegistry } from '@/composables/useCitationRegistry'
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
@@ -87,6 +88,7 @@ const entryPointStyle = computed(() => settings.value.entryPoint.style)
 // Force entry point
 const { getEditor, hasContent, citationClickCount } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
+const { allCitations } = useCitationRegistry()
 const { cursorRect } = useCursorRect()
 const { triggerDetectionOnInsert } = usePeacockDetection()
 const {
@@ -170,7 +172,7 @@ function onOpenOutline() {
 }
 
 function onOpenCiteDefault() {
-  citeDialogInitialTab.value = 'automatic'
+  citeDialogInitialTab.value = allCitations.value.length > 0 ? 'reuse' : 'automatic'
   citeDialogOpen.value = true
 }
 

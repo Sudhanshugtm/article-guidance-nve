@@ -16,7 +16,7 @@
           class="reference-link"
           @click.stop
         >
-          {{ source.referenceCount }} {{ source.referenceCount === 1 ? 'reference' : 'references' }}
+          {{ source.references.length }} {{ source.references.length === 1 ? 'reference' : 'references' }}
         </a>
       </template>
     </CdxCard>

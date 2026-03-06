@@ -73,8 +73,43 @@
           </div>
         </CdxTab>
         <CdxTab name="discover" label="Discover">
-          <div class="cite-dialog__tab-content">
-            <p class="cite-dialog__description">Discover sources</p>
+          <div class="cite-dialog__discover">
+            <div class="cite-dialog__discover-search">
+              <CdxSearchInput
+                v-model="discoverSearchQuery"
+                placeholder="Search citations in other projects"
+              />
+              <CdxButton weight="quiet" aria-label="Filter">
+                <CdxIcon :icon="cdxIconFunnel" />
+              </CdxButton>
+            </div>
+            <div class="cite-dialog__discover-list">
+              <div
+                v-for="ref in discoverReferences"
+                :key="ref.id"
+                class="cite-dialog__discover-item"
+              >
+                <div class="cite-dialog__discover-source">
+                  <img
+                    :src="ref.sourceThumbnailUrl"
+                    :alt="ref.sourceTitle"
+                    class="cite-dialog__discover-source-icon"
+                  />
+                  <span class="cite-dialog__discover-source-name">{{ ref.sourceTitle }}</span>
+                </div>
+                <p class="cite-dialog__discover-text">{{ ref.text }}</p>
+                <div class="cite-dialog__discover-actions">
+                  <CdxButton>
+                    <CdxIcon :icon="cdxIconAdd" />
+                    Insert
+                  </CdxButton>
+                  <CdxButton weight="quiet">
+                    <CdxIcon :icon="cdxIconBook" />
+                    Read
+                  </CdxButton>
+                </div>
+              </div>
+            </div>
           </div>
         </CdxTab>
       </CdxTabs>
@@ -83,10 +118,11 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { CdxDialog, CdxTabs, CdxTab, CdxSearchInput, CdxButton, CdxIcon } from '@wikimedia/codex'
-import { cdxIconLogoWikidata } from '@wikimedia/codex-icons'
+import { cdxIconLogoWikidata, cdxIconFunnel, cdxIconAdd, cdxIconBook } from '@wikimedia/codex-icons'
 import { useCitationRegistry } from '@/composables/useCitationRegistry'
+import { referenceSources } from '@/config/referenceSources'
 
 const props = defineProps({
   initialTab: {
@@ -101,6 +137,18 @@ const open = defineModel('open', { type: Boolean, default: false })
 const activeTab = ref(props.initialTab)
 const searchQuery = ref('')
 const reuseSearchQuery = ref('')
+const discoverSearchQuery = ref('')
+
+const discoverReferences = computed(() =>
+  referenceSources.flatMap((source) =>
+    source.references.map((ref) => ({
+      ...ref,
+      sourceId: source.id,
+      sourceTitle: source.title,
+      sourceThumbnailUrl: source.thumbnailUrl,
+    })),
+  ),
+)
 
 watch(open, (isOpen) => {
   if (isOpen) {
@@ -126,6 +174,7 @@ watch(open, (isOpen) => {
 }
 
 .cite-dialog :deep(.cdx-dialog__body) {
+  font-family: var(--font-family-system-sans);
   padding: 0;
 }
 
@@ -191,5 +240,72 @@ watch(open, (isOpen) => {
 
 .cite-dialog__reuse-link:hover {
   text-decoration: underline;
+}
+
+.cite-dialog__discover {
+  display: flex;
+  flex-direction: column;
+}
+
+.cite-dialog__discover-search {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-50);
+  padding: var(--spacing-75) var(--spacing-100);
+  border-bottom: var(--border-width-base) var(--border-style-base) var(--border-color-subtle);
+}
+
+.cite-dialog__discover-search .cdx-search-input {
+  flex: 1;
+}
+
+.cite-dialog__discover-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--spacing-100);
+}
+
+.cite-dialog__discover-item {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-75) 0 var(--spacing-100);
+  border-bottom: var(--border-width-base) var(--border-style-base) var(--border-color-subtle);
+}
+
+.cite-dialog__discover-item:last-child {
+  border-bottom: none;
+}
+
+.cite-dialog__discover-source {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-25);
+  margin-bottom: var(--spacing-25);
+}
+
+.cite-dialog__discover-source-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.cite-dialog__discover-source-name {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+  color: var(--color-progressive);
+}
+
+.cite-dialog__discover-text {
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.048px;
+  color: var(--color-emphasized);
+  margin: 0 0 var(--spacing-75) 0;
+}
+
+.cite-dialog__discover-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-50);
 }
 </style>
