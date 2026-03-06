@@ -1,35 +1,54 @@
 <template>
   <Transition name="slide-up">
-    <div v-show="isVisible" class="soft-keyboard-wrapper">
+    <div v-show="isVisible" ref="wrapperRef" class="soft-keyboard-wrapper">
       <div ref="keyboardRef" class="soft-keyboard"></div>
+      <div class="keyboard-bottom-bar">
+        <img :src="emojiIcon" alt="" class="bottom-bar-icon emoji-icon" />
+        <img :src="micIcon" alt="" class="bottom-bar-icon mic-icon" />
+      </div>
     </div>
   </Transition>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import Keyboard from 'simple-keyboard'
 import 'simple-keyboard/build/css/index.css'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import emojiIcon from '../assets/keyboard-emoji.svg'
+import micIcon from '../assets/keyboard-mic.svg'
 
+const emit = defineEmits(['height-change'])
+
+const wrapperRef = ref(null)
 const keyboardRef = ref(null)
 const isVisible = ref(false)
 let keyboardInstance = null
 
 const { editorInstance } = useEditorInstance()
 
+watch(isVisible, async (visible) => {
+  if (visible) {
+    await nextTick()
+    const height = wrapperRef.value?.offsetHeight || 0
+    emit('height-change', height)
+  } else {
+    emit('height-change', 0)
+  }
+})
+
 const layout = {
   default: [
     'q w e r t y u i o p',
     'a s d f g h j k l',
     '{shift} z x c v b n m {backspace}',
-    '{space}',
+    '{numbers} {space} {enter}',
   ],
   shift: [
     'Q W E R T Y U I O P',
     'A S D F G H J K L',
     '{shift} Z X C V B N M {backspace}',
-    '{space}',
+    '{numbers} {space} {enter}',
   ],
 }
 
@@ -37,6 +56,8 @@ const display = {
   '{shift}': '⇧',
   '{backspace}': '⌫',
   '{space}': ' ',
+  '{numbers}': '123',
+  '{enter}': 'return',
 }
 
 onMounted(() => {
@@ -46,7 +67,7 @@ onMounted(() => {
     theme: 'hg-theme-default ios-theme',
     physicalKeyboardHighlight: true,
     physicalKeyboardHighlightPress: true,
-    physicalKeyboardHighlightBgColor: '#b0d4f1',
+    physicalKeyboardHighlightBgColor: '#E6E9ED',
     physicalKeyboardHighlightTextColor: '#000',
     mergeDisplay: true,
     preventMouseDownDefault: true,
@@ -99,8 +120,7 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100%;
   z-index: 100;
-  background-color: #d1d4d9;
-  padding: 4px 2px 20px 2px;
+  background-color: #e6e9ed;
   box-sizing: border-box;
 }
 
@@ -114,50 +134,113 @@ onBeforeUnmount(() => {
   transform: translateY(100%);
 }
 
-/* iOS-style overrides for simple-keyboard */
+/* simple-keyboard container */
 .soft-keyboard-wrapper :deep(.hg-theme-default) {
   background-color: transparent;
   border: none;
-  padding: 0;
+  padding: 12px 8.5px 10px;
 }
 
+.soft-keyboard-wrapper :deep(.hg-theme-default .hg-row .hg-button-container),
+.soft-keyboard-wrapper :deep(.hg-theme-default .hg-row .hg-button:not(:last-child)) {
+  margin-right: 0;
+}
+
+/* Rows */
 .soft-keyboard-wrapper :deep(.hg-row) {
   display: flex;
   justify-content: center;
-  margin-bottom: 6px;
+  gap: 6px;
+  margin-bottom: 0;
 }
 
+.soft-keyboard-wrapper :deep(.hg-row:not(:last-child)) {
+  margin-bottom: 11px;
+}
+
+/* Row 2: indented like iOS */
+.soft-keyboard-wrapper :deep(.hg-row:nth-child(2)) {
+  padding: 0 20px;
+}
+
+/* Shift key: extra right margin to create wider gap with letter keys */
+.soft-keyboard-wrapper :deep(.hg-theme-default .hg-row .hg-button[data-skbtn='{shift}']) {
+  flex: 0 0 45px;
+  font-size: 23px;
+  margin-right: 8.25px;
+}
+
+/* Backspace key */
+.soft-keyboard-wrapper :deep(.hg-button[data-skbtn='{backspace}']) {
+  flex: 0 0 45px;
+  font-size: 23px;
+  margin-left: 8.25px;
+}
+
+/* All keys: base style */
 .soft-keyboard-wrapper :deep(.hg-button) {
-  background-color: #fff;
-  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 8.5px;
   border: none;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-  color: #000;
-  font-size: 22px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  color: #595959;
+  font-family: -apple-system, 'SF Pro', 'Helvetica Neue', sans-serif;
+  font-size: 25px;
   font-weight: 400;
-  height: 42px;
-  min-width: 32px;
-  margin: 0 3px;
-  flex-grow: 0;
+  height: 45px;
+  min-width: 0;
+  margin: 0;
+  flex: 1 1 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
 }
 
-.soft-keyboard-wrapper :deep(.hg-button[data-skbtn="{space}"]) {
+/* Space key */
+.soft-keyboard-wrapper :deep(.hg-button[data-skbtn='{space}']) {
   flex-grow: 1;
-  min-width: 180px;
-  background-color: #fff;
 }
 
-.soft-keyboard-wrapper :deep(.hg-button[data-skbtn="{shift}"]),
-.soft-keyboard-wrapper :deep(.hg-button[data-skbtn="{backspace}"]) {
-  background-color: #adb0b8;
-  min-width: 42px;
+/* 123 key */
+.soft-keyboard-wrapper :deep(.hg-button[data-skbtn='{numbers}']) {
+  flex: 0 0 92px;
+  font-family: -apple-system, 'SF Compact Rounded', 'Helvetica Neue', sans-serif;
   font-size: 18px;
 }
 
+/* Return key */
+.soft-keyboard-wrapper :deep(.hg-button[data-skbtn='{enter}']) {
+  flex: 0 0 92px;
+  font-size: 19px;
+}
+
+/* Highlight on physical key press */
 .soft-keyboard-wrapper :deep(.hg-activeButton) {
-  background-color: #b0d4f1 !important;
+  background-color: #e6e9ed !important;
+}
+
+/* Bottom bar with emoji and mic */
+.keyboard-bottom-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 39px 15px 36px;
+  height: 70px;
+  box-sizing: border-box;
+}
+
+.bottom-bar-icon {
+  opacity: 0.63;
+}
+
+.emoji-icon {
+  width: 27px;
+  height: 27px;
+}
+
+.mic-icon {
+  width: 19px;
+  height: 28px;
 }
 </style>
