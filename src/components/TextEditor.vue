@@ -76,11 +76,18 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { AnnotationHighlight } from '../extensions/annotationHighlight'
+import { PeacockHighlight } from '../extensions/peacockHighlight'
+import { PasteHighlight } from '../extensions/pasteHighlight'
+import { usePeacockDetection } from '../composables/usePeacockDetection'
+import { usePasteDetection } from '../composables/usePasteDetection'
+import { PlaceholderDetectionHighlight } from '../extensions/placeholderDetectionHighlight'
+import { usePlaceholderDetection } from '../composables/usePlaceholderDetection'
 import { PlaceholderChip } from '../extensions/placeholderChip'
 import { CitationSuperscript } from '../extensions/citationSuperscript'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
+import { useEditCheckPagination } from '../composables/useEditCheckPagination'
 import { useCursorRect } from '../composables/useCursorRect'
 import { defaultSettings } from '../config/editorSettings'
 import { articleSections } from '../config/articleSections'
@@ -91,6 +98,19 @@ const { settings } = useEditorSettings()
 const { setEditor, hasContent } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { setCursorRect, clearCursorRect } = useCursorRect()
+const { triggerDetection, scanParagraphAtPos, updatePeacockRect, activeParagraphRange } =
+  usePeacockDetection()
+const { onPaste, triggerPasteDetection, updatePasteRect, activePastedRange } =
+  usePasteDetection()
+const {
+  triggerPlaceholderDetection,
+  updatePlaceholderDetectionRect,
+  placeholderDetections,
+} = usePlaceholderDetection()
+const { isAnyCardActive, dismissAllCards, updateCursorInCheck } = useEditCheckPagination()
+
+// Track which paragraph the cursor is in so we can detect when it leaves
+let lastParagraphPos = null
 
 const entryPointStyle = computed(
   () => settings.value.entryPoint.style || defaultSettings.entryPoint.style,
@@ -127,13 +147,42 @@ const editor = useEditor({
       placeholder: 'Start writing or tap the +',
     }),
     AnnotationHighlight,
+    PeacockHighlight,
+    PasteHighlight,
+    PlaceholderDetectionHighlight,
     PlaceholderChip,
     CitationSuperscript,
   ],
-  onSelectionUpdate() {
+  editorProps: {
+    handlePaste: (view) => {
+      // After the paste transaction is applied, flag the paragraph
+      setTimeout(() => {
+        const editorInstance = editor.value
+        if (editorInstance) onPaste(editorInstance)
+      }, 0)
+      return false // let TipTap handle the actual paste
+    },
+  },
+  onSelectionUpdate({ editor: editorRef }) {
     if (!typingTimer) {
       updateButtonPosition()
     }
+
+    // Detect when cursor moves to a different paragraph and scan the one it left
+    const { $from } = editorRef.state.selection
+    const currentParaPos = $from.parent.type.name === 'paragraph' ? $from.before() : null
+    if (lastParagraphPos !== null && currentParaPos !== lastParagraphPos) {
+      scanParagraphAtPos(editorRef, lastParagraphPos)
+      triggerPlaceholderDetection(editorRef, lastParagraphPos)
+      // Re-compute the warning rail rects after new highlights are set
+      updatePeacockRect(editorRef)
+      updatePasteRect(editorRef)
+      updatePlaceholderDetectionRect(editorRef)
+    }
+    lastParagraphPos = currentParaPos
+
+    // Track whether cursor is inside a flagged paragraph
+    updateCursorInCheck(editorRef)
   },
   onTransaction({ transaction, editor: editorRef }) {
     if (transaction.docChanged) {
@@ -148,9 +197,22 @@ const editor = useEditor({
         hideButton()
         scheduleShowButton()
       }
+
+      // Detect new paragraph creation and scan previous paragraph for checks
+      const { $from } = editorRef.state.selection
+      const currentNode = $from.parent
+      if (currentNode.type.name === 'paragraph' && currentNode.content.size === 0) {
+        triggerDetection(editorRef)
+        triggerPasteDetection(editorRef)
+      }
     }
+
   },
-  onFocus() {
+  onFocus({ editor: editorRef }) {
+    // Dismiss any open check cards when focus returns to the editor
+    if (isAnyCardActive.value) {
+      dismissAllCards(editorRef)
+    }
     setTimeout(() => updateButtonPosition(), 0)
   },
   onBlur({ event }) {
@@ -291,8 +353,8 @@ const floatingButtonStyle = computed(() => ({
 }))
 
 function getEditorScrollEl() {
-  // The EditorContent wrapper is the scrollable element (.text-editor has overflow-y: auto)
-  return editorContentRef.value?.$el || null
+  // The actual scrollable element is the .ProseMirror div (editor.view.dom)
+  return editor.value?.view?.dom || null
 }
 
 function updateButtonPosition() {
@@ -306,6 +368,11 @@ function updateButtonPosition() {
     isButtonVisible.value = false
     return
   }
+
+  // Update paragraph rects for warning rail positioning
+  updatePeacockRect(editor.value)
+  updatePasteRect(editor.value)
+  updatePlaceholderDetectionRect(editor.value)
 
   const { state, view } = editor.value
   const { empty } = state.selection
@@ -462,6 +529,15 @@ function onScroll() {
   if (isButtonVisible.value || useForceMode.value) {
     updateButtonPosition()
   }
+  if (
+    activeParagraphRange.value ||
+    activePastedRange.value ||
+    placeholderDetections.value.size > 0
+  ) {
+    updatePeacockRect(editor.value)
+    updatePasteRect(editor.value)
+    updatePlaceholderDetectionRect(editor.value)
+  }
 }
 
 function onCodexButtonClick() {
@@ -606,6 +682,34 @@ defineExpose({ editor })
 .text-editor :deep(.annotation-highlight) {
   background-color: var(--background-color-warning-subtle, #fef6e7);
   border-radius: 2px;
+}
+
+.text-editor :deep(.peacock-highlight) {
+  background-color: var(--background-color-interactive-subtle);
+}
+
+.text-editor :deep(.peacock-highlight-warning) {
+  background-color: var(--background-color-warning-subtle, #fef6e7);
+}
+
+.text-editor :deep(.paste-highlight) {
+  background-color: var(--background-color-interactive-subtle);
+}
+
+.text-editor :deep(.paste-highlight-warning) {
+  background-color: var(--background-color-warning-subtle, #fef6e7);
+}
+
+.text-editor :deep(.placeholder-detection-highlight.placeholder-chip) {
+  background-color: var(--background-color-interactive-subtle);
+}
+
+.text-editor :deep(.placeholder-detection-highlight.placeholder-chip.placeholder-chip--selected) {
+  background-color: var(--background-color-interactive-subtle--hover);
+}
+
+.text-editor :deep(.placeholder-detection-highlight-warning.placeholder-chip) {
+  background-color: var(--background-color-warning-subtle, #fdf2d5);
 }
 
 .settings-btn {

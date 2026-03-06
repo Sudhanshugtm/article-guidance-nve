@@ -1,12 +1,18 @@
 <template>
   <div class="editor-page">
     <CdxToolbar @cite="onOpenCiteDefault" />
-    <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen }">
+    <div class="editor-wrapper" :class="{ 'rail-open': isRailOpen, 'check-card-active': isAnyCardActive, 'cursor-in-check': cursorInCheckParagraph }">
       <div class="editor-main" @click="isRailOpen && (isRailOpen = false)">
         <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
       </div>
       <div class="editor-rail-column">
-        <EditorRail :is-open="isRailOpen" :initial-view="initialView" @content-inserted="onContentInserted" @close="isRailOpen = false" @open-cite-discover="onOpenCiteDiscover" />
+        <EditorRail
+          :is-open="isRailOpen"
+          :initial-view="initialView"
+          @content-inserted="onContentInserted"
+          @close="isRailOpen = false"
+          @open-cite-discover="onOpenCiteDiscover"
+        />
       </div>
     </div>
 
@@ -21,27 +27,57 @@
       <CdxIcon :icon="cdxIconAdd" />
     </div>
 
-    <OutlinePopover v-if="outlineLocation === 'popover'" v-model:open="isPopoverOpen" :initial-view="initialView" @content-inserted="onContentInserted" @open-cite-discover="onOpenCiteDiscover" />
+    <!-- Per-paragraph check rail indicators -->
+    <template v-if="areRailIndicatorsVisible">
+      <div
+        v-for="(group, gi) in checkGroups"
+        :key="gi"
+        class="peacock-rail-indicator"
+        :style="railStyleForGroup(group)"
+        @mousedown.prevent
+        @click.stop="onGroupRailClick(gi)"
+      >
+        <span class="rail-icon-wrapper">
+          <CdxIcon :icon="cdxIconAlert" />
+          <span v-if="group.count > 1" class="rail-badge">{{ group.count }}</span>
+        </span>
+      </div>
+    </template>
+
+    <OutlinePopover
+      v-if="outlineLocation === 'popover'"
+      v-model:open="isPopoverOpen"
+      :initial-view="initialView"
+      @content-inserted="onContentInserted"
+      @open-cite-discover="onOpenCiteDiscover"
+    />
     <SettingsDialog v-model:open="settingsDialogOpen" />
     <CiteDialog v-model:open="citeDialogOpen" :initial-tab="citeDialogInitialTab" />
+    <ReviseToneCard />
+    <PastedContentCard />
+    <CompleteSectionCard />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { CdxIcon } from '@wikimedia/codex'
-import { cdxIconAdd } from '@wikimedia/codex-icons'
+import { cdxIconAdd, cdxIconAlert } from '@wikimedia/codex-icons'
 import TextEditor from '@/components/TextEditor.vue'
 import EditorRail from '@/components/EditorRail.vue'
 import CdxToolbar from '@/components/CdxToolbar.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
 import CiteDialog from '@/components/CiteDialog.vue'
 import OutlinePopover from '@/components/OutlinePopover.vue'
+import ReviseToneCard from '@/components/ReviseToneCard.vue'
+import PastedContentCard from '@/components/PastedContentCard.vue'
+import CompleteSectionCard from '@/components/CompleteSectionCard.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
 import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
-
+import { usePeacockDetection } from '@/composables/usePeacockDetection'
+import { useEditCheckPagination } from '@/composables/useEditCheckPagination'
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
@@ -52,11 +88,39 @@ const entryPointStyle = computed(() => settings.value.entryPoint.style)
 const { getEditor, hasContent, citationClickCount } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { cursorRect } = useCursorRect()
+const { triggerDetectionOnInsert } = usePeacockDetection()
+const {
+  activeChecks,
+  checkGroups,
+  totalGroups,
+  isAnyCardActive,
+  cursorInCheckParagraph,
+  showGroupAtIndex,
+} = useEditCheckPagination()
+
+// Per-paragraph rail indicators
+const areRailIndicatorsVisible = computed(() => {
+  if (isRailOpen.value || isPopoverOpen.value) return false
+  return totalGroups.value > 0
+})
+
+function railStyleForGroup(group) {
+  if (!group.rect) return {}
+  return {
+    position: 'fixed',
+    top: `${group.rect.top}px`,
+    right: '0px',
+    width: '44px',
+    height: `${group.rect.height}px`,
+  }
+}
 
 const isForceButtonVisible = computed(() => {
-  if (!['inline', 'force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value)) return false
+  if (!['inline', 'force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value))
+    return false
   if (isRailOpen.value || isPopoverOpen.value) return false
   if (!cursorRect.value) return false
+  if (areRailIndicatorsVisible.value && cursorInCheckParagraph.value) return false
   return cursorRect.value.visible
 })
 
@@ -83,6 +147,12 @@ const initialView = ref(null)
 function onForceButtonClick() {
   getEditor()?.commands.blur()
   onOpenOutline()
+}
+
+function onGroupRailClick(groupIndex) {
+  const editor = getEditor()
+  editor?.commands.blur()
+  showGroupAtIndex(groupIndex, editor)
 }
 
 function onOpenOutline() {
@@ -121,6 +191,12 @@ function onContentInserted() {
     // Set flag so the watcher can re-open the popover if focus-loss closes it
     keepOpenAfterInsert.value = true
   }
+
+  // Check the previous paragraph for peacock words after rail insertion
+  nextTick(() => {
+    const editor = getEditor()
+    if (editor) triggerDetectionOnInsert(editor)
+  })
 }
 
 // When the popover closes due to focus moving to the editor after insertion,
@@ -187,4 +263,76 @@ watch(outlineLocation, () => {
 .force-entry-point :deep(.cdx-icon) {
   color: var(--color-base);
 }
+
+.peacock-rail-indicator {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  border-left: 2px solid var(--color-warning);
+  box-sizing: border-box;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.rail-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.peacock-rail-indicator :deep(.cdx-icon) {
+  color: var(--color-warning);
+}
+
+.rail-badge {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  min-width: 12px;
+  min-height: 12px;
+  padding: 1px 2px;
+  background-color: var(--background-color-progressive, #36c);
+  border: 1px solid var(--border-color-inverted, #fff);
+  border-radius: var(--border-radius-base, 2px);
+  color: var(--color-inverted, #fff);
+  font-size: var(--font-size-x-small, 12px);
+  font-weight: var(--font-weight-bold, 700);
+  line-height: 12px;
+  text-align: center;
+}
+
+.editor-wrapper.check-card-active :deep(.peacock-highlight) {
+  background-color: transparent;
+}
+
+.editor-wrapper.check-card-active :deep(.paste-highlight) {
+  background-color: transparent;
+}
+
+.editor-wrapper.check-card-active :deep(.placeholder-detection-highlight) {
+  background-color: transparent;
+}
+
+/* Ensure promoted (warning) highlights always show over the suppression */
+.editor-wrapper.check-card-active :deep(.peacock-highlight-warning) {
+  background-color: var(--background-color-warning-subtle, #fef6e7);
+}
+
+.editor-wrapper.check-card-active :deep(.paste-highlight-warning) {
+  background-color: var(--background-color-warning-subtle, #fef6e7);
+}
+
+.editor-wrapper.check-card-active :deep(.placeholder-detection-highlight-warning) {
+  background-color: var(--background-color-warning-subtle, #fdf2d5);
+}
+
+/* Hide highlight when cursor is in the flagged paragraph and card is closed */
+.editor-wrapper.cursor-in-check:not(.check-card-active) :deep(.peacock-highlight) {
+  background-color: transparent;
+}
+
+.editor-wrapper.cursor-in-check:not(.check-card-active) :deep(.paste-highlight) {
+  background-color: transparent;
+}
+
 </style>
