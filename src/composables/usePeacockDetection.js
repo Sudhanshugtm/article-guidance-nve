@@ -151,17 +151,25 @@ function showCard(paragraphId, editor) {
 }
 
 function revise(editor) {
-  if (activeParagraphRange.value) {
-    const { from, to } = activeParagraphRange.value
-    editor.chain().focus().setTextSelection(to).run()
-  }
-  if (activeParagraphId.value) {
-    editor.commands.clearPeacockParagraph(activeParagraphId.value)
+  const range = activeParagraphRange.value
+  const id = activeParagraphId.value
+
+  // Clear decoration and state BEFORE focusing the editor.
+  // This prevents onFocus → dismissAllCards → demotePeacockParagraph from
+  // re-adding a subtle decoration after it was cleared.
+  if (id) {
+    editor.commands.clearPeacockParagraph(id)
   }
   isCardVisible.value = false
   activeParagraphId.value = null
   activeParagraphRange.value = null
   peacockParagraphRect.value = null
+
+  // Now focus and move cursor — onFocus won't trigger dismissAllCards
+  // because isCardVisible is already false.
+  if (range) {
+    editor.chain().focus().setTextSelection(range.to).run()
+  }
 }
 
 function dismissCard(editor) {

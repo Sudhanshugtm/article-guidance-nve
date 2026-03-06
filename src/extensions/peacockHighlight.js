@@ -31,10 +31,16 @@ export const PeacockHighlight = Extension.create({
                     { paragraphId: h.paragraphId },
                   ),
                 )
-              // Merge with existing decorations (other paragraphs)
+              // Merge with existing decorations, replacing any that overlap
+              // the new highlight ranges (prevents duplicates on same paragraph)
               const existing = decorationSet.map(tr.mapping, tr.doc)
               const all = []
-              existing.find(0, newState.doc.content.size).forEach((d) => all.push(d))
+              existing.find(0, newState.doc.content.size).forEach((d) => {
+                const dominated = decorations.some(
+                  (n) => d.from >= n.from && d.to <= n.to,
+                )
+                if (!dominated) all.push(d)
+              })
               decorations.forEach((d) => all.push(d))
               return DecorationSet.create(newState.doc, all)
             }
