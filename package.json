@@ -20,6 +20,7 @@
     "@wikimedia/codex": "^2.3.4",
     "@wikimedia/codex-design-tokens": "^2.3.4",
     "@wikimedia/codex-icons": "^2.3.4",
+    "simple-keyboard": "^3.8.118",
     "vue": "^3.5.27",
     "vue-router": "^5.0.1"
   },

@@ -29,7 +29,7 @@
         </CdxTab>
         <CdxTab name="manual" label="Manual">
           <div class="cite-dialog__tab-content">
-            <p class="cite-dialog__description">Manual citation entry</p>
+            <p class="cite-dialog__description"></p>
           </div>
         </CdxTab>
         <CdxTab name="reuse" label="Re-use">
@@ -101,7 +101,7 @@
                 <div class="cite-dialog__discover-actions">
                   <CdxButton>
                     <CdxIcon :icon="cdxIconAdd" />
-                    Insert
+                    Add
                   </CdxButton>
                   <CdxButton weight="quiet">
                     <CdxIcon :icon="cdxIconBook" />

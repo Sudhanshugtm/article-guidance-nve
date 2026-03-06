@@ -41,6 +41,14 @@ export function useEditorSettings() {
           parsed.placeholder[settingName] = value
         }
       }
+
+      const keyboardMatch = key.match(/^keyboard-(\w+)$/)
+      if (keyboardMatch) {
+        const settingName = keyboardMatch[1]
+        if (settingName in parsed.keyboard) {
+          parsed.keyboard[settingName] = value
+        }
+      }
     }
 
     return parsed
@@ -71,6 +79,12 @@ export function useEditorSettings() {
       }
     }
 
+    for (const [settingName, value] of Object.entries(settings.keyboard)) {
+      if (value !== defaultSettings.keyboard[settingName]) {
+        query[`keyboard-${settingName}`] = value
+      }
+    }
+
     return query
   }
 
@@ -84,7 +98,7 @@ export function useEditorSettings() {
     // Preserve non-settings query params
     const preservedQuery = {}
     for (const [key, value] of Object.entries(route.query)) {
-      if (!key.match(/^(entryPoint|outline|placeholder)-\w+$/)) {
+      if (!key.match(/^(entryPoint|outline|placeholder|keyboard)-\w+$/)) {
         preservedQuery[key] = value
       }
     }

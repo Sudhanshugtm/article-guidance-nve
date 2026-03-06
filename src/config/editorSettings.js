@@ -15,6 +15,9 @@ export const defaultSettings = {
   placeholder: {
     cursorBehavior: 'before', // 'after' | 'select' | 'before'
   },
+  keyboard: {
+    display: 'hidden', // 'hidden' | 'visible'
+  },
 }
 
 /**
@@ -48,4 +51,9 @@ export const placeholderCursorLabels = {
   after: 'Place cursor after placeholder on tap',
   select: 'Select placeholder on tap',
   before: 'Place cursor before placeholder on tap',
+}
+
+export const keyboardDisplayLabels = {
+  visible: 'Show',
+  hidden: 'Hide',
 }

@@ -17,14 +17,8 @@
     <template #actions>
       <p class="paste-question">Did you write this text?</p>
       <div class="paste-buttons">
-        <CdxButton @click="onYes">
-          <CdxIcon :icon="cdxIconCheck" />
-          Yes
-        </CdxButton>
-        <CdxButton @click="onNo">
-          <CdxIcon :icon="cdxIconClose" />
-          No
-        </CdxButton>
+        <CdxButton @click="onYes">Yes, keep it</CdxButton>
+        <CdxButton @click="onNo">No, remove it</CdxButton>
       </div>
     </template>
   </EditCheckCard>
