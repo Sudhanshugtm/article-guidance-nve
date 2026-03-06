@@ -49,7 +49,7 @@ function onInsertFact(fact) {
     const refNumber = insertCitation(citation)
     return {
       type: 'citationSuperscript',
-      attrs: { label: String(refNumber) },
+      attrs: { label: String(refNumber), citationId: citation.id },
     }
   })
 
