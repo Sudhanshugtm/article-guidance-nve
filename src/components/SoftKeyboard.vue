@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import Keyboard from 'simple-keyboard'
 import 'simple-keyboard/build/css/index.css'
 import { useEditorInstance } from '../composables/useEditorInstance'
@@ -22,10 +22,27 @@ const emit = defineEmits(['height-change'])
 
 const wrapperRef = ref(null)
 const keyboardRef = ref(null)
-const isVisible = ref(false)
+const editorFocused = ref(false)
+const externalInputFocused = ref(false)
+const isVisible = computed(() => editorFocused.value || externalInputFocused.value)
 let keyboardInstance = null
 
 const { editorInstance } = useEditorInstance()
+
+const EXTERNAL_INPUT_SELECTOR =
+  '.cite-dialog__reuse-search input, .cite-dialog__discover-search input'
+
+function onDocumentFocusIn(e) {
+  if (e.target.matches(EXTERNAL_INPUT_SELECTOR)) {
+    externalInputFocused.value = true
+  }
+}
+
+function onDocumentFocusOut(e) {
+  if (!e.relatedTarget || !e.relatedTarget.matches(EXTERNAL_INPUT_SELECTOR)) {
+    externalInputFocused.value = false
+  }
+}
 
 watch(isVisible, async (visible) => {
   if (visible) {
@@ -67,8 +84,8 @@ onMounted(() => {
     theme: 'hg-theme-default ios-theme',
     physicalKeyboardHighlight: true,
     physicalKeyboardHighlightPress: true,
-    physicalKeyboardHighlightBgColor: '#E6E9ED',
-    physicalKeyboardHighlightTextColor: '#000',
+    physicalKeyboardHighlightBgColor: '#e7e6ed',
+    physicalKeyboardHighlightTextColor: '#595959',
     mergeDisplay: true,
     preventMouseDownDefault: true,
     onChange: () => {},
@@ -76,6 +93,9 @@ onMounted(() => {
   })
 
   setupFocusListeners()
+
+  document.addEventListener('focusin', onDocumentFocusIn)
+  document.addEventListener('focusout', onDocumentFocusOut)
 })
 
 function setupFocusListeners() {
@@ -83,21 +103,21 @@ function setupFocusListeners() {
   if (!editor) return
 
   editor.on('focus', () => {
-    isVisible.value = true
+    editorFocused.value = true
   })
   editor.on('blur', () => {
-    isVisible.value = false
+    editorFocused.value = false
   })
 
   // Also sync on selection updates, in case focus fired before listeners were attached
   editor.on('selectionUpdate', () => {
-    if (editor.isFocused && !isVisible.value) {
-      isVisible.value = true
+    if (editor.isFocused && !editorFocused.value) {
+      editorFocused.value = true
     }
   })
 
   if (editor.isFocused) {
-    isVisible.value = true
+    editorFocused.value = true
   }
 }
 
@@ -108,6 +128,8 @@ watch(editorInstance, (newEditor) => {
 })
 
 onBeforeUnmount(() => {
+  document.removeEventListener('focusin', onDocumentFocusIn)
+  document.removeEventListener('focusout', onDocumentFocusOut)
   keyboardInstance?.destroy()
   keyboardInstance = null
 })
@@ -119,7 +141,7 @@ onBeforeUnmount(() => {
   bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 100;
+  z-index: 450;
   background-color: #e6e9ed;
   box-sizing: border-box;
 }
@@ -182,7 +204,7 @@ onBeforeUnmount(() => {
   background-color: rgba(255, 255, 255, 0.85);
   border-radius: 8.5px;
   border: none;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: none;
   color: #595959;
   font-family: -apple-system, 'SF Pro', 'Helvetica Neue', sans-serif;
   font-size: 25px;

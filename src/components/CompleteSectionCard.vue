@@ -1,11 +1,11 @@
 <template>
   <EditCheckCard title="Complete section" :visible="isPlaceholderCardVisible" @close="onDismiss">
     <template #description>
-      <p>Before you continue, fill all the blanks.</p>
+      <p>Before you continue, replace or remove all incomplete parts.</p>
     </template>
     <template #actions>
       <div class="complete-section-buttons">
-        <CdxButton @click="onEdit">Edit</CdxButton>
+        <CdxButton @click="onEdit">Got it</CdxButton>
       </div>
     </template>
   </EditCheckCard>
