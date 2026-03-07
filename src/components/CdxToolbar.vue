@@ -4,6 +4,8 @@
       <CdxButton class="cdx-toolbar__btn cdx-toolbar__btn--close" weight="quiet" aria-label="Close">
         <CdxIcon :icon="cdxIconClose" />
       </CdxButton>
+    </div>
+    <div class="cdx-toolbar__ctr">
       <CdxButton
         class="cdx-toolbar__btn"
         weight="quiet"
@@ -95,6 +97,11 @@ import {
 }
 
 .cdx-toolbar__lhs {
+  flex: 0 0 44px;
+  display: flex;
+}
+
+.cdx-toolbar__ctr {
   flex: 1;
   display: flex;
   min-width: 0;
@@ -112,6 +119,7 @@ import {
   flex: 1 0 0;
   height: 100%;
   border-radius: 0;
+  padding: 0;
 }
 
 .cdx-toolbar__btn:focus {
@@ -120,7 +128,6 @@ import {
 }
 
 .cdx-toolbar__btn--close {
-  flex: 0 0 44px;
   border-right: 1px solid var(--border-color-subtle) !important;
 }
 
