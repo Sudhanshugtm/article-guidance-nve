@@ -1,6 +1,6 @@
 <template>
   <div class="editor-page">
-    <CdxToolbar @cite="onOpenCiteDefault" />
+    <CdxToolbar :cite-badge-count="citeBadgeCount" @cite="onOpenCiteDefault" />
     <div
       class="editor-wrapper"
       :class="{
@@ -97,6 +97,7 @@ import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteracti
 import { usePeacockDetection } from '@/composables/usePeacockDetection'
 import { useEditCheckPagination } from '@/composables/useEditCheckPagination'
 import { useCitationRegistry } from '@/composables/useCitationRegistry'
+import { citations as preExistingCitations } from '@/config/citations'
 
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
@@ -200,7 +201,13 @@ function onOpenOutline() {
   }
 }
 
+const citeBadgeDismissed = ref(false)
+const citeBadgeCount = computed(() =>
+  citeBadgeDismissed.value ? 0 : preExistingCitations.length,
+)
+
 function onOpenCiteDefault() {
+  citeBadgeDismissed.value = true
   const hasCitations = usedCitations.value.length > 0 || availableCitations.value.length > 0
   citeDialogInitialTab.value = hasCitations ? 'reuse' : 'automatic'
   citeDialogOpen.value = true

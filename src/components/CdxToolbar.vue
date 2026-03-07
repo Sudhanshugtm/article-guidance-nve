@@ -21,7 +21,10 @@
         <CdxIcon :icon="cdxIconExpand" class="cdx-toolbar__indicator" />
       </CdxButton>
       <CdxButton class="cdx-toolbar__btn" weight="quiet" aria-label="Cite" @click="emit('cite')">
-        <CdxIcon :icon="cdxIconQuotes" />
+        <span class="cite-icon-wrapper">
+          <CdxIcon :icon="cdxIconQuotes" />
+          <span v-if="citeBadgeCount > 0" class="cite-badge">{{ citeBadgeCount }}</span>
+        </span>
       </CdxButton>
       <CdxButton class="cdx-toolbar__btn" weight="quiet" aria-label="Link">
         <CdxIcon :icon="cdxIconLink" />
@@ -58,6 +61,9 @@
 </template>
 
 <script setup>
+defineProps({
+  citeBadgeCount: { type: Number, default: 0 },
+})
 const emit = defineEmits(['cite'])
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
 import { useEditorInstance } from '../composables/useEditorInstance'
@@ -130,6 +136,28 @@ import {
   flex: 0 0 44px;
   width: 44px;
   height: 100%;
+}
+
+.cite-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.cite-badge {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  min-width: 12px;
+  min-height: 12px;
+  padding: 1px 2px;
+  background-color: var(--background-color-progressive, #36c);
+  border: 1px solid var(--border-color-inverted, #fff);
+  border-radius: var(--border-radius-base, 2px);
+  color: var(--color-inverted, #fff);
+  font-size: var(--font-size-x-small, 12px);
+  font-weight: var(--font-weight-bold, 700);
+  line-height: 12px;
+  text-align: center;
 }
 
 .cdx-toolbar__indicator {
