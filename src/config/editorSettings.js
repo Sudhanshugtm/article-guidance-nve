@@ -18,6 +18,9 @@ export const defaultSettings = {
   keyboard: {
     display: 'hidden', // 'hidden' | 'visible'
   },
+  cite: {
+    badge: 'hidden', // 'hidden' | 'visible'
+  },
 }
 
 /**
@@ -54,6 +57,11 @@ export const placeholderCursorLabels = {
 }
 
 export const keyboardDisplayLabels = {
+  visible: 'Show',
+  hidden: 'Hide',
+}
+
+export const citeBadgeLabels = {
   visible: 'Show',
   hidden: 'Hide',
 }

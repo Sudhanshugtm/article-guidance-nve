@@ -71,6 +71,20 @@
           {{ label }}
         </CdxRadio>
       </div>
+      <!-- References badge section -->
+      <div class="field-group">
+        <CdxLabel>References badge</CdxLabel>
+        <CdxRadio
+          v-for="(label, badgeKey) in citeBadgeLabels"
+          :key="badgeKey"
+          v-model="localSettings.cite.badge"
+          :input-value="badgeKey"
+          name="cite-badge"
+          @update:model-value="onSettingChange"
+        >
+          {{ label }}
+        </CdxRadio>
+      </div>
       <!-- Soft keyboard section -->
       <div class="field-group">
         <CdxLabel>Soft keyboard</CdxLabel>
@@ -100,6 +114,7 @@ import {
   outlinePersistenceLabels,
   placeholderCursorLabels,
   keyboardDisplayLabels,
+  citeBadgeLabels,
 } from '../config/editorSettings'
 
 const open = defineModel('open', { type: Boolean, default: false })

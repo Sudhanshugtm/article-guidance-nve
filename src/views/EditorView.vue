@@ -201,9 +201,12 @@ function onOpenOutline() {
   }
 }
 
+const citeBadgeSetting = computed(() => settings.value.cite.badge)
 const citeBadgeDismissed = ref(false)
 const citeBadgeCount = computed(() =>
-  citeBadgeDismissed.value ? 0 : preExistingCitations.length,
+  citeBadgeSetting.value === 'hidden' || citeBadgeDismissed.value
+    ? 0
+    : preExistingCitations.length,
 )
 
 function onOpenCiteDefault() {

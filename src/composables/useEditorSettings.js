@@ -49,6 +49,14 @@ export function useEditorSettings() {
           parsed.keyboard[settingName] = value
         }
       }
+
+      const citeMatch = key.match(/^cite-(\w+)$/)
+      if (citeMatch) {
+        const settingName = citeMatch[1]
+        if (settingName in parsed.cite) {
+          parsed.cite[settingName] = value
+        }
+      }
     }
 
     return parsed
@@ -85,6 +93,12 @@ export function useEditorSettings() {
       }
     }
 
+    for (const [settingName, value] of Object.entries(settings.cite)) {
+      if (value !== defaultSettings.cite[settingName]) {
+        query[`cite-${settingName}`] = value
+      }
+    }
+
     return query
   }
 
@@ -98,7 +112,7 @@ export function useEditorSettings() {
     // Preserve non-settings query params
     const preservedQuery = {}
     for (const [key, value] of Object.entries(route.query)) {
-      if (!key.match(/^(entryPoint|outline|placeholder|keyboard)-\w+$/)) {
+      if (!key.match(/^(entryPoint|outline|placeholder|keyboard|cite)-\w+$/)) {
         preservedQuery[key] = value
       }
     }
