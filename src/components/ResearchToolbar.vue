@@ -301,6 +301,17 @@ function applyItalic() {
   height: 10px;
 }
 
+@media (min-width: 768px) {
+  .research-toolbar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+  }
+}
+
 :deep(.cdx-popover) {
   z-index: 4;
   width: 292px;

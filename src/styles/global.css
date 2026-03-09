@@ -33,6 +33,12 @@ a:hover {
 }
 
 @media (min-width: 768px) {
+  html,
+  body,
+  #app {
+    overflow: hidden;
+  }
+
   :root {
     --editor-shell-width: var(--prototype-shell-max-width);
     --editor-shell-offset: max(0px, calc((100vw - var(--editor-shell-width)) / 2));

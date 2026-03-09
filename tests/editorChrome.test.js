@@ -21,6 +21,10 @@ const researchToolbarSource = readFileSync(
   new URL('../src/components/ResearchToolbar.vue', import.meta.url),
   'utf8',
 )
+const outlinePopoverSource = readFileSync(
+  new URL('../src/components/OutlinePopover.vue', import.meta.url),
+  'utf8',
+)
 const editorInstanceSource = readFileSync(
   new URL('../src/composables/useEditorInstance.js', import.meta.url),
   'utf8',
@@ -80,6 +84,28 @@ test('research style menu relies on the outer popover shell for chrome and sits 
   assert.match(researchToolbarSource, /:deep\(\.cdx-popover\)\s*\{[\s\S]*padding:\s*0\s*!important;/)
   assert.match(researchToolbarSource, /:deep\(\.cdx-popover\)\s*\{[\s\S]*margin-top:\s*-15px\s*!important;/)
   assert.match(researchToolbarSource, /:deep\(\.cdx-popover__arrow\)\s*\{[\s\S]*display:\s*none\s*!important;/)
+})
+
+test('desktop editor chrome uses in-shell toolbar positioning instead of viewport-fixed corners', () => {
+  assert.match(
+    researchToolbarSource,
+    /@media \(min-width:\s*768px\)\s*\{[\s\S]*\.research-toolbar\s*\{[\s\S]*position:\s*sticky;[\s\S]*top:\s*0;[\s\S]*left:\s*0;[\s\S]*width:\s*100%;[\s\S]*border-top-left-radius:\s*24px;[\s\S]*border-top-right-radius:\s*24px;/,
+  )
+  assert.match(
+    editorViewSource,
+    /@media \(min-width:\s*768px\)\s*\{[\s\S]*\.editor-page\s*\{[\s\S]*display:\s*flex;[\s\S]*flex-direction:\s*column;[\s\S]*\}[\s\S]*\.editor-wrapper\s*\{[\s\S]*flex:\s*1;[\s\S]*min-height:\s*0;[\s\S]*height:\s*auto;[\s\S]*padding-top:\s*0;/,
+  )
+})
+
+test('desktop outline popover is constrained to the editor shell instead of the full viewport', () => {
+  assert.match(
+    editorViewSource,
+    /\.editor-page\s*\{[\s\S]*position:\s*relative;/,
+  )
+  assert.match(
+    outlinePopoverSource,
+    /@media \(min-width:\s*768px\)\s*\{[\s\S]*\.outline-popover-anchor \+ :deep\(\.cdx-popover\)\s*\{[\s\S]*position:\s*absolute\s*!important;[\s\S]*left:\s*0\s*!important;[\s\S]*right:\s*0\s*!important;[\s\S]*bottom:\s*0\s*!important;[\s\S]*width:\s*100%\s*!important;[\s\S]*max-width:\s*100%\s*!important;[\s\S]*border-bottom-left-radius:\s*24px\s*!important;[\s\S]*border-bottom-right-radius:\s*24px\s*!important;/,
+  )
 })
 
 test('shared toolbar remains available as Amin-style baseline chrome', () => {

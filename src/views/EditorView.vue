@@ -325,6 +325,7 @@ watch(outlineLocation, () => {
 
 <style scoped>
 .editor-page {
+  position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -452,5 +453,19 @@ watch(outlineLocation, () => {
 
 .editor-wrapper.cursor-in-check:not(.check-card-active) :deep(.paste-highlight) {
   background-color: transparent;
+}
+
+@media (min-width: 768px) {
+  .editor-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editor-wrapper {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    padding-top: 0;
+  }
 }
 </style>

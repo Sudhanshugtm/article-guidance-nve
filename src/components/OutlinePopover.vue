@@ -221,4 +221,20 @@ onBeforeUnmount(() => {
 .outline-popover-body :deep(.cdx-accordion__content) {
   font-family: var(--font-family-system-sans);
 }
+
+@media (min-width: 768px) {
+  .outline-popover-anchor + :deep(.cdx-popover) {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    max-height: 50vh !important;
+    border-bottom-left-radius: 24px !important;
+    border-bottom-right-radius: 24px !important;
+  }
+}
 </style>

@@ -101,47 +101,6 @@ const article = computed(() => getArticleForRoute(route.query, researchContent))
       </div>
     </main>
 
-    <!-- Wikipedia footer chrome — matches real Wikipedia footer -->
-    <footer class="wiki-footer">
-      <div class="wiki-footer-meta">
-        <p class="wiki-footer-edited">This page was last edited on 4 March 2026, at 11:42 (UTC).</p>
-        <p class="wiki-footer-license">
-          Text is available under the
-          <a href="#" class="wiki-footer-link">Creative Commons Attribution-ShareAlike 4.0 License</a>;
-          additional terms may apply. By using this site, you agree to the
-          <a href="#" class="wiki-footer-link">Terms of Use</a> and
-          <a href="#" class="wiki-footer-link">Privacy Policy</a>.
-          Wikipedia&reg; is a registered trademark of the
-          <a href="#" class="wiki-footer-link">Wikimedia Foundation, Inc.</a>, a non-profit organization.
-        </p>
-      </div>
-      <div class="wiki-footer-links">
-        <a href="#" class="wiki-footer-link">Privacy policy</a>
-        <a href="#" class="wiki-footer-link">About Wikipedia</a>
-        <a href="#" class="wiki-footer-link">Disclaimers</a>
-      </div>
-      <div class="wiki-footer-links">
-        <a href="#" class="wiki-footer-link">Contact Wikipedia</a>
-        <a href="#" class="wiki-footer-link">Code of Conduct</a>
-      </div>
-      <div class="wiki-footer-links">
-        <a href="#" class="wiki-footer-link">Developers</a>
-        <a href="#" class="wiki-footer-link">Statistics</a>
-        <a href="#" class="wiki-footer-link">Cookie statement</a>
-      </div>
-      <div class="wiki-footer-bottom">
-        <!-- Wikimedia Foundation logo -->
-        <svg class="wiki-footer-icon" viewBox="0 0 25 25" aria-label="Wikimedia Foundation">
-          <circle cx="12.5" cy="12.5" r="11" fill="none" stroke="var(--color-placeholder)" stroke-width="1" />
-          <text x="4" y="17" font-size="13" font-weight="700" font-family="sans-serif" fill="var(--color-placeholder)">W</text>
-        </svg>
-        <!-- Powered by MediaWiki logo -->
-        <svg class="wiki-footer-icon" viewBox="0 0 25 25" aria-label="Powered by MediaWiki">
-          <rect x="2" y="2" width="21" height="21" rx="3" fill="none" stroke="var(--color-placeholder)" stroke-width="1" />
-          <text x="3" y="18" font-size="14" font-weight="700" font-family="sans-serif" fill="var(--color-placeholder)">M</text>
-        </svg>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -315,60 +274,5 @@ const article = computed(() => getArticleForRoute(route.query, researchContent))
 
 .wiki-red-link:visited {
   color: var(--color-link-red--visited);
-}
-
-/* Wikipedia footer chrome — matches real Wikipedia footer */
-.wiki-footer {
-  border-top: 1px solid var(--border-color-base);
-  padding: var(--spacing-75) var(--spacing-150) var(--spacing-150);
-  margin-top: auto;
-}
-
-.wiki-footer-meta {
-  margin-bottom: var(--spacing-100);
-}
-
-.wiki-footer-edited {
-  font-size: var(--font-size-small);
-  color: var(--color-base);
-  margin: 0 0 var(--spacing-75);
-  line-height: 1.5;
-}
-
-.wiki-footer-license {
-  font-size: var(--font-size-small);
-  color: var(--color-base);
-  margin: 0 0 var(--spacing-100);
-  line-height: 1.6;
-}
-
-.wiki-footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-50) var(--spacing-100);
-  margin-bottom: var(--spacing-75);
-}
-
-.wiki-footer-link {
-  font-size: var(--font-size-small);
-  color: var(--color-progressive);
-  text-decoration: none;
-}
-
-.wiki-footer-link:hover {
-  text-decoration: underline;
-}
-
-.wiki-footer-bottom {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: var(--spacing-75);
-  padding-top: var(--spacing-50);
-}
-
-.wiki-footer-icon {
-  width: 25px;
-  height: 25px;
 }
 </style>
