@@ -40,6 +40,17 @@ test('research editor mounts a research-specific toolbar instead of the shared t
   assert.doesNotMatch(editorViewSource, /<CdxToolbar/)
 })
 
+test('closing the research editor returns to the source article instead of the article list', () => {
+  assert.match(
+    editorViewSource,
+    /const currentArticle = computed\(\(\) =>[\s\S]*route\.query\.article[\s\S]*\)/,
+  )
+  assert.match(
+    editorViewSource,
+    /function onCloseEditor\(\) \{[\s\S]*if \(currentArticle\.value\) \{[\s\S]*name:\s*'article'[\s\S]*lang:\s*currentLang\.value[\s\S]*article:\s*currentArticle\.value[\s\S]*\}[\s\S]*name:\s*'articles'/,
+  )
+})
+
 test('TextEditor exposes a showSettingsButton prop and gates the settings button with it', () => {
   assert.match(
     textEditorSource,

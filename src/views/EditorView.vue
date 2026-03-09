@@ -118,6 +118,9 @@ const showSoftKeyboard = computed(() => settings.value.keyboard.display === 'vis
 const currentLang = computed(() =>
   Array.isArray(route.query.lang) ? route.query.lang[0] ?? 'en' : route.query.lang ?? 'en',
 )
+const currentArticle = computed(() =>
+  Array.isArray(route.query.article) ? route.query.article[0] ?? null : route.query.article ?? null,
+)
 const keyboardHeight = ref(0)
 function onKeyboardHeightChange(height) {
   keyboardHeight.value = height
@@ -236,6 +239,17 @@ function onOpenCiteDiscover() {
 }
 
 function onCloseEditor() {
+  if (currentArticle.value) {
+    router.replace({
+      name: 'article',
+      query: {
+        lang: currentLang.value,
+        article: currentArticle.value,
+      },
+    })
+    return
+  }
+
   router.replace({
     name: 'articles',
     query: { lang: currentLang.value },
