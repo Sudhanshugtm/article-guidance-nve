@@ -1,7 +1,12 @@
 <template>
   <div class="cdx-toolbar">
     <div class="cdx-toolbar__lhs">
-      <CdxButton class="cdx-toolbar__btn cdx-toolbar__btn--close" weight="quiet" aria-label="Close">
+      <CdxButton
+        class="cdx-toolbar__btn cdx-toolbar__btn--close"
+        weight="quiet"
+        aria-label="Close"
+        @click="emit('close')"
+      >
         <CdxIcon :icon="cdxIconClose" />
       </CdxButton>
     </div>
@@ -10,6 +15,7 @@
         class="cdx-toolbar__btn"
         weight="quiet"
         aria-label="Undo"
+        :disabled="!canUndo"
         @click="getEditor()?.chain().focus().undo().run()"
       >
         <CdxIcon :icon="cdxIconUndo" />
@@ -66,11 +72,11 @@
 defineProps({
   citeBadgeCount: { type: Number, default: 0 },
 })
-const emit = defineEmits(['cite'])
+const emit = defineEmits(['cite', 'close'])
 import { CdxButton, CdxIcon } from '@wikimedia/codex'
 import { useEditorInstance } from '../composables/useEditorInstance'
 
-const { hasContent, getEditor } = useEditorInstance()
+const { hasContent, getEditor, canUndo } = useEditorInstance()
 import {
   cdxIconClose,
   cdxIconUndo,
@@ -93,7 +99,8 @@ import {
   background-color: var(--background-color-base, #fff);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
   border-bottom: var(--border-subtle);
-  width: 100%;
+  left: var(--editor-shell-offset);
+  width: var(--editor-shell-width);
 }
 
 .cdx-toolbar__lhs {

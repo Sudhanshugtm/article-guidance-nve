@@ -58,6 +58,7 @@
       </CdxButton>
     </div>
     <CdxButton
+      v-if="showSettingsButton"
       weight="quiet"
       class="settings-btn"
       aria-label="Settings"
@@ -93,10 +94,13 @@ import { useCursorRect } from '../composables/useCursorRect'
 import { defaultSettings } from '../config/editorSettings'
 import { articleSections } from '../config/articleSections'
 
+const { showSettingsButton } = defineProps({
+  showSettingsButton: { type: Boolean, default: true },
+})
 const emit = defineEmits(['open-outline', 'open-settings'])
 
 const { settings } = useEditorSettings()
-const { setEditor, hasContent } = useEditorInstance()
+const { setEditor, hasContent, updateUndoAvailability } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { setCursorRect, clearCursorRect } = useCursorRect()
 const { triggerDetection, scanParagraphAtPos, updatePeacockRect, activeParagraphRange } =
@@ -187,6 +191,7 @@ const editor = useEditor({
     updateCursorInCheck(editorRef)
   },
   onTransaction({ transaction, editor: editorRef }) {
+    updateUndoAvailability(editorRef)
     if (transaction.docChanged) {
       hasContent.value = !editorRef.isEmpty
       if (isPlaceholderInitialState.value) {
@@ -574,6 +579,7 @@ onMounted(() => {
   // Register the editor instance globally
   if (editor.value) {
     setEditor(editor.value)
+    updateUndoAvailability(editor.value)
     if (import.meta.env.DEV) window.__editor = editor.value
   }
 

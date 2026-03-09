@@ -1,6 +1,10 @@
 <template>
   <div class="editor-page">
-    <CdxToolbar :cite-badge-count="citeBadgeCount" @cite="onOpenCiteDefault" />
+    <ResearchToolbar
+      :cite-badge-count="citeBadgeCount"
+      @cite="onOpenCiteDefault"
+      @close="onCloseEditor"
+    />
     <div
       class="editor-wrapper"
       :class="{
@@ -15,7 +19,11 @@
         :style="keyboardHeight > 0 ? { '--keyboard-padding': `${keyboardHeight + 24}px` } : {}"
         @click="isRailOpen && (isRailOpen = false)"
       >
-        <TextEditor @open-outline="onOpenOutline" @open-settings="settingsDialogOpen = true" />
+        <TextEditor
+          :show-settings-button="false"
+          @open-outline="onOpenOutline"
+          @open-settings="settingsDialogOpen = true"
+        />
       </div>
       <div class="editor-rail-column">
         <EditorRail
@@ -78,11 +86,12 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { CdxIcon } from '@wikimedia/codex'
 import { cdxIconAdd, cdxIconAlert } from '@wikimedia/codex-icons'
 import TextEditor from '@/components/TextEditor.vue'
 import EditorRail from '@/components/EditorRail.vue'
-import CdxToolbar from '@/components/CdxToolbar.vue'
+import ResearchToolbar from '@/components/ResearchToolbar.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
 import CiteDialog from '@/components/CiteDialog.vue'
 import OutlinePopover from '@/components/OutlinePopover.vue'
@@ -99,11 +108,16 @@ import { useEditCheckPagination } from '@/composables/useEditCheckPagination'
 import { useCitationRegistry } from '@/composables/useCitationRegistry'
 import { citations as preExistingCitations } from '@/config/citations'
 
+const route = useRoute()
+const router = useRouter()
 const { settings } = useEditorSettings()
 const outlineLocation = computed(() => settings.value.outline.location)
 const outlinePersistence = computed(() => settings.value.outline.persistence)
 const entryPointStyle = computed(() => settings.value.entryPoint.style)
 const showSoftKeyboard = computed(() => settings.value.keyboard.display === 'visible')
+const currentLang = computed(() =>
+  Array.isArray(route.query.lang) ? route.query.lang[0] ?? 'en' : route.query.lang ?? 'en',
+)
 const keyboardHeight = ref(0)
 function onKeyboardHeightChange(height) {
   keyboardHeight.value = height
@@ -141,7 +155,7 @@ function railStyleForGroup(group) {
   return {
     position: 'fixed',
     top: `${group.rect.top}px`,
-    right: '0px',
+    right: 'var(--editor-shell-offset)',
     width: '44px',
     height: `${group.rect.height}px`,
   }
@@ -163,7 +177,7 @@ const forceButtonStyle = computed(() => {
   return {
     position: 'fixed',
     top: `${rect.top - halfLeading}px`,
-    right: '0px',
+    right: 'var(--editor-shell-offset)',
     width: '44px',
     height: `${rect.lineHeight}px`,
   }
@@ -219,6 +233,13 @@ function onOpenCiteDefault() {
 function onOpenCiteDiscover() {
   citeDialogInitialTab.value = 'discover'
   citeDialogOpen.value = true
+}
+
+function onCloseEditor() {
+  router.replace({
+    name: 'articles',
+    query: { lang: currentLang.value },
+  })
 }
 
 // Track whether the popover/rail should stay open after content insertion
@@ -304,10 +325,11 @@ watch(outlineLocation, () => {
 
 <style scoped>
 .editor-page {
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+  --rail-strip-width: 44px;
+  --panel-width: calc(var(--editor-shell-width) - var(--rail-strip-width));
 }
 
 .editor-wrapper {
@@ -319,19 +341,28 @@ watch(outlineLocation, () => {
 }
 
 .editor-wrapper.rail-open {
-  transform: translateX(calc(-100vw + 88px));
+  transform: translateX(calc(-1 * (var(--panel-width) - var(--rail-strip-width))));
 }
 
 .editor-main {
-  flex: 0 0 calc(100vw - 44px);
+  flex: 0 0 var(--panel-width);
+  min-width: var(--panel-width);
   display: flex;
   flex-direction: column;
 }
 
 .editor-rail-column {
-  flex: 0 0 calc(100vw - 44px);
+  flex: 0 0 var(--rail-strip-width);
+  min-width: var(--rail-strip-width);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  transition: flex-basis 0.3s ease, min-width 0.3s ease;
+}
+
+.editor-wrapper.rail-open .editor-rail-column {
+  flex-basis: var(--panel-width);
+  min-width: var(--panel-width);
 }
 
 .editor-main.keyboard-visible :deep(.ProseMirror) {

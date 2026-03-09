@@ -4,6 +4,7 @@ import { useEditorSettings } from './useEditorSettings'
 
 const editorInstance = shallowRef(null)
 const hasContent = ref(false)
+const canUndo = ref(false)
 const citationClickCount = ref(0)
 
 export function useEditorInstance() {
@@ -12,6 +13,7 @@ export function useEditorInstance() {
 
   function setEditor(editor) {
     editorInstance.value = editor
+    updateUndoAvailability(editor)
   }
 
   function getEditor() {
@@ -48,6 +50,10 @@ export function useEditorInstance() {
     editorInstance.value?.commands.focus()
   }
 
+  function updateUndoAvailability(editor = editorInstance.value) {
+    canUndo.value = editor ? editor.can().undo() : false
+  }
+
   function signalCitationClicked() {
     citationClickCount.value++
   }
@@ -59,6 +65,8 @@ export function useEditorInstance() {
     insertContent,
     focus,
     hasContent,
+    canUndo,
+    updateUndoAvailability,
     citationClickCount,
     signalCitationClicked,
   }
