@@ -23,3 +23,10 @@ export function getTopicForRoute(query, content) {
 export function buildEditorQuery({ lang, articleId, topicId }) {
   return { lang, article: articleId, topic: topicId }
 }
+
+export function flattenParagraph(para, redLinks) {
+  if (typeof para === 'string') return para
+  return para
+    .map((seg) => (typeof seg === 'string' ? seg : redLinks?.[seg.redLinkIndex]?.label ?? ''))
+    .join('')
+}

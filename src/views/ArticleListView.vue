@@ -5,7 +5,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { researchContent } from '@/config/researchContent'
-import { getArticlesForLanguage } from '@/utils/researchFlow'
+import { getArticlesForLanguage, flattenParagraph } from '@/utils/researchFlow'
 
 const route = useRoute()
 const articleListState = computed(() => getArticlesForLanguage(route.query.lang, researchContent))
@@ -33,7 +33,7 @@ const articleListState = computed(() => getArticlesForLanguage(route.query.lang,
           class="article-list-card-link"
         >
           <span class="article-list-card-title">{{ article.title }}</span>
-          <span class="article-list-card-summary">{{ article.summary[0] }}</span>
+          <span class="article-list-card-summary">{{ flattenParagraph(article.summary[0], article.redLinks) }}</span>
         </router-link>
       </li>
     </ul>

@@ -65,7 +65,25 @@ const article = computed(() => getArticleForRoute(route.query, researchContent))
 
       <div class="wiki-lead">
         <p v-for="(para, i) in article.summary" :key="'s' + i" class="wiki-paragraph">
-          {{ para }}
+          <!-- Plain string paragraph -->
+          <template v-if="typeof para === 'string'">{{ para }}</template>
+          <!-- Segment paragraph: strings interleaved with inline red links -->
+          <template v-else v-for="(seg, segi) in para" :key="'sseg' + i + '-' + segi">
+            <template v-if="typeof seg === 'string'">{{ seg }}</template>
+            <router-link
+              v-else
+              :to="{
+                name: 'editor',
+                query:
+                  buildEditorQuery({
+                    lang: lang,
+                    articleId: article.id,
+                    topicId: article.redLinks[seg.redLinkIndex].id,
+                  }),
+              }"
+              class="wiki-red-link"
+            >{{ article.redLinks[seg.redLinkIndex].label }}</router-link>
+          </template>
         </p>
       </div>
 
