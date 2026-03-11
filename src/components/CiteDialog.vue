@@ -359,4 +359,25 @@ watch(open, (isOpen) => {
   align-items: center;
   gap: var(--spacing-50);
 }
+
+@media (min-width: 768px) {
+  .cite-dialog {
+    position: absolute;
+    inset: 0;
+  }
+
+  .cite-dialog :deep(.cdx-dialog-backdrop) {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .cite-dialog :deep(.cdx-dialog) {
+    max-width: calc(100% - 2rem) !important;
+    max-height: calc(100% - 2rem) !important;
+  }
+}
 </style>

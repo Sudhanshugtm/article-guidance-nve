@@ -25,6 +25,10 @@ const outlinePopoverSource = readFileSync(
   new URL('../src/components/OutlinePopover.vue', import.meta.url),
   'utf8',
 )
+const citeDialogSource = readFileSync(
+  new URL('../src/components/CiteDialog.vue', import.meta.url),
+  'utf8',
+)
 const editorInstanceSource = readFileSync(
   new URL('../src/composables/useEditorInstance.js', import.meta.url),
   'utf8',
@@ -116,6 +120,21 @@ test('desktop outline popover is constrained to the editor shell instead of the 
   assert.match(
     outlinePopoverSource,
     /@media \(min-width:\s*768px\)\s*\{[\s\S]*\.outline-popover-anchor \+ :deep\(\.cdx-popover\)\s*\{[\s\S]*position:\s*absolute\s*!important;[\s\S]*left:\s*0\s*!important;[\s\S]*right:\s*0\s*!important;[\s\S]*bottom:\s*0\s*!important;[\s\S]*width:\s*100%\s*!important;[\s\S]*max-width:\s*100%\s*!important;[\s\S]*border-bottom-left-radius:\s*24px\s*!important;[\s\S]*border-bottom-right-radius:\s*24px\s*!important;/,
+  )
+})
+
+test('desktop cite dialog is constrained to the editor shell instead of the full viewport', () => {
+  assert.match(
+    citeDialogSource,
+    /@media \(min-width:\s*768px\)\s*\{[\s\S]*\.cite-dialog\s*\{[\s\S]*position:\s*absolute;[\s\S]*inset:\s*0;[\s\S]*\}/,
+  )
+  assert.match(
+    citeDialogSource,
+    /@media \(min-width:\s*768px\)\s*\{[\s\S]*\.cite-dialog :deep\(\.cdx-dialog-backdrop\)\s*\{[\s\S]*position:\s*absolute\s*!important;[\s\S]*top:\s*0\s*!important;[\s\S]*left:\s*0\s*!important;[\s\S]*width:\s*100%\s*!important;[\s\S]*height:\s*100%\s*!important;[\s\S]*min-height:\s*0\s*!important;/,
+  )
+  assert.match(
+    citeDialogSource,
+    /@media \(min-width:\s*768px\)\s*\{[\s\S]*\.cite-dialog :deep\(\.cdx-dialog\)\s*\{[\s\S]*max-width:\s*calc\(100%\s*-\s*2rem\)\s*!important;[\s\S]*max-height:\s*calc\(100%\s*-\s*2rem\)\s*!important;/,
   )
 })
 
