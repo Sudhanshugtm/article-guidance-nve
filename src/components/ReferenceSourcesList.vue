@@ -16,7 +16,7 @@
           class="reference-link"
           @click.stop
         >
-          {{ source.references.length }} {{ source.references.length === 1 ? 'reference' : 'references' }}
+          {{ source.references.length }} {{ source.references.length === 1 ? locale.counts.reference : locale.counts.references }}
         </a>
       </template>
     </CdxCard>
@@ -26,8 +26,10 @@
 <script setup>
 import { CdxCard } from '@wikimedia/codex'
 import { referenceSources } from '../config/referenceSources.js'
+import { useLocale } from '../composables/useLocale'
 
 const emit = defineEmits(['open-cite-discover'])
+const { locale } = useLocale()
 </script>
 
 <style scoped>

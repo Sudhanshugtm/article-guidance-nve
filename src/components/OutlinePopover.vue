@@ -6,7 +6,7 @@
         <CdxIcon :icon="currentItem.icon" />
         {{ currentItem.label }}
       </CdxMenuButton>
-      <CdxButton weight="quiet" aria-label="Close" @click="open = false">
+      <CdxButton weight="quiet" :aria-label="locale.toolbar.close" @click="open = false">
         <CdxIcon :icon="cdxIconClose" />
       </CdxButton>
     </div>
@@ -40,7 +40,10 @@ import OutlineAccordionList from './OutlineAccordionList.vue'
 import VerifiedFactsList from './VerifiedFactsList.vue'
 import ReferenceSourcesList from './ReferenceSourcesList.vue'
 
+import { useLocale } from '../composables/useLocale'
+
 defineEmits(['content-inserted', 'open-cite-discover'])
+const { locale } = useLocale()
 const props = defineProps({
   initialView: {
     type: String,
@@ -57,29 +60,29 @@ watch(open, (isOpen) => {
   }
 })
 
-const menuItems = [
+const menuItems = computed(() => [
   {
     value: 'outline',
-    label: 'Outline',
-    description: 'Build off similar articles',
+    label: locale.value.rail.outline,
+    description: locale.value.rail.outlineDesc,
     icon: cdxIconListBullet,
   },
   {
     value: 'verified-facts',
-    label: 'Verified facts',
-    description: 'From Wikidata',
+    label: locale.value.rail.verifiedFacts,
+    description: locale.value.rail.verifiedFactsDesc,
     icon: cdxIconCheckAll,
   },
   {
     value: 'references',
-    label: 'References',
-    description: 'In other projects',
+    label: locale.value.rail.references,
+    description: locale.value.rail.referencesDesc,
     icon: cdxIconReference,
   },
-]
+])
 
 const currentItem = computed(
-  () => menuItems.find((item) => item.value === selectedView.value) || menuItems[0],
+  () => menuItems.value.find((item) => item.value === selectedView.value) || menuItems.value[0],
 )
 
 let bodyEl = null

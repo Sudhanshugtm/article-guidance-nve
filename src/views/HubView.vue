@@ -4,15 +4,17 @@
 <script setup>
 import { researchContent } from '@/config/researchContent'
 import { getSupportedLanguages } from '@/utils/researchFlow'
+import { useLocale } from '@/composables/useLocale'
 
 const languages = getSupportedLanguages(researchContent).map((code) => researchContent[code])
+const { locale } = useLocale()
 </script>
 
 <template>
   <div class="hub-page">
     <header class="hub-header">
       <h1 class="hub-title">Research prototype</h1>
-      <p class="hub-subtitle">Select a language to start the article creation flow.</p>
+      <p class="hub-subtitle">{{ locale.flow.hubSubtitle }}</p>
     </header>
 
     <ul class="hub-list">
@@ -25,7 +27,7 @@ const languages = getSupportedLanguages(researchContent).map((code) => researchC
             <span class="hub-card-label">{{ lang.label }}</span>
           </div>
           <div class="hub-card-actions">
-            Open article list
+            {{ locale.flow.openArticleList }}
           </div>
         </router-link>
       </li>

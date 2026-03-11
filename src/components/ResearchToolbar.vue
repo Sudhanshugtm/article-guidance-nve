@@ -4,7 +4,7 @@
       <CdxButton
         class="research-toolbar__btn research-toolbar__btn--close"
         weight="quiet"
-        aria-label="Close"
+        :aria-label="locale.toolbar.close"
         @click="emit('close')"
       >
         <CdxIcon :icon="cdxIconClose" />
@@ -14,7 +14,7 @@
       <CdxButton
         class="research-toolbar__btn"
         weight="quiet"
-        aria-label="Undo"
+        :aria-label="locale.toolbar.undo"
         :disabled="!canUndo"
         @click="getEditor()?.chain().focus().undo().run()"
       >
@@ -25,7 +25,7 @@
           class="research-toolbar__btn research-toolbar__btn--dropdown"
           :class="{ 'research-toolbar__btn--active': isStyleMenuOpen }"
           weight="quiet"
-          aria-label="Style text"
+          :aria-label="locale.toolbar.styleText"
           @click="toggleStyleMenu"
         >
           <CdxIcon :icon="cdxIconTextStyle" />
@@ -46,7 +46,7 @@
             @click="applyBold"
           >
             <span class="research-toolbar__style-icon research-toolbar__style-icon--bold">B</span>
-            <span class="research-toolbar__style-label">Bold</span>
+            <span class="research-toolbar__style-label">{{ locale.toolbar.bold }}</span>
           </button>
           <button
             class="research-toolbar__style-item"
@@ -55,11 +55,11 @@
             @click="applyItalic"
           >
             <span class="research-toolbar__style-icon research-toolbar__style-icon--italic">I</span>
-            <span class="research-toolbar__style-label">Italic</span>
+            <span class="research-toolbar__style-label">{{ locale.toolbar.italic }}</span>
           </button>
         </div>
       </CdxPopover>
-      <CdxButton class="research-toolbar__btn" weight="quiet" aria-label="Cite" @click="emit('cite')">
+      <CdxButton class="research-toolbar__btn" weight="quiet" :aria-label="locale.toolbar.cite" @click="emit('cite')">
         <span class="research-toolbar__cite-icon-wrapper">
           <CdxIcon :icon="cdxIconQuotes" />
           <span v-if="citeBadgeCount > 0" class="research-toolbar__cite-badge">{{
@@ -67,13 +67,13 @@
           }}</span>
         </span>
       </CdxButton>
-      <CdxButton class="research-toolbar__btn" weight="quiet" aria-label="Link">
+      <CdxButton class="research-toolbar__btn" weight="quiet" :aria-label="locale.toolbar.link">
         <CdxIcon :icon="cdxIconLink" />
       </CdxButton>
       <CdxButton
         class="research-toolbar__btn research-toolbar__btn--dropdown"
         weight="quiet"
-        aria-label="Switch editor"
+        :aria-label="locale.toolbar.switchEditor"
       >
         <CdxIcon :icon="cdxIconEdit" />
         <CdxIcon :icon="cdxIconExpand" class="research-toolbar__indicator" />
@@ -84,7 +84,7 @@
         class="research-toolbar__btn research-toolbar__btn--publish"
         action="progressive"
         weight="primary"
-        aria-label="Publish"
+        :aria-label="locale.toolbar.publish"
         :disabled="!hasContent"
       >
         <CdxIcon :icon="cdxIconNext" />
@@ -112,8 +112,11 @@ defineProps({
   citeBadgeCount: { type: Number, default: 0 },
 })
 
+import { useLocale } from '../composables/useLocale'
+
 const emit = defineEmits(['cite', 'close'])
 const { hasContent, getEditor, canUndo } = useEditorInstance()
+const { locale } = useLocale()
 const styleAnchorRef = ref(null)
 const isStyleMenuOpen = ref(false)
 const isBoldActive = ref(false)

@@ -21,7 +21,7 @@
       <CdxButton
         v-if="entryPointStyle === 'icon'"
         class="codex-floating-btn"
-        aria-label="Add content"
+        :aria-label="locale.entryPoint.addContent"
       >
         <CdxIcon :icon="cdxIconAdd" />
       </CdxButton>
@@ -31,7 +31,7 @@
         v-else-if="entryPointStyle === 'quiet' && isCycling"
         weight="quiet"
         class="codex-floating-btn-quiet"
-        aria-label="Add content"
+        :aria-label="locale.entryPoint.addContent"
       >
         <CdxIcon :icon="cdxIconAdd" />
         <span class="typewriter-container">
@@ -49,11 +49,11 @@
         v-else-if="entryPointStyle === 'floating' && !hasInteracted"
         class="codex-floating-text"
       >
-        Tap here to continue...
+        {{ locale.entryPoint.tapPrompt }}
       </span>
 
       <!-- Fallback: icon button for other styles after cycling stops -->
-      <CdxButton v-else class="codex-floating-btn" aria-label="Add content">
+      <CdxButton v-else class="codex-floating-btn" :aria-label="locale.entryPoint.addContent">
         <CdxIcon :icon="cdxIconAdd" />
       </CdxButton>
     </div>
@@ -88,6 +88,7 @@ import { CitationSuperscript } from '../extensions/citationSuperscript'
 import { ReferencesSection } from '../extensions/referencesSection'
 import { useEditorSettings } from '../composables/useEditorSettings'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { useLocale } from '../composables/useLocale'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
 import { useEditCheckPagination } from '../composables/useEditCheckPagination'
 import { useCursorRect } from '../composables/useCursorRect'
@@ -100,6 +101,7 @@ const { showSettingsButton } = defineProps({
 const emit = defineEmits(['open-outline', 'open-settings'])
 
 const { settings } = useEditorSettings()
+const { locale } = useLocale()
 const { setEditor, hasContent, updateUndoAvailability } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { setCursorRect, clearCursorRect } = useCursorRect()
@@ -149,7 +151,7 @@ const editor = useEditor({
       link: { openOnClick: false },
     }),
     Placeholder.configure({
-      placeholder: 'Start writing or tap the +',
+      placeholder: () => locale.value.entryPoint?.editorPlaceholder || 'Start writing or tap the +',
     }),
     AnnotationHighlight,
     PeacockHighlight,
@@ -240,7 +242,9 @@ const editor = useEditor({
 
 // ── Typewriter animation for the quiet button style ────────────────────
 
-const sectionTitles = articleSections.map((s) => s.title)
+const sectionTitles = computed(() =>
+  (locale.value.sections || articleSections).map((s) => s.title),
+)
 const currentLabelIndex = ref(0)
 const displayText = ref('')
 const wipeProgress = ref(0)
@@ -265,7 +269,7 @@ const wipeMaskPercent = computed(() => -15 + wipeProgress.value * 115)
 
 function typewriterTick() {
   if (animPhase.value === 'typing') {
-    const title = sectionTitles[currentLabelIndex.value]
+    const title = sectionTitles.value[currentLabelIndex.value]
     displayText.value += title[charIndex]
     charIndex++
     if (charIndex >= title.length) {
@@ -283,7 +287,7 @@ function typewriterTick() {
       clearInterval(charTimer)
       charTimer = null
       displayText.value = ''
-      currentLabelIndex.value = (currentLabelIndex.value + 1) % sectionTitles.length
+      currentLabelIndex.value = (currentLabelIndex.value + 1) % sectionTitles.value.length
       charIndex = 0
       animPhase.value = 'typing'
       charTimer = setInterval(typewriterTick, CHAR_INTERVAL_MS)
@@ -562,6 +566,16 @@ function onEditorClick(event) {
     emit('open-outline')
   }
 }
+
+// Force placeholder re-render when locale changes
+watch(
+  () => locale.value.entryPoint?.editorPlaceholder,
+  () => {
+    if (editor.value) {
+      editor.value.view.dispatch(editor.value.state.tr)
+    }
+  },
+)
 
 // Start typewriter on first button appearance (not on mount)
 watch(isButtonVisible, (visible) => {

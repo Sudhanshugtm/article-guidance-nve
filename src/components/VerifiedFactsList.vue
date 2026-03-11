@@ -16,7 +16,7 @@
           class="reference-link"
           @click.stop
         >
-          {{ fact.references.length }} {{ fact.references.length === 1 ? 'reference' : 'references' }}
+          {{ fact.references.length }} {{ fact.references.length === 1 ? locale.counts.reference : locale.counts.references }}
         </a>
       </template>
     </CdxCard>
@@ -28,11 +28,13 @@ import { CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
 import { verifiedFacts } from '../config/verifiedFacts.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { useLocale } from '../composables/useLocale'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
 import { useCitationRegistry } from '../composables/useCitationRegistry'
 
 const emit = defineEmits(['content-inserted'])
 const { getEditor, insertContent } = useEditorInstance()
+const { locale } = useLocale()
 const { activePlaceholderPos, clearActivePlaceholder } = usePlaceholderInteraction()
 const { insertCitation } = useCitationRegistry()
 

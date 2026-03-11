@@ -2,42 +2,42 @@
   <div class="cite-dialog">
     <CdxDialog
       v-model:open="open"
-      title="Add a citation"
+      :title="locale.cite.title"
       :use-close-button="true"
       :render-in-place="true"
     >
       <CdxTabs v-model:active="activeTab" :framed="true">
-        <CdxTab name="automatic" label="Automatic">
+        <CdxTab name="automatic" :label="locale.cite.automatic">
           <div class="cite-dialog__tab-content">
             <p class="cite-dialog__description">
-              Enter a link or reference code (ISBN, DOI or other) to create a citation
+              {{ locale.cite.automaticDesc }}
             </p>
             <CdxSearchInput
               v-model="searchQuery"
               :use-button="true"
               :hide-icon="true"
-              button-label="Create"
-              placeholder="e.g. http://www.example.com"
+              :button-label="locale.cite.create"
+              :placeholder="locale.cite.placeholder"
             />
             <div>
               <CdxButton>
                 <CdxIcon :icon="cdxIconLogoWikidata" />
-                Scan ISBN barcode
+                {{ locale.cite.scanIsbn }}
               </CdxButton>
             </div>
           </div>
         </CdxTab>
-        <CdxTab name="manual" label="Manual">
+        <CdxTab name="manual" :label="locale.cite.manual">
           <div class="cite-dialog__tab-content">
             <p class="cite-dialog__description"></p>
           </div>
         </CdxTab>
-        <CdxTab name="reuse" label="Re-use">
+        <CdxTab name="reuse" :label="locale.cite.reuse">
           <div class="cite-dialog__reuse">
             <div class="cite-dialog__reuse-search">
               <CdxSearchInput
                 v-model="reuseSearchQuery"
-                placeholder="Search within current citations"
+                :placeholder="locale.cite.reusePlaceholder"
               />
             </div>
             <div class="cite-dialog__reuse-list">
@@ -102,14 +102,14 @@
             </div>
           </div>
         </CdxTab>
-        <CdxTab name="discover" label="Discover">
+        <CdxTab name="discover" :label="locale.cite.discover">
           <div class="cite-dialog__discover">
             <div class="cite-dialog__discover-search">
               <CdxSearchInput
                 v-model="discoverSearchQuery"
-                placeholder="Search citations in other projects"
+                :placeholder="locale.cite.discoverPlaceholder"
               />
-              <CdxButton weight="quiet" aria-label="Filter">
+              <CdxButton weight="quiet" :aria-label="locale.cite.filter">
                 <CdxIcon :icon="cdxIconFunnel" />
               </CdxButton>
             </div>
@@ -131,11 +131,11 @@
                 <div class="cite-dialog__discover-actions">
                   <CdxButton @click="onAddDiscoverReference(ref)">
                     <CdxIcon :icon="cdxIconAdd" />
-                    Add
+                    {{ locale.cite.add }}
                   </CdxButton>
                   <CdxButton weight="quiet">
                     <CdxIcon :icon="cdxIconBook" />
-                    Read
+                    {{ locale.cite.read }}
                   </CdxButton>
                 </div>
               </div>
@@ -153,6 +153,7 @@ import { CdxDialog, CdxTabs, CdxTab, CdxSearchInput, CdxButton, CdxIcon } from '
 import { cdxIconLogoWikidata, cdxIconFunnel, cdxIconAdd, cdxIconBook } from '@wikimedia/codex-icons'
 import { useCitationRegistry } from '@/composables/useCitationRegistry'
 import { referenceSources } from '@/config/referenceSources'
+import { useLocale } from '../composables/useLocale'
 
 const props = defineProps({
   initialTab: {
@@ -164,6 +165,7 @@ const props = defineProps({
 const emit = defineEmits(['update:open', 'citation-selected'])
 
 const { usedCitations, availableCitations } = useCitationRegistry()
+const { locale } = useLocale()
 
 const open = defineModel('open', { type: Boolean, default: false })
 const activeTab = ref(props.initialTab)

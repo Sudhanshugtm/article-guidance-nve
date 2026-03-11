@@ -1,22 +1,22 @@
 <template>
   <CdxAccordion
-    v-for="(section, index) in articleSections"
-    :key="section.title"
+    v-for="(section, index) in localizedSections"
+    :key="index"
     :class="{ 'accordion--empty': isSectionEmpty(section) }"
     separation="none"
-    :model-value="accordionStates[section.title]"
+    :model-value="accordionStates[index]"
     :action-icon="index === 0 ? null : cdxIconAdd"
     :action-always-visible="index !== 0 && isSectionEmpty(section)"
-    :action-button-label="`Add ${section.title} section`"
-    @update:model-value="(val) => updateAccordionState(section, val)"
+    :action-button-label="locale.outline.addSectionLabel.replace('{section title}', section.title)"
+    @update:model-value="(val) => updateAccordionState(index, val)"
     @action-button-click="onInsertSectionHeading(section)"
   >
     <template #title>{{ section.title }}</template>
     <template #description>{{ section.description }}</template>
     <div v-if="section.paragraphs && section.paragraphs.length" class="paragraph-cards">
       <CdxCard
-        v-for="paragraph in section.paragraphs"
-        :key="paragraph.title"
+        v-for="(paragraph, pIndex) in section.paragraphs"
+        :key="pIndex"
         :icon="cdxIconAdd"
         @click="onInsertParagraph(section, index, paragraph)"
       >
@@ -28,15 +28,34 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { CdxAccordion, CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
 import { articleSections, CITATION_LABEL } from '../config/articleSections.js'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { useAccordionState } from '../composables/useAccordionState'
+import { useLocale } from '../composables/useLocale'
 
 const emit = defineEmits(['content-inserted'])
 const { insertContent, getEditor } = useEditorInstance()
 const { accordionStates, updateAccordionState } = useAccordionState()
+const { locale } = useLocale()
+
+// Merge locale-translated titles/descriptions with articleSections content templates
+const localizedSections = computed(() => {
+  const ls = locale.value.sections
+  if (!ls) return articleSections
+  return articleSections.map((section, i) => ({
+    ...section,
+    title: ls[i]?.title || section.title,
+    description: ls[i]?.description || section.description,
+    paragraphs: section.paragraphs?.map((para, j) => ({
+      ...para,
+      title: ls[i]?.paragraphs?.[j]?.title || para.title,
+      description: ls[i]?.paragraphs?.[j]?.description || para.description,
+    })),
+  }))
+})
 
 function isSectionEmpty(section) {
   return !section.paragraphs || section.paragraphs.length === 0

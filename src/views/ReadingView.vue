@@ -5,19 +5,20 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { researchContent } from '@/config/researchContent'
-import wikipediaWordmarkUrl from '@/assets/wikipedia-wordmark-en.svg'
 import { getArticleForRoute, buildEditorQuery } from '@/utils/researchFlow'
+import { useLocale } from '@/composables/useLocale'
 
 const route = useRoute()
 const lang = computed(() => route.query.lang ?? 'en')
 const article = computed(() => getArticleForRoute(route.query, researchContent))
+const { locale } = useLocale()
 </script>
 
 <template>
   <div class="reading-page">
     <!-- Wikipedia mobile header chrome -->
     <header class="wiki-header">
-      <button class="wiki-header-btn wiki-header-btn--menu" aria-label="Main menu" type="button">
+      <button class="wiki-header-btn wiki-header-btn--menu" :aria-label="locale.reading.mainMenu" type="button">
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
           <path d="M1 3h18v2H1zm0 6h18v2H1zm0 6h18v2H1z" fill="currentColor" />
         </svg>
@@ -26,12 +27,12 @@ const article = computed(() => getArticleForRoute(route.query, researchContent))
       <router-link :to="{ name: 'articles', query: { lang: lang } }" class="wiki-brand-link">
         <img
           class="wiki-brand-wordmark"
-          :src="wikipediaWordmarkUrl"
-          alt="Wikipedia"
+          :src="locale.reading.wordmarkUrl"
+          :alt="locale.reading.wordmarkAlt"
         />
       </router-link>
 
-      <button class="wiki-header-btn wiki-header-btn--search" aria-label="Search" type="button">
+      <button class="wiki-header-btn wiki-header-btn--search" :aria-label="locale.reading.search" type="button">
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
           <path
             d="M12.2 13.6a7 7 0 1 1 1.4-1.4l5.4 5.4-1.4 1.4zM3 8a5 5 0 1 0 10 0A5 5 0 0 0 3 8"
@@ -45,17 +46,17 @@ const article = computed(() => getArticleForRoute(route.query, researchContent))
       <h1 class="wiki-title">{{ article.title }}</h1>
 
       <!-- "From Wikipedia, the free encyclopedia" tagline -->
-      <div class="wiki-tagline">From Wikipedia, the free encyclopedia</div>
+      <div class="wiki-tagline">{{ locale.reading.tagline }}</div>
     </section>
 
     <!-- Article/Talk tabs bar -->
     <nav class="wiki-tabs-bar" aria-label="Associated pages">
       <ul class="wiki-tabs-list">
         <li class="wiki-tab wiki-tab--selected">
-          <span class="wiki-tab-text">Article</span>
+          <span class="wiki-tab-text">{{ locale.reading.articleTab }}</span>
         </li>
         <li class="wiki-tab">
-          <span class="wiki-tab-text">Talk</span>
+          <span class="wiki-tab-text">{{ locale.reading.talkTab }}</span>
         </li>
       </ul>
     </nav>

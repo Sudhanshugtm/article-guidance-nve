@@ -6,17 +6,19 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { researchContent } from '@/config/researchContent'
 import { getArticlesForLanguage, flattenParagraph } from '@/utils/researchFlow'
+import { useLocale } from '@/composables/useLocale'
 
 const route = useRoute()
 const articleListState = computed(() => getArticlesForLanguage(route.query.lang, researchContent))
+const { locale } = useLocale()
 </script>
 
 <template>
   <div class="article-list-page">
     <header class="article-list-header">
-      <router-link :to="{ name: 'hub' }" class="back-link">&larr; Back</router-link>
+      <router-link :to="{ name: 'hub' }" class="back-link">&larr; {{ locale.flow.back }}</router-link>
       <h1 class="article-list-title">{{ articleListState.language.label }}</h1>
-      <p class="article-list-subtitle">Select an article to read.</p>
+      <p class="article-list-subtitle">{{ locale.flow.articleListSubtitle }}</p>
     </header>
 
     <ul class="article-list">
