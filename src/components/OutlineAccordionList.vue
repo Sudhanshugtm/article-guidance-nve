@@ -6,7 +6,7 @@
     separation="none"
     :model-value="accordionStates[index]"
     :action-icon="index === 0 ? null : cdxIconAdd"
-    :action-always-visible="index !== 0 && isSectionEmpty(section)"
+    :action-always-visible="index !== 0"
     :action-button-label="locale.outline.addSectionLabel.replace('{section title}', section.title)"
     @update:model-value="(val) => updateAccordionState(index, val)"
     @action-button-click="onInsertSectionHeading(section)"

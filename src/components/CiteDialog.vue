@@ -366,6 +366,7 @@ watch(open, (isOpen) => {
   .cite-dialog {
     position: absolute;
     inset: 0;
+    pointer-events: none;
   }
 
   .cite-dialog :deep(.cdx-dialog-backdrop) {
@@ -375,11 +376,13 @@ watch(open, (isOpen) => {
     width: 100% !important;
     height: 100% !important;
     min-height: 0 !important;
+    pointer-events: auto !important;
   }
 
   .cite-dialog :deep(.cdx-dialog) {
     max-width: calc(100% - 2rem) !important;
     max-height: calc(100% - 2rem) !important;
+    pointer-events: auto !important;
   }
 }
 </style>
