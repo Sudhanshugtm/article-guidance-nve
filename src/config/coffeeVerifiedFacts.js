@@ -2,6 +2,16 @@
 // ABOUTME: Displayed in the "Verified facts" panel in the editor rail.
 
 export const coffeeVerifiedFacts = [
+  // Supports: "What coffee is" → {{plant name}}
+  {
+    title: 'Coffea',
+    description: 'plant genus',
+    references: [
+      { url: 'https://www.britannica.com/plant/coffee-plant-genus' },
+    ],
+    wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
+  },
+  // Supports: "What coffee is" → {{region of origin}}, "Early origins" → {{country of origin}}
   {
     title: 'Ethiopia',
     description: 'country of origin',
@@ -11,23 +21,44 @@ export const coffeeVerifiedFacts = [
     ],
     wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
   },
+  // Supports: "What coffee is" → {{number of people}}
   {
-    title: 'coffee bean',
-    description: 'made from material',
+    title: '2 billion',
+    description: 'estimated daily consumers worldwide',
+    references: [
+      { url: 'https://www.ico.org/monthly_coffee_trade_stats.asp' },
+    ],
+    wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
+  },
+  // Supports: "Why it matters" → {{type of product}}, {{comparison product}}
+  {
+    title: 'commodity',
+    description: 'second most traded after petroleum',
     references: [
       { url: 'https://www.britannica.com/topic/coffee' },
     ],
     wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
   },
+  // Supports: "Early origins" → {{century of discovery}}
   {
-    title: 'caffeine',
-    description: 'contains chemical compound',
+    title: '15th century',
+    description: 'earliest known use',
     references: [
-      { url: 'https://pubchem.ncbi.nlm.nih.gov/compound/Caffeine' },
-      { url: 'https://www.fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much' },
+      { url: 'https://www.britannica.com/topic/coffee' },
+      { url: 'https://www.ico.org/heritage.asp' },
     ],
     wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
   },
+  // Supports: "Main varieties" → {{first species}}, {{second species}}
+  {
+    title: 'Arabica and Robusta',
+    description: 'two main cultivated species',
+    references: [
+      { url: 'https://www.britannica.com/plant/coffee-plant-genus' },
+    ],
+    wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
+  },
+  // Supports: "Where it grows" → {{top producer}}
   {
     title: 'Brazil',
     description: 'top producing country',
@@ -36,12 +67,13 @@ export const coffeeVerifiedFacts = [
     ],
     wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
   },
+  // Supports: general knowledge, "What coffee is"
   {
-    title: '15th century',
-    description: 'earliest known use',
+    title: 'caffeine',
+    description: 'main active compound',
     references: [
-      { url: 'https://www.britannica.com/topic/coffee' },
-      { url: 'https://www.ico.org/heritage.asp' },
+      { url: 'https://pubchem.ncbi.nlm.nih.gov/compound/Caffeine' },
+      { url: 'https://www.fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much' },
     ],
     wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
   },

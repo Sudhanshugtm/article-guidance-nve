@@ -33,12 +33,55 @@ import { useEditorInstance } from '../composables/useEditorInstance'
 import { useLocale } from '../composables/useLocale'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
 import { useCitationRegistry } from '../composables/useCitationRegistry'
+import { CITATION_LABEL } from '../config/articleSections.js'
 
 const emit = defineEmits(['content-inserted'])
 const { getEditor, insertContent } = useEditorInstance()
 const { locale } = useLocale()
 const { activePlaceholderPos, clearActivePlaceholder } = usePlaceholderInteraction()
 const { insertCitation } = useCitationRegistry()
+
+/**
+ * After inserting a verified fact at chipPos, scan the parent paragraph
+ * and remove any unfilled [Add a citation] markers if no placeholder
+ * chips remain in that paragraph.
+ */
+function removeRedundantCiteMarkers(editor, posInParagraph) {
+  const $pos = editor.state.doc.resolve(posInParagraph)
+  const paragraph = $pos.parent
+
+  // Check if any placeholder chips remain in this paragraph
+  let hasPlaceholders = false
+  paragraph.forEach((child) => {
+    if (child.type.name === 'placeholderChip') hasPlaceholders = true
+  })
+  if (hasPlaceholders) return
+
+  // Collect positions of unfilled citation markers (in reverse to avoid offset shifts)
+  const paragraphStart = $pos.start()
+  const toDelete = []
+  paragraph.forEach((child, offset) => {
+    if (
+      child.type.name === 'citationSuperscript' &&
+      child.attrs.label === CITATION_LABEL
+    ) {
+      toDelete.push({ from: paragraphStart + offset, size: child.nodeSize })
+    }
+  })
+
+  if (toDelete.length === 0) return
+
+  // Delete in reverse order so positions stay valid
+  editor
+    .chain()
+    .command(({ tr }) => {
+      for (const item of toDelete.reverse()) {
+        tr.delete(item.from, item.from + item.size)
+      }
+      return true
+    })
+    .run()
+}
 
 function onInsertFact(fact) {
   const chipPos = activePlaceholderPos.value
@@ -73,6 +116,10 @@ function onInsertFact(fact) {
         .insertContentAt(chipPos, contentNodes)
         .run()
       clearActivePlaceholder()
+
+      // Clean up [Add a citation] markers if all placeholders in this paragraph are filled
+      removeRedundantCiteMarkers(editor, chipPos)
+
       emit('content-inserted')
       return
     }

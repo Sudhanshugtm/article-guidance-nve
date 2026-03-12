@@ -1,8 +1,7 @@
 // ABOUTME: Outline sections for the Coffee article used in research prototype.
 // ABOUTME: Mirrors articleSections.js structure with fill-in-the-blank templates.
 
-/** Label used for inline citation superscripts. Change here to update everywhere. */
-export const CITATION_LABEL = 'Add a citation'
+import { CITATION_LABEL } from './articleSections.js'
 
 const CITE = `[${CITATION_LABEL}]`
 
@@ -14,7 +13,7 @@ export const coffeeSections = [
       {
         title: 'What coffee is',
         description: 'A brief description of coffee as a drink.',
-        content: `{{Coffee}} is a brewed drink made from the roasted seeds of the {{plant name}} plant, native to {{region of origin}}.${CITE} It is one of the most popular beverages in the world, consumed by an estimated {{number of people}} people daily.${CITE}`,
+        content: `Coffee is a brewed drink made from the roasted seeds of the {{plant name}} plant, native to {{region of origin}}.${CITE} It is one of the most popular beverages in the world, consumed by an estimated {{number of people}} people daily.${CITE}`,
       },
       {
         title: 'Why it matters',
