@@ -1,6 +1,6 @@
 <template>
   <NodeViewWrapper as="div" class="references-section" contenteditable="false">
-    <h2 class="references-heading">References</h2>
+    <h2 class="references-heading">{{ locale.rail.references }}</h2>
     <ol class="references-list">
       <li v-for="citation in parsedCitations" :key="citation.id" class="references-item">
         <span class="references-caret">^</span>
@@ -28,12 +28,15 @@
 <script setup>
 import { computed } from 'vue'
 import { NodeViewWrapper } from '@tiptap/vue-3'
+import { useLocale } from '../composables/useLocale'
 
 const props = defineProps({
   node: { type: Object, required: true },
   editor: { type: Object, required: true },
   getPos: { type: Function, required: true },
 })
+
+const { locale } = useLocale()
 
 const parsedCitations = computed(() => {
   try {

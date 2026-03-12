@@ -10,25 +10,30 @@ import { citations } from '@/config/citations'
 import { referenceSources } from '@/config/referenceSources'
 
 import { coffeeSections } from '@/config/coffeeSections'
-import { coffeeVerifiedFacts } from '@/config/coffeeVerifiedFacts'
 import { coffeeCitations } from '@/config/coffeeCitations'
-import { coffeeReferenceSources } from '@/config/coffeeReferenceSources'
+import {
+  getLocalizedCoffeeFacts,
+  getLocalizedCoffeeReferenceSources,
+} from '@/utils/topicContentLocalization'
 
 const COFFEE_TOPIC_IDS = new Set(['coffee', 'kahve', 'cafe'])
 
 export function useTopicContent() {
   const route = useRoute()
+  const lang = computed(() =>
+    Array.isArray(route.query.lang) ? route.query.lang[0] ?? 'en' : route.query.lang ?? 'en',
+  )
 
   const isCoffeeTopic = computed(() => COFFEE_TOPIC_IDS.has(route.query.topic))
 
   const sections = computed(() => (isCoffeeTopic.value ? coffeeSections : articleSections))
 
-  const facts = computed(() => (isCoffeeTopic.value ? coffeeVerifiedFacts : verifiedFacts))
+  const facts = computed(() => (isCoffeeTopic.value ? getLocalizedCoffeeFacts(lang.value) : verifiedFacts))
 
   const topicCitations = computed(() => (isCoffeeTopic.value ? coffeeCitations : citations))
 
   const sources = computed(() =>
-    isCoffeeTopic.value ? coffeeReferenceSources : referenceSources,
+    isCoffeeTopic.value ? getLocalizedCoffeeReferenceSources(lang.value) : referenceSources,
   )
 
   return { isCoffeeTopic, sections, facts, topicCitations, sources }
