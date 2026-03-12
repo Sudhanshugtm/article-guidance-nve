@@ -13,7 +13,7 @@ export const coffeeSections = [
       {
         title: 'What coffee is',
         description: 'A brief description of coffee as a drink.',
-        content: `Coffee is a brewed drink made from the roasted seeds of the {{plant name}} plant, native to {{region of origin}}.${CITE} It is one of the most popular beverages in the world, consumed by an estimated {{number of people}} people daily.${CITE}`,
+        content: `Coffee is a brewed drink made from the roasted seeds of the {{plant name}} plant, native to {{region of origin}}.${CITE} It is one of the most widely consumed beverages in the world, with an estimated {{number of people}} people drinking it daily.${CITE}`,
       },
       {
         title: 'Why it matters',
@@ -29,7 +29,7 @@ export const coffeeSections = [
       {
         title: 'Early origins',
         description: 'How coffee was first discovered and used.',
-        content: `Coffee was first discovered in {{country of origin}} around the {{century of discovery}}.${CITE} According to legend, a {{occupation of discoverer}} named {{legendary figure}} noticed that his goats became unusually energetic after eating berries from a certain tree.${CITE}`,
+        content: `Coffee was first discovered in {{country of origin}} around the {{century of discovery}}.${CITE} According to legend, a {{occupation of discoverer}} named {{figure in the legend}} noticed that his goats became unusually energetic after eating berries from a certain tree.${CITE}`,
       },
       {
         title: 'Spread around the world',
@@ -50,7 +50,7 @@ export const coffeeSections = [
       {
         title: 'Where it grows',
         description: 'The climate and regions suited for growing coffee.',
-        content: `Coffee plants grow best in {{climate type}} climates between the Tropics of {{northern tropic}} and {{southern tropic}}, a region often called the {{nickname for region}}.${CITE} The largest producing countries today are {{top producer}}, {{second producer}}, and {{third producer}}.${CITE}`,
+        content: `Coffee plants thrive in {{climate type}} climates between the Tropics of {{northern tropic}} and {{southern tropic}}, a region often called the {{nickname for region}}.${CITE} The largest producing countries today are {{top producer}}, {{second producer}}, and {{third producer}}.${CITE}`,
       },
     ],
   },
@@ -66,7 +66,7 @@ export const coffeeSections = [
       {
         title: 'Brewing methods',
         description: 'Common ways people prepare coffee to drink.',
-        content: `Coffee can be brewed in many ways, including {{first method}}, {{second method}}, and {{third method}}.${CITE} Each method produces a different strength and flavour profile. {{Most popular method globally}} remains the most common preparation method worldwide.${CITE}`,
+        content: `Coffee can be brewed in many ways, including {{first method}}, {{second method}}, and {{third method}}.${CITE} Each method produces a different strength and flavour profile. {{most common method globally}} remains the most widely used preparation method worldwide.${CITE}`,
       },
     ],
   },
