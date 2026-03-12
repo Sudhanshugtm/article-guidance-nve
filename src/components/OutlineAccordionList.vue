@@ -31,7 +31,8 @@
 import { computed } from 'vue'
 import { CdxAccordion, CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
-import { articleSections, CITATION_LABEL } from '../config/articleSections.js'
+import { CITATION_LABEL } from '../config/articleSections.js'
+import { useTopicContent } from '../composables/useTopicContent'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { useAccordionState } from '../composables/useAccordionState'
 import { useLocale } from '../composables/useLocale'
@@ -40,12 +41,14 @@ const emit = defineEmits(['content-inserted'])
 const { insertContent, getEditor } = useEditorInstance()
 const { accordionStates, updateAccordionState } = useAccordionState()
 const { locale } = useLocale()
+const { sections: topicSections, isCoffeeTopic } = useTopicContent()
 
-// Merge locale-translated titles/descriptions with articleSections content templates
+// Merge locale-translated titles/descriptions with topic-specific content templates.
+// Skip locale override for coffee topics — those configs already have the right titles.
 const localizedSections = computed(() => {
   const ls = locale.value.sections
-  if (!ls) return articleSections
-  return articleSections.map((section, i) => ({
+  if (!ls || isCoffeeTopic.value) return topicSections.value
+  return topicSections.value.map((section, i) => ({
     ...section,
     title: ls[i]?.title || section.title,
     description: ls[i]?.description || section.description,

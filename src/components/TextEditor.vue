@@ -93,7 +93,7 @@ import { usePlaceholderInteraction } from '../composables/usePlaceholderInteract
 import { useEditCheckPagination } from '../composables/useEditCheckPagination'
 import { useCursorRect } from '../composables/useCursorRect'
 import { defaultSettings } from '../config/editorSettings'
-import { articleSections } from '../config/articleSections'
+import { useTopicContent } from '../composables/useTopicContent'
 
 const { showSettingsButton } = defineProps({
   showSettingsButton: { type: Boolean, default: true },
@@ -102,6 +102,7 @@ const emit = defineEmits(['open-outline', 'open-settings'])
 
 const { settings } = useEditorSettings()
 const { locale } = useLocale()
+const { sections: topicSections } = useTopicContent()
 const { setEditor, hasContent, updateUndoAvailability } = useEditorInstance()
 const { activePlaceholderPos } = usePlaceholderInteraction()
 const { setCursorRect, clearCursorRect } = useCursorRect()
@@ -243,7 +244,7 @@ const editor = useEditor({
 // ── Typewriter animation for the quiet button style ────────────────────
 
 const sectionTitles = computed(() =>
-  (locale.value.sections || articleSections).map((s) => s.title),
+  (locale.value.sections || topicSections.value).map((s) => s.title),
 )
 const currentLabelIndex = ref(0)
 const displayText = ref('')

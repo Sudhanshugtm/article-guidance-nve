@@ -26,7 +26,9 @@
 <script setup>
 import { CdxCard } from '@wikimedia/codex'
 import { cdxIconAdd } from '@wikimedia/codex-icons'
-import { verifiedFacts } from '../config/verifiedFacts.js'
+import { useTopicContent } from '../composables/useTopicContent'
+
+const { facts: verifiedFacts } = useTopicContent()
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { useLocale } from '../composables/useLocale'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'

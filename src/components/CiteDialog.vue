@@ -152,7 +152,7 @@ import { ref, computed, watch } from 'vue'
 import { CdxDialog, CdxTabs, CdxTab, CdxSearchInput, CdxButton, CdxIcon } from '@wikimedia/codex'
 import { cdxIconLogoWikidata, cdxIconFunnel, cdxIconAdd, cdxIconBook } from '@wikimedia/codex-icons'
 import { useCitationRegistry } from '@/composables/useCitationRegistry'
-import { referenceSources } from '@/config/referenceSources'
+import { useTopicContent } from '@/composables/useTopicContent'
 import { useLocale } from '../composables/useLocale'
 
 const props = defineProps({
@@ -166,6 +166,7 @@ const emit = defineEmits(['update:open', 'citation-selected'])
 
 const { usedCitations, availableCitations } = useCitationRegistry()
 const { locale } = useLocale()
+const { sources: referenceSources } = useTopicContent()
 
 const open = defineModel('open', { type: Boolean, default: false })
 const activeTab = ref(props.initialTab)
@@ -174,7 +175,7 @@ const reuseSearchQuery = ref('')
 const discoverSearchQuery = ref('')
 
 const discoverReferences = computed(() =>
-  referenceSources.flatMap((source) =>
+  referenceSources.value.flatMap((source) =>
     source.references.map((ref) => ({
       ...ref,
       sourceId: source.id,

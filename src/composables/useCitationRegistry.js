@@ -1,20 +1,20 @@
 import { ref, computed } from 'vue'
-import { citations as preExistingCitations } from '@/config/citations'
+import { citations as defaultCitations } from '@/config/citations'
 
 // Persistent store of all citations ever seen (keyed by id).
 // Grows monotonically — handles undo by letting us recover citation data.
 const citationStore = new Map()
 
-// Pre-populate store with config citations
-for (const c of preExistingCitations) {
+// Pre-populate store with default citations
+for (const c of defaultCitations) {
   citationStore.set(c.id, c)
 }
 
 // IDs of citations that originated from config (for returning to available on delete)
-const configCitationIds = new Set(preExistingCitations.map((c) => c.id))
+const configCitationIds = new Set(defaultCitations.map((c) => c.id))
 
 // Available references from config — not yet inserted into editor
-const availableCitations = ref([...preExistingCitations])
+const availableCitations = ref([...defaultCitations])
 
 // Citations that have been inserted into the editor, in insertion order.
 // Each entry: { id, segments, referenceNumber }
@@ -116,6 +116,22 @@ export function useCitationRegistry() {
     clickedCitationPos.value = null
   }
 
+  /**
+   * Reset the registry with a different set of initial citations.
+   * Used when switching between topic configs (e.g., tiger vs coffee).
+   */
+  function resetWithCitations(newCitations) {
+    citationStore.clear()
+    configCitationIds.clear()
+    for (const c of newCitations) {
+      citationStore.set(c.id, c)
+      configCitationIds.add(c.id)
+    }
+    availableCitations.value = [...newCitations]
+    usedCitations.value = []
+    clickedCitationPos.value = null
+  }
+
   return {
     availableCitations,
     usedCitations,
@@ -125,5 +141,6 @@ export function useCitationRegistry() {
     clickedCitationPos,
     setClickedCitationPos,
     clearClickedCitationPos,
+    resetWithCitations,
   }
 }

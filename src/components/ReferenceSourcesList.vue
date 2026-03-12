@@ -25,7 +25,9 @@
 
 <script setup>
 import { CdxCard } from '@wikimedia/codex'
-import { referenceSources } from '../config/referenceSources.js'
+import { useTopicContent } from '../composables/useTopicContent'
+
+const { sources: referenceSources } = useTopicContent()
 import { useLocale } from '../composables/useLocale'
 
 const emit = defineEmits(['open-cite-discover'])

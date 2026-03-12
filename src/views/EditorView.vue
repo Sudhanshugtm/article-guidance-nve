@@ -106,7 +106,8 @@ import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteracti
 import { usePeacockDetection } from '@/composables/usePeacockDetection'
 import { useEditCheckPagination } from '@/composables/useEditCheckPagination'
 import { useCitationRegistry } from '@/composables/useCitationRegistry'
-import { citations as preExistingCitations } from '@/config/citations'
+import { useTopicContent } from '@/composables/useTopicContent'
+import { useAccordionState } from '@/composables/useAccordionState'
 
 const route = useRoute()
 const router = useRouter()
@@ -124,6 +125,15 @@ const currentArticle = computed(() =>
 const keyboardHeight = ref(0)
 function onKeyboardHeightChange(height) {
   keyboardHeight.value = height
+}
+
+// Initialize editor content based on topic (coffee vs default tiger)
+const { isCoffeeTopic, topicCitations, sections: topicSections } = useTopicContent()
+const { resetWithCitations } = useCitationRegistry()
+const { resetForSections } = useAccordionState()
+if (isCoffeeTopic.value) {
+  resetWithCitations(topicCitations.value)
+  resetForSections(topicSections.value)
 }
 
 // Force entry point
@@ -223,7 +233,7 @@ const citeBadgeDismissed = ref(false)
 const citeBadgeCount = computed(() =>
   citeBadgeSetting.value === 'hidden' || citeBadgeDismissed.value
     ? 0
-    : preExistingCitations.length,
+    : topicCitations.value.length,
 )
 
 function onOpenCiteDefault() {

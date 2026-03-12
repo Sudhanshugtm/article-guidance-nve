@@ -10,5 +10,15 @@ export function useAccordionState() {
     accordionStates.value[index] = newValue
   }
 
-  return { accordionStates, updateAccordionState }
+  /**
+   * Reset accordion states for a different number of sections.
+   * First section open, rest closed.
+   */
+  function resetForSections(sections) {
+    accordionStates.value = Object.fromEntries(
+      sections.map((_, index) => [index, index === 0]),
+    )
+  }
+
+  return { accordionStates, updateAccordionState, resetForSections }
 }
