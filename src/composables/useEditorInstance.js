@@ -20,6 +20,31 @@ export function useEditorInstance() {
     return editorInstance.value
   }
 
+  function activatePlaceholder(chipPos, editor = editorInstance.value) {
+    if (chipPos === null || !editor) return
+
+    const behavior = settings.value.placeholder?.cursorBehavior || 'before'
+    const chipNode = editor.state.doc.nodeAt(chipPos)
+    if (!chipNode) return
+
+    const targetPos =
+      behavior === 'before' ? chipPos : chipPos + chipNode.nodeSize
+    setActivePlaceholder(chipPos, behavior)
+
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => {
+        editor.commands.focus()
+        editor.commands.setTextSelection(targetPos)
+        markActivePlaceholderSettled()
+      })
+      return
+    }
+
+    editor.commands.focus()
+    editor.commands.setTextSelection(targetPos)
+    markActivePlaceholderSettled()
+  }
+
   function insertContent(content) {
     const editor = editorInstance.value
     if (!editor) return
@@ -36,13 +61,7 @@ export function useEditorInstance() {
     })
 
     if (firstChipPos !== null) {
-      const behavior = settings.value.placeholder?.cursorBehavior || 'before'
-      const chipNode = editor.state.doc.nodeAt(firstChipPos)
-      const targetPos =
-        behavior === 'before' ? firstChipPos : firstChipPos + chipNode.nodeSize
-      setActivePlaceholder(firstChipPos, behavior)
-      editor.commands.setTextSelection(targetPos)
-      markActivePlaceholderSettled()
+      activatePlaceholder(firstChipPos, editor)
     }
   }
 
@@ -62,6 +81,7 @@ export function useEditorInstance() {
     editorInstance,
     setEditor,
     getEditor,
+    activatePlaceholder,
     insertContent,
     focus,
     hasContent,
