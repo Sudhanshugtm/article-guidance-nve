@@ -68,9 +68,10 @@ const { locale } = useLocale()
         <p v-for="(para, i) in article.summary" :key="'s' + i" class="wiki-paragraph">
           <!-- Plain string paragraph -->
           <template v-if="typeof para === 'string'">{{ para }}</template>
-          <!-- Segment paragraph: strings interleaved with inline red links -->
+          <!-- Segment paragraph: strings interleaved with inline links -->
           <template v-else v-for="(seg, segi) in para" :key="'sseg' + i + '-' + segi">
             <template v-if="typeof seg === 'string'">{{ seg }}</template>
+            <a v-else-if="seg.blueLink" class="wiki-blue-link" @click.prevent>{{ seg.blueLink }}</a>
             <router-link
               v-else
               :to="{
@@ -99,9 +100,10 @@ const { locale } = useLocale()
         >
           <!-- Plain string paragraph -->
           <template v-if="typeof para === 'string'">{{ para }}</template>
-          <!-- Segment paragraph: strings interleaved with inline red links -->
+          <!-- Segment paragraph: strings interleaved with inline links -->
           <template v-else v-for="(seg, segi) in para" :key="'seg' + si + '-' + pi + '-' + segi">
             <template v-if="typeof seg === 'string'">{{ seg }}</template>
+            <a v-else-if="seg.blueLink" class="wiki-blue-link" @click.prevent>{{ seg.blueLink }}</a>
             <router-link
               v-else
               :to="{
@@ -274,6 +276,17 @@ const { locale } = useLocale()
   font-weight: 400;
   color: var(--color-base);
   margin: 0;
+}
+
+/* Blue links — decorative Wikipedia-style wikilinks that don't navigate */
+.wiki-blue-link {
+  color: var(--color-progressive);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wiki-blue-link:hover {
+  text-decoration: underline;
 }
 
 /* Red links — matches Wikipedia's red link color */
