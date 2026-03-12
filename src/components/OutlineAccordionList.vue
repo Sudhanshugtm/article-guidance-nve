@@ -51,10 +51,10 @@ const { sections: topicSections, isCoffeeTopic } = useTopicContent()
 const { clearActivePlaceholder } = usePlaceholderInteraction()
 
 // Merge locale-translated titles/descriptions with topic-specific content templates.
-// Skip locale override for coffee topics — those configs already have the right titles.
+// For coffee topics, use locale.coffeeSections; for others, use locale.sections.
 const localizedSections = computed(() => {
-  const ls = locale.value.sections
-  if (!ls || isCoffeeTopic.value) return topicSections.value
+  const ls = isCoffeeTopic.value ? locale.value.coffeeSections : locale.value.sections
+  if (!ls) return topicSections.value
   return topicSections.value.map((section, i) => ({
     ...section,
     title: ls[i]?.title || section.title,
@@ -63,6 +63,7 @@ const localizedSections = computed(() => {
       ...para,
       title: ls[i]?.paragraphs?.[j]?.title || para.title,
       description: ls[i]?.paragraphs?.[j]?.description || para.description,
+      content: ls[i]?.paragraphs?.[j]?.content || para.content,
     })),
   }))
 })

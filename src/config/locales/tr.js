@@ -80,8 +80,76 @@ export default {
     },
   ],
 
+  // Coffee article outline section titles, descriptions, and fill-in-the-blank content
+  coffeeSections: [
+    {
+      title: 'Giriş',
+      description: 'Konunun kısa bir özeti.',
+      paragraphs: [
+        {
+          title: 'Kahve nedir',
+          description: 'Kahvenin bir içecek olarak kısa tanımı.',
+          content: 'Kahve, {{region of origin}} kökenli {{plant name}} bitkisinin kavrulmuş tohumlarından hazırlanan bir içecektir.[Add a citation] Dünyada en çok tüketilen içeceklerden biri olup tahminen {{number of people}} kişi tarafından her gün içilmektedir.[Add a citation]',
+        },
+        {
+          title: 'Neden önemlidir',
+          description: 'Günümüz dünyasındaki yeri.',
+          content: 'Kahve, {{comparison product}} ürününden sonra dünyada en çok ticareti yapılan ikinci {{type of product}} ürünüdür.[Add a citation] Küresel kahve endüstrisi, {{number of countries}} ülkede yaklaşık {{number of workers}} kişinin geçimini desteklemektedir.[Add a citation]',
+        },
+      ],
+    },
+    {
+      title: 'Tarihçe',
+      description: 'Kahvenin nereden geldiği ve nasıl yayıldığı.',
+      paragraphs: [
+        {
+          title: 'İlk kökenleri',
+          description: 'Kahvenin ilk nasıl keşfedildiği ve kullanıldığı.',
+          content: 'Kahve ilk olarak {{century of discovery}} civarında {{country of origin}} ülkesinde keşfedilmiştir.[Add a citation] Efsaneye göre {{figure in the legend}} adlı bir {{occupation of discoverer}}, keçilerinin belirli bir ağacın meyvelerini yedikten sonra alışılmadık biçimde enerjik olduğunu fark etmiştir.[Add a citation]',
+        },
+        {
+          title: 'Dünyaya yayılması',
+          description: 'Kahvenin diğer kıtalara nasıl ulaştığı.',
+          content: '{{century of spread}} itibarıyla kahve, ticaret yolları aracılığıyla {{first regions outside origin}} bölgesine ulaşmıştı.[Add a citation] İlk Avrupa kahvehaneleri {{year or decade}} yılında {{first European city}} şehrinde açıldı ve içecek kısa sürede kıtanın sosyal ve entelektüel yaşamının vazgeçilmez bir parçası hâline geldi.[Add a citation]',
+        },
+      ],
+    },
+    {
+      title: 'Kahve bitkisi',
+      description: 'Bitkinin görünümü ve yetiştiği yerler.',
+      paragraphs: [
+        {
+          title: 'Başlıca türler',
+          description: 'En yaygın kahve bitkisi türleri.',
+          content: 'En yaygın yetiştirilen iki tür {{first species common name}} ve {{second species common name}} türleridir.[Add a citation] {{First species}}, küresel üretimin yaklaşık %{{percentage}} kadarını oluşturur ve genellikle daha yumuşak, daha karmaşık bir tada sahip olduğu kabul edilir.[Add a citation]',
+        },
+        {
+          title: 'Nerede yetişir',
+          description: 'Kahve yetiştirmeye uygun iklim ve bölgeler.',
+          content: 'Kahve bitkileri, {{northern tropic}} ve {{southern tropic}} dönenceleri arasındaki {{climate type}} iklimlerde yetişir; bu bölge genellikle {{nickname for region}} olarak adlandırılır.[Add a citation] Günümüzde en büyük üretici ülkeler {{top producer}}, {{second producer}} ve {{third producer}} ülkeleridir.[Add a citation]',
+        },
+      ],
+    },
+    {
+      title: 'Kahve nasıl yapılır',
+      description: 'Çekirdekten fincana.',
+      paragraphs: [
+        {
+          title: 'Kavurma',
+          description: 'Yeşil çekirdeklerin tanıdığımız kahverengi çekirdeklere nasıl dönüştüğü.',
+          content: 'Hasattan sonra kahve çekirdekleri {{initial processing step}} işleminden geçirilir ve ardından {{temperature range}} sıcaklıklarda kavrulur.[Add a citation] Kavurma, yeşil çekirdekleri demleme için kullanılan aromalı, {{colour}} çekirdeklere dönüştürür. Kavurma derecesi — {{light roast name}}, {{medium roast name}} veya {{dark roast name}} — son tadı etkiler.[Add a citation]',
+        },
+        {
+          title: 'Demleme yöntemleri',
+          description: 'İnsanların kahve hazırlamak için kullandığı yaygın yöntemler.',
+          content: 'Kahve, {{first method}}, {{second method}} ve {{third method}} dahil olmak üzere birçok yöntemle demlenebilir.[Add a citation] Her yöntem farklı bir yoğunluk ve tat profili üretir. {{most common method globally}} dünya genelinde en yaygın kullanılan hazırlama yöntemi olmaya devam etmektedir.[Add a citation]',
+        },
+      ],
+    },
+  ],
+
   outline: {
-    addSectionLabel: '{section title} b\u00f6l\u00fcm\u00fcn\u00fc ekle',
+    addSectionLabel: '{section title} bölümünü ekle',
   },
 
   cite: {

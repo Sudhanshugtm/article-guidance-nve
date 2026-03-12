@@ -85,6 +85,42 @@ export default {
     },
   ],
 
+  // Coffee article outline section titles and descriptions
+  coffeeSections: [
+    {
+      title: 'Introduction',
+      description: 'A short summary of the topic.',
+      paragraphs: [
+        { title: 'What coffee is', description: 'A brief description of coffee as a drink.' },
+        { title: 'Why it matters', description: 'Its place in the world today.' },
+      ],
+    },
+    {
+      title: 'History',
+      description: 'Where coffee comes from and how it spread.',
+      paragraphs: [
+        { title: 'Early origins', description: 'How coffee was first discovered and used.' },
+        { title: 'Spread around the world', description: 'How coffee reached other continents.' },
+      ],
+    },
+    {
+      title: 'The coffee plant',
+      description: 'What the plant looks like and where it grows.',
+      paragraphs: [
+        { title: 'Main varieties', description: 'The most common types of coffee plants.' },
+        { title: 'Where it grows', description: 'The climate and regions suited for growing coffee.' },
+      ],
+    },
+    {
+      title: 'How coffee is made',
+      description: 'From bean to cup.',
+      paragraphs: [
+        { title: 'Roasting', description: 'How green beans become the brown beans we recognise.' },
+        { title: 'Brewing methods', description: 'Common ways people prepare coffee to drink.' },
+      ],
+    },
+  ],
+
   // Outline actions
   outline: {
     addSectionLabel: 'Add {section title} section',

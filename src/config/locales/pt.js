@@ -9,7 +9,7 @@ export default {
     wordmarkAlt: 'Wikipédia',
     mainMenu: 'Menu principal',
     search: 'Pesquisar',
-    tagline: 'Origem: Wikip\u00e9dia, a enciclop\u00e9dia livre',
+    tagline: 'Da Wikipédia, a enciclopédia livre',
     articleTab: 'Artigo',
     talkTab: 'Discuss\u00e3o',
   },
@@ -80,8 +80,76 @@ export default {
     },
   ],
 
+  // Coffee article outline section titles, descriptions, and fill-in-the-blank content
+  coffeeSections: [
+    {
+      title: 'Introdução',
+      description: 'Um breve resumo do tema.',
+      paragraphs: [
+        {
+          title: 'O que é o café',
+          description: 'Uma breve descrição do café como bebida.',
+          content: 'O café é uma bebida preparada a partir das sementes torradas da planta {{plant name}}, nativa de {{region of origin}}.[Add a citation] É uma das bebidas mais consumidas no mundo, com cerca de {{number of people}} pessoas a bebê-lo diariamente.[Add a citation]',
+        },
+        {
+          title: 'Por que é importante',
+          description: 'O seu lugar no mundo atual.',
+          content: 'O café é o segundo {{type of product}} mais comercializado no mundo, depois de {{comparison product}}.[Add a citation] A indústria global do café sustenta a subsistência de aproximadamente {{number of workers}} pessoas em mais de {{number of countries}} países.[Add a citation]',
+        },
+      ],
+    },
+    {
+      title: 'História',
+      description: 'De onde vem o café e como se espalhou.',
+      paragraphs: [
+        {
+          title: 'Origens remotas',
+          description: 'Como o café foi descoberto e utilizado pela primeira vez.',
+          content: 'O café foi descoberto pela primeira vez em {{country of origin}} por volta do {{century of discovery}}.[Add a citation] Segundo a lenda, um {{occupation of discoverer}} chamado {{figure in the legend}} notou que as suas cabras ficavam invulgarmente enérgicas depois de comerem bagas de uma determinada árvore.[Add a citation]',
+        },
+        {
+          title: 'Expansão pelo mundo',
+          description: 'Como o café chegou a outros continentes.',
+          content: 'No {{century of spread}}, o café já havia chegado a {{first regions outside origin}} através de rotas comerciais.[Add a citation] Os primeiros cafés europeus abriram em {{first European city}} em {{year or decade}}, e a bebida rapidamente se tornou um elemento social e intelectual em todo o continente.[Add a citation]',
+        },
+      ],
+    },
+    {
+      title: 'A planta do café',
+      description: 'Como é a planta e onde cresce.',
+      paragraphs: [
+        {
+          title: 'Principais variedades',
+          description: 'Os tipos mais comuns de plantas de café.',
+          content: 'As duas espécies mais cultivadas são {{first species common name}} e {{second species common name}}.[Add a citation] {{First species}} representa cerca de {{percentage}}% da produção mundial e é geralmente considerada como tendo um sabor mais suave e complexo.[Add a citation]',
+        },
+        {
+          title: 'Onde cresce',
+          description: 'O clima e as regiões adequados para o cultivo do café.',
+          content: 'As plantas de café prosperam em climas {{climate type}} entre os trópicos de {{northern tropic}} e {{southern tropic}}, uma região frequentemente chamada de {{nickname for region}}.[Add a citation] Os maiores países produtores atualmente são {{top producer}}, {{second producer}} e {{third producer}}.[Add a citation]',
+        },
+      ],
+    },
+    {
+      title: 'Como o café é feito',
+      description: 'Do grão à chávena.',
+      paragraphs: [
+        {
+          title: 'Torrefação',
+          description: 'Como os grãos verdes se tornam os grãos castanhos que conhecemos.',
+          content: 'Após a colheita, os grãos de café são {{initial processing step}} e depois torrados a temperaturas de {{temperature range}}.[Add a citation] A torrefação transforma os grãos verdes nos grãos {{colour}} e aromáticos usados para preparar a bebida. O grau de torra — {{light roast name}}, {{medium roast name}} ou {{dark roast name}} — afeta o sabor final.[Add a citation]',
+        },
+        {
+          title: 'Métodos de preparação',
+          description: 'Formas comuns de preparar café para beber.',
+          content: 'O café pode ser preparado de diversas formas, incluindo {{first method}}, {{second method}} e {{third method}}.[Add a citation] Cada método produz uma intensidade e um perfil de sabor diferentes. {{most common method globally}} continua a ser o método de preparação mais utilizado em todo o mundo.[Add a citation]',
+        },
+      ],
+    },
+  ],
+
   outline: {
-    addSectionLabel: 'Adicionar se\u00e7\u00e3o {section title}',
+    addSectionLabel: 'Adicionar seção {section title}',
   },
 
   cite: {
