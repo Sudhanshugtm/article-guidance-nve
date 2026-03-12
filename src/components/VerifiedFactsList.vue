@@ -43,29 +43,33 @@ const { insertCitation } = useCitationRegistry()
 
 /**
  * After inserting a verified fact at chipPos, scan the parent paragraph
- * and remove any unfilled [Add a citation] markers if no placeholder
- * chips remain in that paragraph.
+ * and remove [Add a citation] markers whose segment has no remaining
+ * placeholder chips. A "segment" is the slice of content leading up to
+ * each [Add a citation] marker (bounded by the previous marker or the
+ * start of the paragraph).
  */
 function removeRedundantCiteMarkers(editor, posInParagraph) {
   const $pos = editor.state.doc.resolve(posInParagraph)
   const paragraph = $pos.parent
-
-  // Check if any placeholder chips remain in this paragraph
-  let hasPlaceholders = false
-  paragraph.forEach((child) => {
-    if (child.type.name === 'placeholderChip') hasPlaceholders = true
-  })
-  if (hasPlaceholders) return
-
-  // Collect positions of unfilled citation markers (in reverse to avoid offset shifts)
   const paragraphStart = $pos.start()
+
+  // Walk through paragraph children, segmenting by [Add a citation] markers.
+  // For each marker, track whether its preceding segment has placeholder chips.
+  let segmentHasPlaceholder = false
   const toDelete = []
+
   paragraph.forEach((child, offset) => {
-    if (
+    if (child.type.name === 'placeholderChip') {
+      segmentHasPlaceholder = true
+    } else if (
       child.type.name === 'citationSuperscript' &&
       child.attrs.label === CITATION_LABEL
     ) {
-      toDelete.push({ from: paragraphStart + offset, size: child.nodeSize })
+      if (!segmentHasPlaceholder) {
+        toDelete.push({ from: paragraphStart + offset, size: child.nodeSize })
+      }
+      // Reset for the next segment
+      segmentHasPlaceholder = false
     }
   })
 
