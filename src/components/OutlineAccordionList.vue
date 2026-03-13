@@ -42,6 +42,7 @@ import { useAccordionState } from '../composables/useAccordionState'
 import { useLocale } from '../composables/useLocale'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
 import { findReusableSectionParagraphRange } from '../utils/outlineInsertion'
+import { getCitationPlaceholderLabel } from '../utils/citationPlaceholders'
 
 const emit = defineEmits(['content-inserted'])
 const { getEditor, activatePlaceholder } = useEditorInstance()
@@ -107,8 +108,14 @@ function onInsertSectionHeading(section, index) {
 }
 
 function parsePlaceholders(text) {
-  const citationMarker = `[${CITATION_LABEL}]`
-  const parts = text.split(new RegExp(`(\\{\\{[^}]+\\}\\}|\\[${CITATION_LABEL}\\])`))
+  const localizedCitationLabel = getCitationPlaceholderLabel(locale.value)
+  const citationMarkers = [...new Set([CITATION_LABEL, localizedCitationLabel])].map(
+    (label) => `[${label}]`,
+  )
+  const escapedCitationMarkers = citationMarkers
+    .map((marker) => marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|')
+  const parts = text.split(new RegExp(`(\\{\\{[^}]+\\}\\}|${escapedCitationMarkers})`))
   return parts
     .filter((part) => part.length > 0)
     .map((part) => {
@@ -116,8 +123,14 @@ function parsePlaceholders(text) {
       if (placeholderMatch) {
         return { type: 'placeholderChip', attrs: { label: placeholderMatch[1] } }
       }
-      if (part === citationMarker) {
-        return { type: 'citationSuperscript', attrs: { label: CITATION_LABEL } }
+      if (citationMarkers.includes(part)) {
+        return {
+          type: 'citationSuperscript',
+          attrs: {
+            label: localizedCitationLabel,
+            isPlaceholder: true,
+          },
+        }
       }
       return { type: 'text', text: part }
     })

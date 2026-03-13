@@ -322,7 +322,7 @@ function onCitationSelected(citation) {
         .chain()
         .focus()
         .command(({ tr }) => {
-          tr.setNodeMarkup(pos, null, { label, citationId: citation.id })
+          tr.setNodeMarkup(pos, null, { label, citationId: citation.id, isPlaceholder: false })
           return true
         })
         .run()
@@ -335,7 +335,7 @@ function onCitationSelected(citation) {
       .focus()
       .insertContent({
         type: 'citationSuperscript',
-        attrs: { label, citationId: citation.id },
+        attrs: { label, citationId: citation.id, isPlaceholder: false },
       })
       .run()
   }

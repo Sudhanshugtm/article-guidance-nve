@@ -16,6 +16,7 @@ export const CitationSuperscript = Node.create({
     return {
       label: { default: CITATION_LABEL },
       citationId: { default: null },
+      isPlaceholder: { default: false },
     }
   },
 

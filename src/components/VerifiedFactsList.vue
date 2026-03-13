@@ -33,7 +33,7 @@ import { useEditorInstance } from '../composables/useEditorInstance'
 import { useLocale } from '../composables/useLocale'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
 import { useCitationRegistry } from '../composables/useCitationRegistry'
-import { CITATION_LABEL } from '../config/articleSections.js'
+import { isCitationPlaceholderNode } from '../utils/citationPlaceholders.js'
 
 const emit = defineEmits(['content-inserted'])
 const { getEditor, insertContent } = useEditorInstance()
@@ -43,9 +43,9 @@ const { insertCitation } = useCitationRegistry()
 
 /**
  * After inserting a verified fact at chipPos, scan the parent paragraph
- * and remove [Add a citation] markers whose segment has no remaining
+ * and remove citation placeholder markers whose segment has no remaining
  * placeholder chips. A "segment" is the slice of content leading up to
- * each [Add a citation] marker (bounded by the previous marker or the
+ * each citation placeholder marker (bounded by the previous marker or the
  * start of the paragraph).
  */
 function removeRedundantCiteMarkers(editor, posInParagraph) {
@@ -53,7 +53,7 @@ function removeRedundantCiteMarkers(editor, posInParagraph) {
   const paragraph = $pos.parent
   const paragraphStart = $pos.start()
 
-  // Walk through paragraph children, segmenting by [Add a citation] markers.
+  // Walk through paragraph children, segmenting by citation placeholder markers.
   // For each marker, track whether its preceding segment has placeholder chips.
   let segmentHasPlaceholder = false
   const toDelete = []
@@ -61,10 +61,7 @@ function removeRedundantCiteMarkers(editor, posInParagraph) {
   paragraph.forEach((child, offset) => {
     if (child.type.name === 'placeholderChip') {
       segmentHasPlaceholder = true
-    } else if (
-      child.type.name === 'citationSuperscript' &&
-      child.attrs.label === CITATION_LABEL
-    ) {
+    } else if (isCitationPlaceholderNode(child)) {
       if (!segmentHasPlaceholder) {
         toDelete.push({ from: paragraphStart + offset, size: child.nodeSize })
       }
@@ -121,7 +118,7 @@ function onInsertFact(fact) {
         .run()
       clearActivePlaceholder()
 
-      // Clean up [Add a citation] markers if all placeholders in this paragraph are filled
+      // Clean up citation placeholder markers if all placeholders in this paragraph are filled
       removeRedundantCiteMarkers(editor, chipPos)
 
       emit('content-inserted')

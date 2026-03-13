@@ -6,7 +6,7 @@
 import { NodeViewWrapper } from '@tiptap/vue-3'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import { useCitationRegistry } from '../composables/useCitationRegistry'
-import { CITATION_LABEL } from '../config/articleSections'
+import { isCitationPlaceholderNode } from '../utils/citationPlaceholders'
 
 const props = defineProps({
   node: { type: Object, required: true },
@@ -18,7 +18,7 @@ const { signalCitationClicked } = useEditorInstance()
 const { setClickedCitationPos } = useCitationRegistry()
 
 function onCitationClick() {
-  if (props.node.attrs.label === CITATION_LABEL) {
+  if (isCitationPlaceholderNode(props.node)) {
     setClickedCitationPos(props.getPos())
   } else {
     setClickedCitationPos(null)
