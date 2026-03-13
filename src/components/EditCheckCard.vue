@@ -175,4 +175,15 @@ function onNext() {
   max-height: 32px;
   padding: var(--spacing-25, 5px) !important;
 }
+
+@media (min-width: 768px) {
+  .edit-check-card {
+    left: var(--editor-shell-offset);
+    width: var(--editor-shell-width);
+    bottom: 16px;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    overflow: hidden;
+  }
+}
 </style>
