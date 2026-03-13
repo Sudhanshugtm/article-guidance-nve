@@ -28,8 +28,26 @@
           </div>
         </CdxTab>
         <CdxTab name="manual" :label="locale.cite.manual">
-          <div class="cite-dialog__tab-content">
-            <p class="cite-dialog__description"></p>
+          <div class="cite-dialog__manual">
+            <div class="cite-dialog__manual-grid">
+              <div
+                v-for="option in manualOptionGroups[0]"
+                :key="option.id"
+                class="cite-dialog__manual-option"
+              >
+                <CdxIcon :icon="manualOptionIcons[option.id]" />
+                <span>{{ option.label }}</span>
+              </div>
+            </div>
+            <div class="cite-dialog__manual-divider"></div>
+            <div
+              v-for="option in manualOptionGroups[1]"
+              :key="option.id"
+              class="cite-dialog__manual-option"
+            >
+              <CdxIcon :icon="manualOptionIcons[option.id]" />
+              <span>{{ option.label }}</span>
+            </div>
           </div>
         </CdxTab>
         <CdxTab name="reuse" :label="locale.cite.reuse">
@@ -150,10 +168,20 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { CdxDialog, CdxTabs, CdxTab, CdxSearchInput, CdxButton, CdxIcon } from '@wikimedia/codex'
-import { cdxIconLogoWikidata, cdxIconFunnel, cdxIconAdd, cdxIconBook } from '@wikimedia/codex-icons'
+import {
+  cdxIconLogoWikidata,
+  cdxIconFunnel,
+  cdxIconAdd,
+  cdxIconBook,
+  cdxIconGlobe,
+  cdxIconNewspaper,
+  cdxIconJournal,
+  cdxIconReference,
+} from '@wikimedia/codex-icons'
 import { useCitationRegistry } from '@/composables/useCitationRegistry'
 import { useTopicContent } from '@/composables/useTopicContent'
 import { useLocale } from '../composables/useLocale'
+import { getManualCitationOptionGroups } from '../utils/manualCitationOptions'
 
 const props = defineProps({
   initialTab: {
@@ -173,6 +201,14 @@ const activeTab = ref(props.initialTab)
 const searchQuery = ref('')
 const reuseSearchQuery = ref('')
 const discoverSearchQuery = ref('')
+const manualOptionGroups = computed(() => getManualCitationOptionGroups(locale.value))
+const manualOptionIcons = {
+  website: cdxIconGlobe,
+  book: cdxIconBook,
+  news: cdxIconNewspaper,
+  journal: cdxIconJournal,
+  basic: cdxIconReference,
+}
 
 const discoverReferences = computed(() =>
   referenceSources.value.flatMap((source) =>
@@ -239,6 +275,32 @@ watch(open, (isOpen) => {
   line-height: var(--line-height-medium);
   color: var(--color-base);
   margin: 0;
+}
+
+.cite-dialog__manual {
+  padding: var(--spacing-100);
+}
+
+.cite-dialog__manual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-100) var(--spacing-150);
+}
+
+.cite-dialog__manual-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-75);
+  min-height: 40px;
+  color: var(--color-emphasized);
+  font-size: var(--font-size-large);
+  line-height: var(--line-height-large);
+}
+
+.cite-dialog__manual-divider {
+  height: 1px;
+  background-color: var(--border-color-subtle);
+  margin: var(--spacing-75) 0;
 }
 
 .cite-dialog__reuse {
