@@ -177,6 +177,26 @@ export default {
     read: 'Oku',
   },
 
+  editChecks: {
+    addReference: {
+      title: 'Kaynak ekle',
+      description: 'Bu paragraf yayımlamadan önce bir kaynağa ihtiyaç duyabilir.',
+      addCitation: 'Kaynak ekle',
+      reject: 'Hayır',
+      reasonPrompt: 'Neden kaynak eklemiyorsunuz?',
+      reasonTitle: 'Neden kaynak eklemiyorsunuz?',
+      reasonDescription: 'Diğer düzenleyiciler, bir kaynak eklememe kararınız hakkında daha fazla bilgi edinmeyi isteyecektir.',
+      back: 'Geri',
+      submit: 'Gönder',
+      reasons: [
+        { id: 'uncertain', label: 'Hangi kaynağı ekleyeceğimden emin değilim' },
+        { id: 'common-knowledge', label: 'Eklediğim bilgi herkes tarafından biliniyor' },
+        { id: 'irrelevant', label: 'Yaptığım değişiklikle ilgili alıntıların alakalı olduğunu düşünmüyorum' },
+        { id: 'other', label: 'Diğer' },
+      ],
+    },
+  },
+
   counts: {
     reference: 'kaynak',
     references: 'kaynak',

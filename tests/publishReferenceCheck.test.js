@@ -8,6 +8,7 @@ import { Schema } from '@tiptap/pm/model'
 import {
   buildCitationPlaceholderTarget,
   buildParagraphEndTarget,
+  createReferenceCheckState,
   findFirstCitationPlaceholderTarget,
   findFirstPublishPlaceholderTarget,
   findFirstQualifyingUncitedParagraphTarget,
@@ -160,6 +161,19 @@ test('citation placeholder detection uses stable placeholder attributes instead 
   }))
 })
 
+test('citation placeholder detection accepts placeholders even when the visible label is unrelated', () => {
+  const articleDoc = doc(
+    paragraph(
+      'Coffee spread globally through colonial trade routes.',
+      citationPlaceholder({ label: 'Completely custom placeholder text' }),
+    ),
+  )
+
+  const target = findFirstCitationPlaceholderTarget(articleDoc)
+
+  assert.equal(target?.kind, 'citation-placeholder')
+})
+
 test('citation placeholders outrank uncited paragraphs during publish checks', () => {
   const articleDoc = doc(
     paragraph('This is a long uncited paragraph with more than fifty characters in it.'),
@@ -210,6 +224,18 @@ test('qualifying uncited paragraph detection only considers root-level paragraph
   })
 })
 
+test('reference target detection does not surface unresolved placeholder chips as add-reference candidates', () => {
+  const articleDoc = doc(
+    paragraph(
+      'This paragraph is long enough to qualify, but it still contains an unresolved ',
+      placeholderChip('expand this'),
+      ' placeholder.',
+    ),
+  )
+
+  assert.equal(findFirstReferenceTarget(articleDoc), null)
+})
+
 test('paragraph-end targets insert before trailing punctuation', () => {
   assert.deepEqual(
     buildParagraphEndTarget('Coffee spread globally.', { from: 10, to: 33 }),
@@ -220,4 +246,42 @@ test('paragraph-end targets insert before trailing punctuation', () => {
       placeholderPos: null,
     },
   )
+})
+
+test('reference check state moves from choice to reason and resets on dismiss', () => {
+  const state = createReferenceCheckState()
+  const target = buildParagraphEndTarget('Coffee spread globally.', { from: 10, to: 33 })
+
+  state.showReferenceChoice(target)
+  assert.equal(state.phase.value, 'awaiting-reference-choice')
+  assert.equal(state.isReferenceChoiceVisible.value, true)
+
+  state.rejectReference()
+  assert.equal(state.phase.value, 'awaiting-reference-reason')
+  assert.equal(state.isReferenceReasonVisible.value, true)
+
+  state.dismissReason()
+  assert.equal(state.phase.value, 'idle')
+  assert.equal(state.activeTarget.value, null)
+})
+
+test('reference check state records reasons and cite-dialog transitions', () => {
+  const state = createReferenceCheckState()
+  const target = buildCitationPlaceholderTarget({
+    placeholderPos: 42,
+    paragraphRange: { from: 10, to: 50 },
+  })
+
+  state.showReferenceChoice(target)
+  assert.equal(state.beginCiteDialog(), true)
+  assert.equal(state.phase.value, 'awaiting-cite-dialog')
+
+  state.cancelCiteDialog()
+  assert.equal(state.phase.value, 'idle')
+
+  state.showReferenceChoice(target)
+  state.rejectReference()
+  state.chooseReason('common-knowledge')
+  assert.equal(state.phase.value, 'resolved')
+  assert.equal(state.selectedReason.value, 'common-knowledge')
 })

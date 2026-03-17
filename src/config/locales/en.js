@@ -152,6 +152,26 @@ export default {
     read: 'Read',
   },
 
+  editChecks: {
+    addReference: {
+      title: 'Add reference',
+      description: 'This paragraph may need a citation before publishing.',
+      addCitation: 'Add citation',
+      reject: 'No',
+      reasonPrompt: 'Why are you not adding a citation?',
+      reasonTitle: 'Why are you not adding a citation?',
+      reasonDescription: 'Other editors would value learning more about your decision not to add a citation.',
+      back: 'Back',
+      submit: 'Submit',
+      reasons: [
+        { id: 'uncertain', label: "I'm not sure what citation to add" },
+        { id: 'common-knowledge', label: "The information I'm adding is widely known" },
+        { id: 'irrelevant', label: "I don't think citations are relevant to the change I'm making" },
+        { id: 'other', label: 'Other' },
+      ],
+    },
+  },
+
   // Count labels
   counts: {
     reference: 'reference',

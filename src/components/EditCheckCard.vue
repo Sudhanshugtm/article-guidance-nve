@@ -27,7 +27,7 @@
             <slot name="footer" />
           </div>
         </div>
-        <div v-if="activeGroupCheckCount > 1" class="edit-check-pagination">
+        <div v-if="showPagination && activeGroupCheckCount > 1" class="edit-check-pagination">
           <span class="pagination-text">{{ currentCheckIndex + 1 }} of {{ activeGroupCheckCount }}</span>
           <div class="pagination-buttons">
             <CdxButton
@@ -64,6 +64,7 @@ import { useEditorInstance } from '../composables/useEditorInstance'
 defineProps({
   title: { type: String, required: true },
   visible: { type: Boolean, default: false },
+  showPagination: { type: Boolean, default: true },
 })
 
 defineEmits(['close'])

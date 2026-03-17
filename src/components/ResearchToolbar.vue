@@ -86,6 +86,7 @@
         weight="primary"
         :aria-label="locale.toolbar.publish"
         :disabled="!hasContent"
+        @click="emit('publish')"
       >
         <CdxIcon :icon="cdxIconNext" />
       </CdxButton>
@@ -114,7 +115,7 @@ defineProps({
 
 import { useLocale } from '../composables/useLocale'
 
-const emit = defineEmits(['cite', 'close'])
+const emit = defineEmits(['cite', 'close', 'publish'])
 const { hasContent, getEditor, canUndo } = useEditorInstance()
 const { locale } = useLocale()
 const styleAnchorRef = ref(null)

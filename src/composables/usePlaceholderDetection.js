@@ -24,6 +24,18 @@ function rangesOverlap(a, b) {
   return a.from <= b.to && b.from <= a.to
 }
 
+function ensurePlaceholderDetection(editor, range) {
+  for (const [id, det] of placeholderDetections.value) {
+    if (rangesOverlap(det.range, range)) return id
+  }
+
+  const detectionId = 'pd-' + Math.random().toString(36).slice(2, 8)
+  editor.commands.setPlaceholderDetectionHighlights({ ...range, detectionId })
+  placeholderDetections.value.set(detectionId, { range, rect: null })
+  triggerRef(placeholderDetections)
+  return detectionId
+}
+
 /**
  * Check the paragraph at the given position for unfilled placeholders.
  * Called when the cursor leaves a paragraph (from onSelectionUpdate).
@@ -97,6 +109,12 @@ function showPlaceholderCard(detectionId, editor) {
   if (editor) editor.commands.promotePlaceholderDetection(detectionId)
 }
 
+function showPublishPlaceholderCard(target, editor) {
+  if (!editor || !target?.paragraphRange) return
+  const detectionId = ensurePlaceholderDetection(editor, target.paragraphRange)
+  showPlaceholderCard(detectionId, editor)
+}
+
 /**
  * User clicked "Edit" — move cursor before the first placeholder chip,
  * clear highlights, dismiss card.
@@ -149,6 +167,7 @@ export function usePlaceholderDetection() {
     triggerPlaceholderDetection,
     updatePlaceholderDetectionRect,
     showPlaceholderCard,
+    showPublishPlaceholderCard,
     editPlaceholder,
     dismissPlaceholderCard,
   }

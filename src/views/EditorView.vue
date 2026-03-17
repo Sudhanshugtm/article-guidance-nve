@@ -4,12 +4,13 @@
       :cite-badge-count="citeBadgeCount"
       @cite="onOpenCiteDefault"
       @close="onCloseEditor"
+      @publish="onPublish"
     />
     <div
       class="editor-wrapper"
       :class="{
         'rail-open': isRailOpen,
-        'check-card-active': isAnyCardActive,
+        'check-card-active': isAnyEditorCardActive,
         'cursor-in-check': cursorInCheckParagraph,
       }"
     >
@@ -80,6 +81,18 @@
     <ReviseToneCard />
     <PastedContentCard />
     <CompleteSectionCard />
+    <AddReferenceCard
+      :visible="isReferenceChoiceVisible"
+      @add-citation="onAddReferenceCitation"
+      @reject="onRejectReference"
+      @close="onDismissReferenceChoice"
+    />
+    <AddReferenceReasonCard
+      :visible="isReferenceReasonVisible"
+      @select-reason="onSelectReferenceReason"
+      @back="onBackReferenceReason"
+      @close="onDismissReferenceReason"
+    />
     <SoftKeyboard v-if="showSoftKeyboard" @height-change="onKeyboardHeightChange" />
   </div>
 </template>
@@ -98,14 +111,22 @@ import OutlinePopover from '@/components/OutlinePopover.vue'
 import ReviseToneCard from '@/components/ReviseToneCard.vue'
 import PastedContentCard from '@/components/PastedContentCard.vue'
 import CompleteSectionCard from '@/components/CompleteSectionCard.vue'
+import AddReferenceCard from '@/components/AddReferenceCard.vue'
+import AddReferenceReasonCard from '@/components/AddReferenceReasonCard.vue'
 import SoftKeyboard from '@/components/SoftKeyboard.vue'
 import { useEditorSettings } from '@/composables/useEditorSettings'
 import { useEditorInstance } from '@/composables/useEditorInstance'
 import { useCursorRect } from '@/composables/useCursorRect'
 import { usePlaceholderInteraction } from '@/composables/usePlaceholderInteraction'
+import { usePlaceholderDetection } from '@/composables/usePlaceholderDetection'
 import { usePeacockDetection } from '@/composables/usePeacockDetection'
 import { useEditCheckPagination } from '@/composables/useEditCheckPagination'
 import { useCitationRegistry } from '@/composables/useCitationRegistry'
+import {
+  findFirstPublishPlaceholderTarget,
+  findFirstReferenceTarget,
+  useReferenceCheck,
+} from '@/composables/useReferenceCheck'
 import { useTopicContent } from '@/composables/useTopicContent'
 import { useAccordionState } from '@/composables/useAccordionState'
 
@@ -144,10 +165,12 @@ const {
   availableCitations,
   insertCitation,
   clickedCitationPos,
+  setClickedCitationPos,
   clearClickedCitationPos,
 } = useCitationRegistry()
 const { cursorRect } = useCursorRect()
 const { triggerDetectionOnInsert } = usePeacockDetection()
+const { showPublishPlaceholderCard } = usePlaceholderDetection()
 const {
   activeChecks,
   checkGroups,
@@ -155,11 +178,38 @@ const {
   isAnyCardActive,
   cursorInCheckParagraph,
   showGroupAtIndex,
+  dismissAllCards,
 } = useEditCheckPagination()
+const {
+  phase: referenceCheckPhase,
+  activeTarget: activeReferenceTarget,
+  isReferenceChoiceVisible,
+  isReferenceReasonVisible,
+  beginChecking,
+  showReferenceChoice,
+  dismissChoice,
+  rejectReference,
+  dismissReason,
+  chooseReason,
+  beginCiteDialog,
+  cancelCiteDialog,
+  resolveAfterCitation,
+  resolvePublishAttempt,
+  reset: resetReferenceCheck,
+} = useReferenceCheck()
+const pendingCitationInsertionPos = ref(null)
+const dismissedReferenceGate = ref(null)
+const isAnyPublishReferenceCardVisible = computed(
+  () => isReferenceChoiceVisible.value || isReferenceReasonVisible.value,
+)
+const isAnyEditorCardActive = computed(
+  () => isAnyCardActive.value || isAnyPublishReferenceCardVisible.value,
+)
 
 // Per-paragraph rail indicators
 const areRailIndicatorsVisible = computed(() => {
-  if (isRailOpen.value || isPopoverOpen.value) return false
+  if (isRailOpen.value || isPopoverOpen.value || isAnyPublishReferenceCardVisible.value)
+    return false
   return totalGroups.value > 0
 })
 
@@ -178,6 +228,7 @@ const isForceButtonVisible = computed(() => {
   if (!['inline', 'force', 'quiet', 'text', 'floating'].includes(entryPointStyle.value))
     return false
   if (isRailOpen.value || isPopoverOpen.value) return false
+  if (isAnyPublishReferenceCardVisible.value) return false
   if (!cursorRect.value) return false
   if (areRailIndicatorsVisible.value && cursorInCheckParagraph.value) return false
   return cursorRect.value.visible
@@ -204,8 +255,18 @@ const citeDialogInitialTab = ref('automatic')
 const initialView = ref(null)
 
 function onForceButtonClick() {
-  getEditor()?.commands.blur()
-  onOpenOutline()
+  // Capture placeholder state before blur clears it
+  const editor = getEditor()
+  const hadPlaceholder =
+    editor?.state.selection.node?.type.name === 'placeholderChip' ||
+    activePlaceholderPos.value !== null
+  editor?.commands.blur()
+  initialView.value = hadPlaceholder ? 'verified-facts' : null
+  if (outlineLocation.value === 'popover') {
+    isPopoverOpen.value = true
+  } else {
+    isRailOpen.value = true
+  }
 }
 
 function onGroupRailClick(groupIndex) {
@@ -214,12 +275,10 @@ function onGroupRailClick(groupIndex) {
   showGroupAtIndex(groupIndex, editor)
 }
 
-function onOpenOutline() {
-  const editor = getEditor()
-  const isPlaceholderSelected =
-    editor?.state.selection.node?.type.name === 'placeholderChip' ||
-    activePlaceholderPos.value !== null
-  initialView.value = isPlaceholderSelected ? 'verified-facts' : null
+function onOpenOutline(payload) {
+  const hadPlaceholder =
+    payload?.hadPlaceholder || activePlaceholderPos.value !== null
+  initialView.value = hadPlaceholder ? 'verified-facts' : null
 
   if (outlineLocation.value === 'popover') {
     isPopoverOpen.value = true
@@ -246,6 +305,114 @@ function onOpenCiteDefault() {
 function onOpenCiteDiscover() {
   citeDialogInitialTab.value = 'discover'
   citeDialogOpen.value = true
+}
+
+function getDocumentFingerprint(editor) {
+  return JSON.stringify(editor.state.doc.toJSON())
+}
+
+function getReferenceTargetKey(target) {
+  if (!target) return null
+  return JSON.stringify({
+    kind: target.kind,
+    paragraphRange: target.paragraphRange,
+    insertionPos: target.insertionPos,
+    placeholderPos: target.placeholderPos,
+  })
+}
+
+function shouldBypassReferenceGate(editor, target) {
+  if (!editor || !target || !dismissedReferenceGate.value) return false
+
+  return (
+    dismissedReferenceGate.value.docFingerprint === getDocumentFingerprint(editor) &&
+    dismissedReferenceGate.value.targetKey === getReferenceTargetKey(target)
+  )
+}
+
+function onPublish() {
+  const editor = getEditor()
+  if (!editor) return
+
+  dismissAllCards(editor)
+  pendingCitationInsertionPos.value = null
+  clearClickedCitationPos()
+  resetReferenceCheck()
+  beginChecking()
+
+  const placeholderTarget = findFirstPublishPlaceholderTarget(editor.state.doc)
+  if (placeholderTarget) {
+    showPublishPlaceholderCard(placeholderTarget, editor)
+    return
+  }
+
+  const referenceTarget = findFirstReferenceTarget(editor.state.doc)
+  if (referenceTarget) {
+    if (shouldBypassReferenceGate(editor, referenceTarget)) {
+      resolvePublishAttempt()
+      resetReferenceCheck()
+      return
+    }
+    showReferenceChoice(referenceTarget)
+    return
+  }
+
+  dismissedReferenceGate.value = null
+  resolvePublishAttempt()
+  resetReferenceCheck()
+}
+
+function onAddReferenceCitation() {
+  const editor = getEditor()
+  const target = activeReferenceTarget.value
+  if (!editor || !target) return
+  if (!beginCiteDialog()) return
+
+  dismissedReferenceGate.value = null
+
+  if (target.kind === 'citation-placeholder') {
+    pendingCitationInsertionPos.value = null
+    setClickedCitationPos(target.placeholderPos)
+  } else {
+    clearClickedCitationPos()
+    pendingCitationInsertionPos.value = target.insertionPos
+  }
+
+  onOpenCiteDefault()
+}
+
+function onRejectReference() {
+  rejectReference()
+}
+
+function onDismissReferenceChoice() {
+  dismissChoice()
+}
+
+function onDismissReferenceReason() {
+  dismissReason()
+}
+
+function onBackReferenceReason() {
+  const target = activeReferenceTarget.value
+  if (!target) {
+    resetReferenceCheck()
+    return
+  }
+  showReferenceChoice(target)
+}
+
+function onSelectReferenceReason(reason) {
+  const editor = getEditor()
+  if (editor && activeReferenceTarget.value) {
+    dismissedReferenceGate.value = {
+      docFingerprint: getDocumentFingerprint(editor),
+      targetKey: getReferenceTargetKey(activeReferenceTarget.value),
+      reason,
+    }
+  }
+  chooseReason(reason)
+  resetReferenceCheck()
 }
 
 function onCloseEditor() {
@@ -303,6 +470,10 @@ watch(citationClickCount, () => {
 watch(citeDialogOpen, (isOpen) => {
   if (!isOpen) {
     clearClickedCitationPos()
+    pendingCitationInsertionPos.value = null
+    if (referenceCheckPhase.value === 'awaiting-cite-dialog') {
+      cancelCiteDialog()
+    }
   }
 })
 
@@ -313,6 +484,7 @@ function onCitationSelected(citation) {
   const refNumber = insertCitation(citation)
   const label = String(refNumber)
   const pos = clickedCitationPos.value
+  const insertionPos = pendingCitationInsertionPos.value
 
   if (pos !== null) {
     // Replace the clicked "Add a citation" placeholder node
@@ -328,6 +500,16 @@ function onCitationSelected(citation) {
         .run()
     }
     clearClickedCitationPos()
+  } else if (insertionPos !== null) {
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(insertionPos, {
+        type: 'citationSuperscript',
+        attrs: { label, citationId: citation.id, isPlaceholder: false },
+      })
+      .run()
+    pendingCitationInsertionPos.value = null
   } else {
     // No placeholder was clicked — insert at current cursor position
     editor
@@ -339,6 +521,8 @@ function onCitationSelected(citation) {
       })
       .run()
   }
+
+  resolveAfterCitation()
 }
 
 watch(outlineLocation, () => {

@@ -177,6 +177,26 @@ export default {
     read: 'Ler',
   },
 
+  editChecks: {
+    addReference: {
+      title: 'Adicionar referência',
+      description: 'Este parágrafo pode precisar de uma citação antes de publicar.',
+      addCitation: 'Adicionar citação',
+      reject: 'Não',
+      reasonPrompt: 'Porque não adicionou uma citação?',
+      reasonTitle: 'Porque não adicionou uma citação?',
+      reasonDescription: 'Os outros editores gostariam de saber mais sobre a sua decisão de não adicionar uma citação.',
+      back: 'Anterior',
+      submit: 'Submeter',
+      reasons: [
+        { id: 'uncertain', label: 'Não tenho certeza de que citação adicionar' },
+        { id: 'common-knowledge', label: 'A informação que estou a adicionar é muito conhecida' },
+        { id: 'irrelevant', label: 'Não acho que as citações sejam relevantes para a mudança que estou a fazer' },
+        { id: 'other', label: 'Outra' },
+      ],
+    },
+  },
+
   counts: {
     reference: 'refer\u00eancia',
     references: 'refer\u00eancias',

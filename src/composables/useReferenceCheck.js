@@ -1,6 +1,7 @@
 // ABOUTME: Provides pure publish-time helpers for unresolved placeholders and reference targets.
 // ABOUTME: Keeps publish gating deterministic without coupling detection to UI state or labels.
 
+import { computed, ref } from 'vue'
 import { isCitationPlaceholderNode } from '../utils/citationPlaceholders.js'
 
 export const MIN_UNCITED_PARAGRAPH_TEXT_LENGTH = 50
@@ -110,8 +111,14 @@ export function isQualifyingUncitedParagraph(node) {
 
   let hasCitation = false
   let hasCitationPlaceholder = false
+  let hasContentPlaceholder = false
 
   node.descendants((child) => {
+    if (child.type?.name === 'placeholderChip') {
+      hasContentPlaceholder = true
+      return false
+    }
+
     if (isCitationPlaceholderNode(child)) {
       hasCitationPlaceholder = true
       return false
@@ -125,7 +132,7 @@ export function isQualifyingUncitedParagraph(node) {
     return true
   })
 
-  return !hasCitation && !hasCitationPlaceholder
+  return !hasCitation && !hasCitationPlaceholder && !hasContentPlaceholder
 }
 
 export function findFirstQualifyingUncitedParagraphTarget(doc) {
@@ -147,4 +154,93 @@ export function findFirstReferenceTarget(doc) {
     findFirstCitationPlaceholderTarget(doc) ||
     findFirstQualifyingUncitedParagraphTarget(doc)
   )
+}
+
+export function createReferenceCheckState() {
+  const phase = ref('idle')
+  const activeTarget = ref(null)
+  const selectedReason = ref(null)
+
+  const isReferenceChoiceVisible = computed(() => phase.value === 'awaiting-reference-choice')
+  const isReferenceReasonVisible = computed(() => phase.value === 'awaiting-reference-reason')
+
+  function reset() {
+    phase.value = 'idle'
+    activeTarget.value = null
+    selectedReason.value = null
+  }
+
+  function beginChecking() {
+    phase.value = 'checking'
+    activeTarget.value = null
+    selectedReason.value = null
+  }
+
+  function showReferenceChoice(target) {
+    activeTarget.value = target
+    selectedReason.value = null
+    phase.value = 'awaiting-reference-choice'
+  }
+
+  function dismissChoice() {
+    reset()
+  }
+
+  function rejectReference() {
+    if (!activeTarget.value) return
+    phase.value = 'awaiting-reference-reason'
+  }
+
+  function dismissReason() {
+    reset()
+  }
+
+  function chooseReason(reason) {
+    if (!activeTarget.value) return
+    selectedReason.value = reason
+    phase.value = 'resolved'
+  }
+
+  function beginCiteDialog() {
+    if (!activeTarget.value) return false
+    phase.value = 'awaiting-cite-dialog'
+    return true
+  }
+
+  function cancelCiteDialog() {
+    reset()
+  }
+
+  function resolveAfterCitation() {
+    reset()
+  }
+
+  function resolvePublishAttempt() {
+    phase.value = 'resolved'
+  }
+
+  return {
+    phase,
+    activeTarget,
+    selectedReason,
+    isReferenceChoiceVisible,
+    isReferenceReasonVisible,
+    beginChecking,
+    showReferenceChoice,
+    dismissChoice,
+    rejectReference,
+    dismissReason,
+    chooseReason,
+    beginCiteDialog,
+    cancelCiteDialog,
+    resolveAfterCitation,
+    resolvePublishAttempt,
+    reset,
+  }
+}
+
+const sharedReferenceCheckState = createReferenceCheckState()
+
+export function useReferenceCheck() {
+  return sharedReferenceCheckState
 }
