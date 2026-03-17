@@ -13,6 +13,9 @@ export default {
     tagline: 'From Wikipedia, the free encyclopedia',
     articleTab: 'Article',
     talkTab: 'Talk',
+    redlinkExplain: 'This page has not yet been created.',
+    redlinkCreate: 'Create page',
+    redlinkLeave: 'No, thanks.',
   },
 
   // Flow pages

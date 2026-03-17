@@ -2,16 +2,34 @@
 <!-- ABOUTME: Renders article content with red links that hand off into the editor. -->
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { researchContent } from '@/config/researchContent'
 import { getArticleForRoute, buildEditorQuery } from '@/utils/researchFlow'
 import { useLocale } from '@/composables/useLocale'
+import EditorLoadingOverlay from '@/components/EditorLoadingOverlay.vue'
 
 const route = useRoute()
 const lang = computed(() => route.query.lang ?? 'en')
 const article = computed(() => getArticleForRoute(route.query, researchContent))
 const { locale } = useLocale()
+
+const showLoadingOverlay = ref(false)
+const pendingEditorQuery = ref(null)
+
+function handleRedLinkClick(topicId) {
+  pendingEditorQuery.value = buildEditorQuery({
+    lang: lang.value,
+    articleId: article.value.id,
+    topicId,
+  })
+  showLoadingOverlay.value = true
+}
+
+function onOverlayCancel() {
+  showLoadingOverlay.value = false
+  pendingEditorQuery.value = null
+}
 </script>
 
 <template>
@@ -72,19 +90,12 @@ const { locale } = useLocale()
           <template v-else v-for="(seg, segi) in para" :key="'sseg' + i + '-' + segi">
             <template v-if="typeof seg === 'string'">{{ seg }}</template>
             <a v-else-if="seg.blueLink" class="wiki-blue-link" @click.prevent>{{ seg.blueLink }}</a>
-            <router-link
+            <a
               v-else
-              :to="{
-                name: 'editor',
-                query:
-                  buildEditorQuery({
-                    lang: lang,
-                    articleId: article.id,
-                    topicId: article.redLinks[seg.redLinkIndex].id,
-                  }),
-              }"
+              href="#"
               class="wiki-red-link"
-            >{{ article.redLinks[seg.redLinkIndex].label }}</router-link>
+              @click.prevent="handleRedLinkClick(article.redLinks[seg.redLinkIndex].id)"
+            >{{ article.redLinks[seg.redLinkIndex].label }}</a>
           </template>
         </p>
       </div>
@@ -104,24 +115,22 @@ const { locale } = useLocale()
           <template v-else v-for="(seg, segi) in para" :key="'seg' + si + '-' + pi + '-' + segi">
             <template v-if="typeof seg === 'string'">{{ seg }}</template>
             <a v-else-if="seg.blueLink" class="wiki-blue-link" @click.prevent>{{ seg.blueLink }}</a>
-            <router-link
+            <a
               v-else
-              :to="{
-                name: 'editor',
-                query:
-                  buildEditorQuery({
-                    lang: lang,
-                    articleId: article.id,
-                    topicId: article.redLinks[seg.redLinkIndex].id,
-                  }),
-              }"
+              href="#"
               class="wiki-red-link"
-            >{{ article.redLinks[seg.redLinkIndex].label }}</router-link>
+              @click.prevent="handleRedLinkClick(article.redLinks[seg.redLinkIndex].id)"
+            >{{ article.redLinks[seg.redLinkIndex].label }}</a>
           </template>
         </p>
       </div>
     </main>
 
+    <EditorLoadingOverlay
+      v-if="showLoadingOverlay"
+      :editor-query="pendingEditorQuery"
+      @cancel="onOverlayCancel"
+    />
   </div>
 </template>
 

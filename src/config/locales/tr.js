@@ -12,6 +12,9 @@ export default {
     tagline: 'Vikipedi, \u00f6zg\u00fcr ansiklopedi',
     articleTab: 'Madde',
     talkTab: 'Tart\u0131\u015fma',
+    redlinkExplain: 'Bu sayfa hen\u00fcz olu\u015fturulmad\u0131.',
+    redlinkCreate: 'Sayfa olu\u015ftur',
+    redlinkLeave: 'Hay\u0131r te\u015fekk\u00fcrler.',
   },
 
   flow: {

@@ -12,6 +12,9 @@ export default {
     tagline: 'Da Wikipédia, a enciclopédia livre',
     articleTab: 'Artigo',
     talkTab: 'Discuss\u00e3o',
+    redlinkExplain: 'Esta p\u00e1gina ainda n\u00e3o foi criada.',
+    redlinkCreate: 'Criar p\u00e1gina',
+    redlinkLeave: 'N\u00e3o, obrigado',
   },
 
   flow: {
