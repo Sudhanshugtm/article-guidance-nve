@@ -17,6 +17,10 @@ import 'simple-keyboard/build/css/index.css'
 import { useEditorInstance } from '../composables/useEditorInstance'
 import emojiIcon from '../assets/keyboard-emoji.svg'
 import micIcon from '../assets/keyboard-mic.svg'
+import {
+  applySoftKeyboardInputButton,
+  getNextSoftKeyboardLayout,
+} from '../utils/softKeyboardInput.js'
 
 const emit = defineEmits(['height-change'])
 
@@ -25,12 +29,105 @@ const keyboardRef = ref(null)
 const editorFocused = ref(false)
 const externalInputFocused = ref(false)
 const isVisible = computed(() => editorFocused.value || externalInputFocused.value)
+const layoutName = ref('default')
 let keyboardInstance = null
 
 const { editorInstance } = useEditorInstance()
 
 const EXTERNAL_INPUT_SELECTOR =
   '.cite-dialog__reuse-search input, .cite-dialog__discover-search input'
+
+function getFocusedExternalInput() {
+  const activeElement = document.activeElement
+  if (
+    activeElement instanceof HTMLInputElement &&
+    activeElement.matches(EXTERNAL_INPUT_SELECTOR)
+  ) {
+    return activeElement
+  }
+  return null
+}
+
+function setKeyboardLayout(nextLayout) {
+  layoutName.value = nextLayout
+  keyboardInstance?.setOptions({ layoutName: nextLayout })
+}
+
+function applyButtonToExternalInput(input, button) {
+  const nextState = applySoftKeyboardInputButton(
+    {
+      value: input.value,
+      selectionStart: input.selectionStart ?? input.value.length,
+      selectionEnd: input.selectionEnd ?? input.value.length,
+    },
+    button,
+  )
+
+  input.value = nextState.value
+  input.setSelectionRange(nextState.selectionStart, nextState.selectionEnd)
+  input.dispatchEvent(new Event('input', { bubbles: true }))
+}
+
+function applyButtonToEditor(button) {
+  const editor = editorInstance.value
+  if (!editor) return
+
+  if (button === '{shift}' || button === '{numbers}') {
+    return
+  }
+
+  if (button === '{backspace}') {
+    editor
+      .chain()
+      .focus()
+      .command(({ state, tr }) => {
+        const { from, to, empty } = state.selection
+        if (!empty) {
+          tr.delete(from, to)
+          return true
+        }
+        if (from === 0) {
+          return true
+        }
+        tr.delete(from - 1, from)
+        return true
+      })
+      .run()
+    return
+  }
+
+  if (button === '{enter}') {
+    editor.chain().focus().splitBlock().run()
+    return
+  }
+
+  const text = button === '{space}' ? ' ' : button
+  if (!text || text.startsWith('{')) return
+
+  editor
+    .chain()
+    .focus()
+    .command(({ state, tr }) => {
+      const { from, to } = state.selection
+      tr.insertText(text, from, to)
+      return true
+    })
+    .run()
+}
+
+function handleSoftKeyboardPress(button) {
+  const input = getFocusedExternalInput()
+  if (input) {
+    applyButtonToExternalInput(input, button)
+  } else {
+    applyButtonToEditor(button)
+  }
+
+  const nextLayout = getNextSoftKeyboardLayout(layoutName.value, button)
+  if (nextLayout !== layoutName.value) {
+    setKeyboardLayout(nextLayout)
+  }
+}
 
 function onDocumentFocusIn(e) {
   if (e.target.matches(EXTERNAL_INPUT_SELECTOR)) {
@@ -80,6 +177,7 @@ const display = {
 onMounted(() => {
   keyboardInstance = new Keyboard(keyboardRef.value, {
     layout,
+    layoutName: layoutName.value,
     display,
     theme: 'hg-theme-default ios-theme',
     physicalKeyboardHighlight: true,
@@ -88,8 +186,7 @@ onMounted(() => {
     physicalKeyboardHighlightTextColor: '#595959',
     mergeDisplay: true,
     preventMouseDownDefault: true,
-    onChange: () => {},
-    onKeyPress: () => {},
+    onKeyPress: handleSoftKeyboardPress,
   })
 
   setupFocusListeners()
@@ -144,6 +241,17 @@ onBeforeUnmount(() => {
   z-index: 450;
   background-color: #e6e9ed;
   box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .soft-keyboard-wrapper {
+    left: var(--editor-shell-offset);
+    width: var(--editor-shell-width);
+    bottom: 16px;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    overflow: hidden;
+  }
 }
 
 .slide-up-enter-active,
