@@ -134,20 +134,9 @@ export default {
       ],
     },
     {
-      title: 'Como o café é feito',
-      description: 'Do grão à chávena.',
-      paragraphs: [
-        {
-          title: 'Torrefação',
-          description: 'Como os grãos verdes se tornam os grãos castanhos que conhecemos.',
-          content: 'Após a colheita, os grãos de café são {{initial processing step}} e depois torrados a temperaturas de {{temperature range}}.[Add a citation] A torrefação transforma os grãos verdes nos grãos {{colour}} e aromáticos usados para preparar a bebida. O grau de torra — {{light roast name}}, {{medium roast name}} ou {{dark roast name}} — afeta o sabor final.[Add a citation]',
-        },
-        {
-          title: 'Métodos de preparação',
-          description: 'Formas comuns de preparar café para beber.',
-          content: 'O café pode ser preparado de diversas formas, incluindo {{first method}}, {{second method}} e {{third method}}.[Add a citation] Cada método produz uma intensidade e um perfil de sabor diferentes. {{most common method globally}} continua a ser o método de preparação mais utilizado em todo o mundo.[Add a citation]',
-        },
-      ],
+      title: 'Preparação',
+      description: 'Como o café é preparado como bebida.',
+      paragraphs: [],
     },
   ],
 

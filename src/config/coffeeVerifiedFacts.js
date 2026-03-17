@@ -284,44 +284,4 @@ export const coffeeVerifiedFacts = [
     ],
     wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
   },
-  {
-    id: 'roasting-temperature',
-    title: '200-240 C',
-    description: 'common roasting temperature range',
-    locales: {
-      pt: {
-        title: '200-240 °C',
-        description: 'intervalo comum de temperatura de torra',
-      },
-      tr: {
-        title: '200-240 °C',
-        description: 'yaygın kavurma sıcaklığı aralığı',
-      },
-    },
-    supports: ['temperature range'],
-    references: [
-      { url: 'https://www.britannica.com/topic/coffee' },
-    ],
-    wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
-  },
-  {
-    id: 'brewing-method',
-    title: 'drip coffee',
-    description: 'widely used brewing method',
-    locales: {
-      pt: {
-        title: 'café filtrado',
-        description: 'método de preparação amplamente utilizado',
-      },
-      tr: {
-        title: 'filtre kahve',
-        description: 'yaygın kullanılan demleme yöntemi',
-      },
-    },
-    supports: ['first method', 'most common method globally'],
-    references: [
-      { url: 'https://www.ncausa.org/About-Coffee/How-to-Brew-Coffee' },
-    ],
-    wikidataUrl: 'https://www.wikidata.org/wiki/Q8486',
-  },
 ]

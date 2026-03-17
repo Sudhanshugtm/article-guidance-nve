@@ -18,6 +18,14 @@ test('coffee verified facts stay within the research-friendly count range', () =
   assert.equal(coffeeVerifiedFacts.length <= 16, true)
 })
 
+test('coffee outline keeps one standalone add-only section for lighter research flows', () => {
+  assert.deepEqual(
+    coffeeSections.map((section) => section.title),
+    ['Introduction', 'History', 'The coffee plant', 'Preparation'],
+  )
+  assert.deepEqual(coffeeSections.at(-1)?.paragraphs ?? [], [])
+})
+
 test('each coffee verified fact declares which blanks it can support', () => {
   for (const fact of coffeeVerifiedFacts) {
     assert.equal(Array.isArray(fact.supports), true, fact.title)

@@ -55,19 +55,8 @@ export const coffeeSections = [
     ],
   },
   {
-    title: 'How coffee is made',
-    description: 'From bean to cup.',
-    paragraphs: [
-      {
-        title: 'Roasting',
-        description: 'How green beans become the brown beans we recognise.',
-        content: `After harvesting, coffee beans are {{initial processing step}} and then roasted at temperatures of {{temperature range}}.${CITE} Roasting transforms the green beans into the fragrant, {{colour}} beans used for brewing. The degree of roast — {{light roast name}}, {{medium roast name}}, or {{dark roast name}} — affects the final flavour.${CITE}`,
-      },
-      {
-        title: 'Brewing methods',
-        description: 'Common ways people prepare coffee to drink.',
-        content: `Coffee can be brewed in many ways, including {{first method}}, {{second method}}, and {{third method}}.${CITE} Each method produces a different strength and flavour profile. {{most common method globally}} remains the most widely used preparation method worldwide.${CITE}`,
-      },
-    ],
+    title: 'Preparation',
+    description: 'How coffee is prepared as a drink.',
+    paragraphs: [],
   },
 ]

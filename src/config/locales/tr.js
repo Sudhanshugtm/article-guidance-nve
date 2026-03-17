@@ -134,20 +134,9 @@ export default {
       ],
     },
     {
-      title: 'Kahve nasıl yapılır',
-      description: 'Çekirdekten fincana.',
-      paragraphs: [
-        {
-          title: 'Kavurma',
-          description: 'Yeşil çekirdeklerin tanıdığımız kahverengi çekirdeklere nasıl dönüştüğü.',
-          content: 'Hasattan sonra kahve çekirdekleri {{initial processing step}} işleminden geçirilir ve ardından {{temperature range}} sıcaklıklarda kavrulur.[Add a citation] Kavurma, yeşil çekirdekleri demleme için kullanılan aromalı, {{colour}} çekirdeklere dönüştürür. Kavurma derecesi — {{light roast name}}, {{medium roast name}} veya {{dark roast name}} — son tadı etkiler.[Add a citation]',
-        },
-        {
-          title: 'Demleme yöntemleri',
-          description: 'İnsanların kahve hazırlamak için kullandığı yaygın yöntemler.',
-          content: 'Kahve, {{first method}}, {{second method}} ve {{third method}} dahil olmak üzere birçok yöntemle demlenebilir.[Add a citation] Her yöntem farklı bir yoğunluk ve tat profili üretir. {{most common method globally}} dünya genelinde en yaygın kullanılan hazırlama yöntemi olmaya devam etmektedir.[Add a citation]',
-        },
-      ],
+      title: 'Hazırlama',
+      description: 'Kahvenin içecek olarak nasıl hazırlandığı.',
+      paragraphs: [],
     },
   ],
 

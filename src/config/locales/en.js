@@ -115,12 +115,9 @@ export default {
       ],
     },
     {
-      title: 'How coffee is made',
-      description: 'From bean to cup.',
-      paragraphs: [
-        { title: 'Roasting', description: 'How green beans become the brown beans we recognise.' },
-        { title: 'Brewing methods', description: 'Common ways people prepare coffee to drink.' },
-      ],
+      title: 'Preparation',
+      description: 'How coffee is prepared as a drink.',
+      paragraphs: [],
     },
   ],
 
