@@ -158,4 +158,10 @@ watch(selectedView, async () => {
 .rail-body :deep(.cdx-accordion__content) {
   font-family: var(--font-family-system-sans);
 }
+
+@media (min-width: 768px) {
+  .editor-rail:not(.is-open) .rail-body {
+    display: none;
+  }
+}
 </style>
