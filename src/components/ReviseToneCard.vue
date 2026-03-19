@@ -1,34 +1,34 @@
 <template>
-  <EditCheckCard title="Revise Tone" :visible="isCardVisible" @close="onDismiss">
+  <EditCheckCard :title="locale.editChecks.tone.title" :visible="isCardVisible" @close="onDismiss">
     <template #description>
       <p>
-        Other editors often revise this kind of wording to have a more balanced tone.
+        {{ locale.editChecks.tone.description }}
         <a
           href="https://meta.wikimedia.org/wiki/Neutral_point_of_view"
           target="_blank"
           rel="noopener"
         >
-          Learn more
+          {{ locale.editChecks.tone.learnMore }}
         </a>
       </p>
     </template>
     <template #actions>
       <div class="revise-tone-buttons">
-        <CdxButton @click="onRevise">Revise</CdxButton>
-        <CdxButton @click="onDecline">Decline</CdxButton>
+        <CdxButton @click="onRevise">{{ locale.editChecks.tone.revise }}</CdxButton>
+        <CdxButton @click="onDecline">{{ locale.editChecks.tone.decline }}</CdxButton>
       </div>
     </template>
     <template #footer>
       <div class="revise-tone-disclaimer">
         <CdxIcon :icon="cdxIconRobot" size="small" class="revise-tone-disclaimer-icon" />
         <span>
-          Identified using a
+          {{ locale.editChecks.tone.identifiedUsing }}
           <a
             href="https://meta.wikimedia.org/wiki/Special:MyLanguage/Machine_learning_models/Proposed/Tone_Check"
             target="_blank"
             rel="noopener"
           >
-            BERT model
+            {{ locale.editChecks.tone.modelLabel }}
           </a>
         </span>
       </div>
@@ -42,9 +42,11 @@ import { cdxIconRobot } from '@wikimedia/codex-icons'
 import EditCheckCard from './EditCheckCard.vue'
 import { usePeacockDetection } from '../composables/usePeacockDetection'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { useLocale } from '../composables/useLocale'
 
 const { isCardVisible, revise, dismissCard, decline } = usePeacockDetection()
 const { getEditor } = useEditorInstance()
+const { locale } = useLocale()
 
 function onRevise() {
   const editor = getEditor()

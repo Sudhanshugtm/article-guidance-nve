@@ -66,15 +66,24 @@ export default {
       description: 'Tra\u00e7os f\u00edsicos e apar\u00eancia.',
       paragraphs: [
         { title: 'Tamanho corporal', description: 'Dimens\u00f5es e peso dos adultos.' },
-        { title: 'Pelagem e marca\u00e7\u00f5es', description: 'Cor da pelagem, padr\u00e3o de listras e mudan\u00e7as sazonais.' },
+        {
+          title: 'Pelagem e marca\u00e7\u00f5es',
+          description: 'Cor da pelagem, padr\u00e3o de listras e mudan\u00e7as sazonais.',
+        },
       ],
     },
     {
       title: 'Distribui\u00e7\u00e3o e habitat',
       description: 'Onde vive e seu ambiente.',
       paragraphs: [
-        { title: 'Distribui\u00e7\u00e3o geogr\u00e1fica', description: 'Pa\u00edses e regi\u00f5es onde \u00e9 encontrado.' },
-        { title: 'Habitat preferido', description: 'Tipos de terreno e vegeta\u00e7\u00e3o que ocupa.' },
+        {
+          title: 'Distribui\u00e7\u00e3o geogr\u00e1fica',
+          description: 'Pa\u00edses e regi\u00f5es onde \u00e9 encontrado.',
+        },
+        {
+          title: 'Habitat preferido',
+          description: 'Tipos de terreno e vegeta\u00e7\u00e3o que ocupa.',
+        },
       ],
     },
     {
@@ -92,12 +101,14 @@ export default {
         {
           title: 'O que é o café',
           description: 'Uma breve descrição do café como bebida.',
-          content: 'O café é uma bebida preparada a partir das sementes torradas da planta {{plant name}}, nativa de {{region of origin}}.[Add a citation] É uma das bebidas mais consumidas no mundo, com cerca de {{number of people}} pessoas a bebê-lo diariamente.[Add a citation]',
+          content:
+            'O café é uma bebida preparada a partir das sementes torradas da planta {{plant name}}, nativa de {{region of origin}}.[Add a citation] É uma das bebidas mais consumidas no mundo, com cerca de {{number of people}} pessoas a bebê-lo diariamente.[Add a citation]',
         },
         {
           title: 'Por que é importante',
           description: 'O seu lugar no mundo atual.',
-          content: 'O café é o segundo {{type of product}} mais comercializado no mundo, depois de {{comparison product}}.[Add a citation] A indústria global do café sustenta a subsistência de aproximadamente {{number of workers}} pessoas em mais de {{number of countries}} países.[Add a citation]',
+          content:
+            'O café é o segundo {{type of product}} mais comercializado no mundo, depois de {{comparison product}}.[Add a citation] A indústria global do café sustenta a subsistência de aproximadamente {{number of workers}} pessoas em mais de {{number of countries}} países.[Add a citation]',
         },
       ],
     },
@@ -108,12 +119,14 @@ export default {
         {
           title: 'Origens remotas',
           description: 'Como o café foi descoberto e utilizado pela primeira vez.',
-          content: 'O café foi descoberto pela primeira vez em {{country of origin}} por volta do {{century of discovery}}.[Add a citation] Segundo a lenda, um {{occupation of discoverer}} chamado {{figure in the legend}} notou que as suas cabras ficavam invulgarmente enérgicas depois de comerem bagas de uma determinada árvore.[Add a citation]',
+          content:
+            'O café foi descoberto pela primeira vez em {{country of origin}} por volta do {{century of discovery}}.[Add a citation] Segundo a lenda, um {{occupation of discoverer}} chamado {{figure in the legend}} notou que as suas cabras ficavam invulgarmente enérgicas depois de comerem bagas de uma determinada árvore.[Add a citation]',
         },
         {
           title: 'Expansão pelo mundo',
           description: 'Como o café chegou a outros continentes.',
-          content: 'No {{century of spread}}, o café já havia chegado a {{first regions outside origin}} através de rotas comerciais.[Add a citation] Os primeiros cafés europeus abriram em {{first European city}} em {{year or decade}}, e a bebida rapidamente se tornou um elemento social e intelectual em todo o continente.[Add a citation]',
+          content:
+            'No {{century of spread}}, o café já havia chegado a {{first regions outside origin}} através de rotas comerciais.[Add a citation] Os primeiros cafés europeus abriram em {{first European city}} em {{year or decade}}, e a bebida rapidamente se tornou um elemento social e intelectual em todo o continente.[Add a citation]',
         },
       ],
     },
@@ -124,12 +137,14 @@ export default {
         {
           title: 'Principais variedades',
           description: 'Os tipos mais comuns de plantas de café.',
-          content: 'As duas espécies mais cultivadas são {{first species common name}} e {{second species common name}}.[Add a citation] {{First species}} representa cerca de {{percentage}}% da produção mundial e é geralmente considerada como tendo um sabor mais suave e complexo.[Add a citation]',
+          content:
+            'As duas espécies mais cultivadas são {{first species common name}} e {{second species common name}}.[Add a citation] {{First species}} representa cerca de {{percentage}}% da produção mundial e é geralmente considerada como tendo um sabor mais suave e complexo.[Add a citation]',
         },
         {
           title: 'Onde cresce',
           description: 'O clima e as regiões adequados para o cultivo do café.',
-          content: 'As plantas de café prosperam em climas {{climate type}} entre os trópicos de {{northern tropic}} e {{southern tropic}}, uma região frequentemente chamada de {{nickname for region}}.[Add a citation] Os maiores países produtores atualmente são {{top producer}}, {{second producer}} e {{third producer}}.[Add a citation]',
+          content:
+            'As plantas de café prosperam em climas {{climate type}} entre os trópicos de {{northern tropic}} e {{southern tropic}}, uma região frequentemente chamada de {{nickname for region}}.[Add a citation] Os maiores países produtores atualmente são {{top producer}}, {{second producer}} e {{third producer}}.[Add a citation]',
         },
       ],
     },
@@ -147,7 +162,8 @@ export default {
   cite: {
     title: 'Adicionar uma cita\u00e7\u00e3o',
     automatic: 'Autom\u00e1tico',
-    automaticDesc: 'Insira um link ou c\u00f3digo de refer\u00eancia (ISBN, DOI ou outro) para criar uma cita\u00e7\u00e3o',
+    automaticDesc:
+      'Insira um link ou c\u00f3digo de refer\u00eancia (ISBN, DOI ou outro) para criar uma cita\u00e7\u00e3o',
     create: 'Criar',
     placeholder: 'ex. http://www.example.com',
     scanIsbn: 'Ler c\u00f3digo de barras ISBN',
@@ -174,15 +190,44 @@ export default {
       reject: 'Não',
       reasonPrompt: 'Porque não adicionou uma citação?',
       reasonTitle: 'Porque não adicionou uma citação?',
-      reasonDescription: 'Os outros editores gostariam de saber mais sobre a sua decisão de não adicionar uma citação.',
+      reasonDescription:
+        'Os outros editores gostariam de saber mais sobre a sua decisão de não adicionar uma citação.',
       back: 'Anterior',
       submit: 'Submeter',
       reasons: [
         { id: 'uncertain', label: 'Não tenho certeza de que citação adicionar' },
         { id: 'common-knowledge', label: 'A informação que estou a adicionar é muito conhecida' },
-        { id: 'irrelevant', label: 'Não acho que as citações sejam relevantes para a mudança que estou a fazer' },
+        {
+          id: 'irrelevant',
+          label: 'Não acho que as citações sejam relevantes para a mudança que estou a fazer',
+        },
         { id: 'other', label: 'Outra' },
       ],
+    },
+    tone: {
+      title: 'Rever tom',
+      description:
+        'Outros editores costumam rever este tipo de redação para dar um tom mais equilibrado.',
+      learnMore: 'Saiba mais',
+      revise: 'Rever',
+      decline: 'Recusar',
+      identifiedUsing: 'Identificado com um',
+      modelLabel: 'modelo BERT',
+    },
+    pastedContent: {
+      title: 'Conteúdo colado',
+      descriptionPrefix:
+        'Evite copiar texto de outras fontes, mesmo que tenha sido reformulado ou citado. Isto pode ser considerado',
+      descriptionLinkText: 'violação de direitos de autor ou plágio',
+      descriptionSuffix: 'e pode resultar na remoção do seu conteúdo ou no bloqueio da sua conta.',
+      question: 'Escreveu este texto?',
+      keep: 'Sim, manter',
+      remove: 'Não, remover',
+    },
+    completeSection: {
+      title: 'Completar secção',
+      description: 'Antes de continuar, substitua ou remova todas as partes incompletas.',
+      confirm: 'Percebi',
     },
   },
 

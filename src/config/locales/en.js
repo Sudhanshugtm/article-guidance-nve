@@ -71,7 +71,10 @@ export default {
       description: 'Physical traits and appearance.',
       paragraphs: [
         { title: 'Body size', description: 'Dimensions and weight of adults.' },
-        { title: 'Coat and markings', description: 'Fur colour, stripe pattern and seasonal changes.' },
+        {
+          title: 'Coat and markings',
+          description: 'Fur colour, stripe pattern and seasonal changes.',
+        },
       ],
     },
     {
@@ -111,7 +114,10 @@ export default {
       description: 'What the plant looks like and where it grows.',
       paragraphs: [
         { title: 'Main varieties', description: 'The most common types of coffee plants.' },
-        { title: 'Where it grows', description: 'The climate and regions suited for growing coffee.' },
+        {
+          title: 'Where it grows',
+          description: 'The climate and regions suited for growing coffee.',
+        },
       ],
     },
     {
@@ -157,15 +163,44 @@ export default {
       reject: 'No',
       reasonPrompt: 'Why are you not adding a citation?',
       reasonTitle: 'Why are you not adding a citation?',
-      reasonDescription: 'Other editors would value learning more about your decision not to add a citation.',
+      reasonDescription:
+        'Other editors would value learning more about your decision not to add a citation.',
       back: 'Back',
       submit: 'Submit',
       reasons: [
         { id: 'uncertain', label: "I'm not sure what citation to add" },
         { id: 'common-knowledge', label: "The information I'm adding is widely known" },
-        { id: 'irrelevant', label: "I don't think citations are relevant to the change I'm making" },
+        {
+          id: 'irrelevant',
+          label: "I don't think citations are relevant to the change I'm making",
+        },
         { id: 'other', label: 'Other' },
       ],
+    },
+    tone: {
+      title: 'Revise tone',
+      description: 'Other editors often revise this kind of wording to have a more balanced tone.',
+      learnMore: 'Learn more',
+      revise: 'Revise',
+      decline: 'Decline',
+      identifiedUsing: 'Identified using a',
+      modelLabel: 'BERT model',
+    },
+    pastedContent: {
+      title: 'Pasted content',
+      descriptionPrefix:
+        'Please avoid copying text from other sources, even if rephrased or cited. This could be considered',
+      descriptionLinkText: 'copyright violation or plagiarism',
+      descriptionSuffix:
+        'and may result in your content being removed or your account being blocked.',
+      question: 'Did you write this text?',
+      keep: 'Yes, keep it',
+      remove: 'No, remove it',
+    },
+    completeSection: {
+      title: 'Complete section',
+      description: 'Before you continue, replace or remove all incomplete parts.',
+      confirm: 'Got it',
     },
   },
 

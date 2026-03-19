@@ -26,3 +26,16 @@ for (const lang of ['en', 'pt', 'tr']) {
     assert.match(source, /reasons:\s*\[/)
   })
 }
+
+test('Turkish publish reference strings reflect reviewer wording', () => {
+  const source = readFileSync(
+    new URL('../src/config/locales/tr.js', import.meta.url),
+    'utf8',
+  )
+
+  assert.match(
+    source,
+    /label:\s*'Alıntıların yaptığım değişiklikle alakalı olduğunu düşünmüyorum'/,
+  )
+  assert.match(source, /references:\s*'kaynaklar'/)
+})

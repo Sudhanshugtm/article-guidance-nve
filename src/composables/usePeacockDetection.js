@@ -1,12 +1,12 @@
 import { ref, shallowRef } from 'vue'
-import { peacockWords } from '../config/peacockWords'
-
-const pattern = new RegExp('\\b(' + peacockWords.join('|') + ')\\b', 'i')
+import { buildPeacockPattern, getPeacockWords, normalizePeacockText } from '../config/peacockWords'
+import { useLocale } from './useLocale'
 
 const isCardVisible = ref(false)
 const activeParagraphId = ref(null)
 const activeParagraphRange = ref(null)
 const peacockParagraphRect = shallowRef(null)
+let matchesCurrentLanguage = (text) => buildPeacockPattern(getPeacockWords('en')).test(text)
 
 function findPreviousParagraph(editor) {
   const { $from } = editor.state.selection
@@ -72,7 +72,7 @@ function scanParagraphAtPos(editor, paragraphPos) {
     if (!node || node.type.name !== 'paragraph' || node.content.size === 0) return
 
     const text = node.textContent
-    if (!pattern.test(text)) return
+    if (!matchesCurrentLanguage(text)) return
 
     const paragraphId = 'p-' + Math.random().toString(36).slice(2, 8)
     const from = paragraphPos + 1
@@ -92,7 +92,7 @@ function triggerDetectionOnInsert(editor) {
   if (!prev) return
 
   const text = prev.node.textContent
-  if (!pattern.test(text)) return
+  if (!matchesCurrentLanguage(text)) return
 
   const paragraphId = 'p-' + Math.random().toString(36).slice(2, 8)
   const from = prev.pos + 1
@@ -109,7 +109,7 @@ function triggerDetection(editor) {
   if (!prev) return
 
   const text = prev.node.textContent
-  if (!pattern.test(text)) return
+  if (!matchesCurrentLanguage(text)) return
 
   const paragraphId = 'p-' + Math.random().toString(36).slice(2, 8)
   const from = prev.pos + 1
@@ -190,6 +190,10 @@ function decline(editor) {
 }
 
 export function usePeacockDetection() {
+  const { lang } = useLocale()
+  matchesCurrentLanguage = (text) =>
+    buildPeacockPattern(getPeacockWords(lang.value)).test(normalizePeacockText(text))
+
   return {
     isCardVisible,
     activeParagraphId,

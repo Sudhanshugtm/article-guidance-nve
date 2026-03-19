@@ -1,38 +1,42 @@
 <template>
-  <EditCheckCard title="Pasted content" :visible="isPasteCardVisible" @close="onDismiss">
+  <EditCheckCard
+    :title="locale.editChecks.pastedContent.title"
+    :visible="isPasteCardVisible"
+    @close="onDismiss"
+  >
     <template #description>
       <p>
-        Please avoid copying text from other sources, even if rephrased or cited. This could be
-        considered
+        {{ locale.editChecks.pastedContent.descriptionPrefix }}
         <a
           href="https://en.wikipedia.org/wiki/Wikipedia:Copyright_violations"
           target="_blank"
           rel="noopener"
         >
-          copyright violation or plagiarism
+          {{ locale.editChecks.pastedContent.descriptionLinkText }}
         </a>
-        and may result in your content being removed or your account being blocked.
+        {{ locale.editChecks.pastedContent.descriptionSuffix }}
       </p>
     </template>
     <template #actions>
-      <p class="paste-question">Did you write this text?</p>
+      <p class="paste-question">{{ locale.editChecks.pastedContent.question }}</p>
       <div class="paste-buttons">
-        <CdxButton @click="onYes">Yes, keep it</CdxButton>
-        <CdxButton @click="onNo">No, remove it</CdxButton>
+        <CdxButton @click="onYes">{{ locale.editChecks.pastedContent.keep }}</CdxButton>
+        <CdxButton @click="onNo">{{ locale.editChecks.pastedContent.remove }}</CdxButton>
       </div>
     </template>
   </EditCheckCard>
 </template>
 
 <script setup>
-import { CdxButton, CdxIcon } from '@wikimedia/codex'
-import { cdxIconCheck, cdxIconClose } from '@wikimedia/codex-icons'
+import { CdxButton } from '@wikimedia/codex'
 import EditCheckCard from './EditCheckCard.vue'
 import { usePasteDetection } from '../composables/usePasteDetection'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { useLocale } from '../composables/useLocale'
 
 const { isPasteCardVisible, confirmPaste, rejectPaste, dismissPaste } = usePasteDetection()
 const { getEditor } = useEditorInstance()
+const { locale } = useLocale()
 
 function onYes() {
   const editor = getEditor()

@@ -1,11 +1,15 @@
 <template>
-  <EditCheckCard title="Complete section" :visible="isPlaceholderCardVisible" @close="onDismiss">
+  <EditCheckCard
+    :title="locale.editChecks.completeSection.title"
+    :visible="isPlaceholderCardVisible"
+    @close="onDismiss"
+  >
     <template #description>
-      <p>Before you continue, replace or remove all incomplete parts.</p>
+      <p>{{ locale.editChecks.completeSection.description }}</p>
     </template>
     <template #actions>
       <div class="complete-section-buttons">
-        <CdxButton @click="onEdit">Got it</CdxButton>
+        <CdxButton @click="onEdit">{{ locale.editChecks.completeSection.confirm }}</CdxButton>
       </div>
     </template>
   </EditCheckCard>
@@ -16,10 +20,12 @@ import { CdxButton } from '@wikimedia/codex'
 import EditCheckCard from './EditCheckCard.vue'
 import { usePlaceholderDetection } from '../composables/usePlaceholderDetection'
 import { useEditorInstance } from '../composables/useEditorInstance'
+import { useLocale } from '../composables/useLocale'
 
 const { isPlaceholderCardVisible, editPlaceholder, dismissPlaceholderCard } =
   usePlaceholderDetection()
 const { getEditor } = useEditorInstance()
+const { locale } = useLocale()
 
 function onEdit() {
   const editor = getEditor()
