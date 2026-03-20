@@ -84,3 +84,15 @@ test('localized tone-check keywords support Portuguese, Turkish, and English fal
   assert.equal(trPattern.test('Bunun unlusunu anlatti.'), false)
   assert.deepEqual(fallbackWords, getPeacockWords('en'))
 })
+
+test('Portuguese tone-check keywords match natural coffee prompts with feminine adjective forms', () => {
+  const ptPattern = buildPeacockPattern(getPeacockWords('pt'))
+
+  assert.equal(ptPattern.test('O café é uma bebida famosa e extraordinária.'), true)
+})
+
+test('Turkish tone-check keywords match natural coffee prompts with predicate suffixes', () => {
+  const trPattern = buildPeacockPattern(getPeacockWords('tr'))
+
+  assert.equal(trPattern.test('Kahve ünlüdür ve harikadır.'), true)
+})
