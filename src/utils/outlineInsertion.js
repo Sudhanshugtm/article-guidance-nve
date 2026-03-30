@@ -1,6 +1,18 @@
 // ABOUTME: Helpers for inserting outline content into the research editor.
 // ABOUTME: Reuses staged empty section paragraphs so guided content does not leave visual gaps.
 
+export function getArticleContentInsertionPos(doc) {
+  let referencesSectionPos = null
+
+  doc.forEach((node, offset) => {
+    if (referencesSectionPos === null && node.type?.name === 'referencesSection') {
+      referencesSectionPos = offset
+    }
+  })
+
+  return referencesSectionPos ?? doc.content.size
+}
+
 export function findReusableSectionParagraphRange(doc, sectionTitle) {
   let previousNode = null
   let reusableRange = null

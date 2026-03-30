@@ -41,7 +41,10 @@ import { useEditorInstance } from '../composables/useEditorInstance'
 import { useAccordionState } from '../composables/useAccordionState'
 import { useLocale } from '../composables/useLocale'
 import { usePlaceholderInteraction } from '../composables/usePlaceholderInteraction'
-import { findReusableSectionParagraphRange } from '../utils/outlineInsertion'
+import {
+  findReusableSectionParagraphRange,
+  getArticleContentInsertionPos,
+} from '../utils/outlineInsertion'
 import { getCitationPlaceholderLabel } from '../utils/citationPlaceholders'
 
 const emit = defineEmits(['content-inserted'])
@@ -85,7 +88,7 @@ function onInsertSectionHeading(section, index) {
 
   clearActivePlaceholder()
 
-  const endPos = editor.state.doc.content.size
+  const endPos = getArticleContentInsertionPos(editor.state.doc)
   editor
     .chain()
     .focus(endPos)
@@ -192,7 +195,7 @@ function onInsertParagraph(section, index, paragraph) {
         : reusableSectionParagraph.from
     } else {
       // Insert at end of document so we don't split the paragraph the cursor is in
-      const endPos = editor.state.doc.content.size
+      const endPos = getArticleContentInsertionPos(editor.state.doc)
       editor.chain().focus(endPos).insertContentAt(endPos, nodes).run()
       searchFrom = endPos
       searchTo = editor.state.doc.content.size

@@ -1,5 +1,5 @@
 // ABOUTME: Guards outline insertions while a different placeholder is still active.
-// ABOUTME: Ensures section adds append at document end and clear stale placeholder context first.
+// ABOUTME: Ensures section adds use the footer-aware insertion position and clear stale placeholder context first.
 
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -25,10 +25,10 @@ test('outline insertions clear any previously active placeholder before mutating
   )
 })
 
-test('outline section heading insertion appends at the end of the document instead of splitting the active paragraph', () => {
+test('outline section heading insertion uses the footer-aware insertion position instead of splitting the active paragraph', () => {
   assert.match(
     outlineAccordionSource,
-    /function onInsertSectionHeading\(section,\s*index\)\s*\{[\s\S]*const editor = getEditor\(\)[\s\S]*const endPos = editor\.state\.doc\.content\.size[\s\S]*insertContentAt\(endPos,/,
+    /function onInsertSectionHeading\(section,\s*index\)\s*\{[\s\S]*const editor = getEditor\(\)[\s\S]*const endPos = getArticleContentInsertionPos\(editor\.state\.doc\)[\s\S]*insertContentAt\(endPos,/,
   )
   assert.doesNotMatch(
     outlineAccordionSource,
