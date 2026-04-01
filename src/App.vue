@@ -6,6 +6,25 @@
   </div>
 </template>
 
+<script setup>
+// ABOUTME: Keeps the root document metadata aligned with the selected locale.
+// ABOUTME: Prevents browsers from misidentifying localized prototypes as English.
+
+import { watchEffect } from 'vue'
+import { useLocale } from '@/composables/useLocale'
+
+const { lang } = useLocale()
+
+watchEffect(() => {
+  if (typeof document === 'undefined') {
+    return
+  }
+
+  document.documentElement.lang = lang.value
+  document.documentElement.dir = 'ltr'
+})
+</script>
+
 <style scoped>
 .app-shell {
   width: 100%;

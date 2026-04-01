@@ -7,7 +7,10 @@ import locales from '@/config/locales'
 
 export function useLocale() {
   const route = useRoute()
-  const lang = computed(() => route.query.lang || 'en')
+  const lang = computed(() => {
+    const requestedLang = typeof route.query.lang === 'string' ? route.query.lang : 'en'
+    return locales[requestedLang] ? requestedLang : 'en'
+  })
   const locale = computed(() => locales[lang.value] || locales.en)
   return { lang, locale }
 }
